@@ -1,1 +1,1 @@
-# team-2026-LUG
+# LUG
