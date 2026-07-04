@@ -1,6 +1,6 @@
 import { RegistrationDraft, RegistrationPage } from "./types";
 
-const VALID_PAGES: RegistrationPage[] = [
+export const VALID_PAGES: RegistrationPage[] = [
   "start",
   "returningUoa",
   "newMember",

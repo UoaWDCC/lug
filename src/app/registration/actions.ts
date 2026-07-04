@@ -7,7 +7,7 @@ import {
 } from "./types";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { readRegistrationDraft } from "./utils";
+import { VALID_PAGES, readRegistrationDraft } from "./utils";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -83,7 +83,21 @@ export async function submitRegistrationStep(
     redirect("/registration");
   }
 
+  /*
+   * Mainly for robustness: redirect if submitted pageValue is not valid
+   * This can happen since server actions can be reached externally through direct POST requests
+   */
+  const pageValue = formData.get("page");
+
+  if (
+    typeof pageValue !== "string" ||
+    !VALID_PAGES.includes(pageValue as RegistrationPage)
+  ) {
+    redirect("/registration");
+  }
+
   const page = formData.get("page") as RegistrationPage;
+
   let nextPage: RegistrationPage = "start";
   let stepData: Partial<RegistrationDraft> = {};
 
@@ -104,7 +118,10 @@ export async function submitRegistrationStep(
         };
       }
 
-      if (!isConditionalReturningMember) {
+      if (
+        isConditionalReturningMember !== "yes" &&
+        isConditionalReturningMember !== "no"
+      ) {
         return {
           error: "Please select whether you have registered previously.",
           fields: { email },
@@ -130,7 +147,7 @@ export async function submitRegistrationStep(
         return { error: "Last name is required.", fields };
       }
 
-      if (!isCurrentUoaStudent) {
+      if (isCurrentUoaStudent !== "yes" && isCurrentUoaStudent !== "no") {
         return {
           error:
             "Please select whether you attend the University of Auckland (UoA).",
