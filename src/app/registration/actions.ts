@@ -96,7 +96,7 @@ export async function submitRegistrationStep(
     redirect("/registration");
   }
 
-  const page = formData.get("page") as RegistrationPage;
+  const page = pageValue as RegistrationPage;
 
   let nextPage: RegistrationPage = "start";
   let stepData: Partial<RegistrationDraft> = {};
