@@ -30,14 +30,14 @@ export type BaseMemberRegistration = {
   potentialInvolvement: PotentialInvolvement[];
 };
 
-// Case 1: Returning member - Registration path 1
+// Case 1: Conditional returning member
 export type ConditionalReturningMember = BaseMemberRegistration & {
   isConditionalReturningMember: true;
   upi: string;
   studentId: string;
 };
 
-// Case 2: Current UoA student - Registration path 2
+// Case 2: Current UoA student
 export type CurrentUoaStudentMember = BaseMemberRegistration & {
   isConditionalReturningMember: false;
   isCurrentUoaStudent: true;
@@ -48,7 +48,7 @@ export type CurrentUoaStudentMember = BaseMemberRegistration & {
   yearLevel: YearLevel;
 };
 
-// Case 3: Non-current UoA student - Registration path 3
+// Case 3: Non-current UoA student
 export type NonCurrentUoaStudentMember = BaseMemberRegistration & {
   isConditionalReturningMember: false;
   isCurrentUoaStudent: false;
