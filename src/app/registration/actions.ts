@@ -7,7 +7,12 @@ import {
 } from "./types";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { VALID_PAGES, readRegistrationDraft } from "./utils";
+import {
+  VALID_PAGES,
+  VALID_INVOLVEMENTS,
+  VALID_SKILL_LEVELS,
+  readRegistrationDraft,
+} from "./utils";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -261,19 +266,34 @@ export async function submitRegistrationStep(
       const discordUsername = formData.get("discordUsername") as string;
       const fields = { linuxSkillLevel, potentialInvolvement, discordUsername };
 
-      if (!linuxSkillLevel) {
-        return { error: "Linux knowledge is required.", fields };
+      if (!linuxSkillLevel || !VALID_SKILL_LEVELS.includes(linuxSkillLevel)) {
+        return {
+          error: "Please select a valid Linux knowledge level.",
+          fields,
+        };
       }
 
-      // Merge otherFaculty to faculty if needed
-      if (prev.otherFaculty) {
-        const withoutOther = (prev.faculty ?? []).filter((f) => f !== "other");
-        prev.faculty = [...withoutOther, prev.otherFaculty];
+      if (
+        potentialInvolvement.length > 0 &&
+        !potentialInvolvement.every((i) => VALID_INVOLVEMENTS.includes(i))
+      ) {
+        return { error: "Invalid involvement option selected.", fields };
       }
+
+      // Merge otherFaculty into faculty without mutating prev
+      const mergedPrev = prev.otherFaculty
+        ? {
+            ...prev,
+            faculty: [
+              ...(prev.faculty ?? []).filter((f) => f !== "other"),
+              prev.otherFaculty,
+            ],
+          }
+        : prev;
 
       // Merge final step data with full draft
       const fullDraft: Partial<RegistrationDraft> = {
-        ...stripIrrelevantFields(prev),
+        ...stripIrrelevantFields(mergedPrev),
         linuxSkillLevel,
         potentialInvolvement,
         discordUsername,
