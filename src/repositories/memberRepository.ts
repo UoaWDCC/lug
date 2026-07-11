@@ -1,8 +1,12 @@
 import { getPrisma } from "../lib/db/prisma";
 
+type CreateMembershipRegistration =
+  | { ok: true }
+  | { ok: false; error: { type: "duplicate" | "database" } };
+
 export async function createMembershipRegistration(
   registration: MemberRegistration,
-) {
+): Promise<CreateMembershipRegistration> {
   const memberData = toMemberCreateInput(registration);
   try {
     await getPrisma().member.create({ data: memberData });
@@ -22,7 +26,7 @@ function toMemberCreateInput(
   registration: MemberRegistration,
 ): MemberCreateInput {
   const memberData = {
-    // unconditonal fields
+    // Unconditional fields
     firstName: registration.firstName,
     lastName: registration.lastName,
     email: registration.email,
@@ -30,17 +34,15 @@ function toMemberCreateInput(
     potentialInvolvement: registration.potentialInvolvement,
     discordUsername: registration.discordUsername,
 
-    // shared conditional field
-    isConditionalReturningMember: registration.isEligibleReturningUoaStudent,
+    // Shared conditional field
+    isConditionalReturningMember: registration.isConditionalReturningMember,
   };
 
-  const conditionalData = // non-shared conditional fields
-    registration.isEligibleReturningUoaStudent === true
+  const conditionalData = // Non-shared conditional fields
+    registration.isConditionalReturningMember === true
       ? {
-          faculty: [],
           upi: registration.upi,
           studentId: registration.studentId,
-          isCurrentUoaStudent: registration.isCurrentUoaStudent,
         }
       : registration.isCurrentUoaStudent === true
         ? {
