@@ -160,6 +160,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             id="otherFaculty"
             placeholder="Specify other"
             defaultValue={field?.otherFaculty || ""}
+            maxLength={100}
             onInput={(event) => {
               const userHasTypedSomething =
                 event.currentTarget.value.trim().length > 0;
@@ -186,6 +187,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           type="text"
           placeholder="Your answer"
           defaultValue={field?.programme ?? ""}
+          maxLength={150}
           required
         />
       </div>

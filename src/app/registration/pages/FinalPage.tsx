@@ -155,6 +155,7 @@ export function FinalPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           type="text"
           placeholder="Your answer"
           defaultValue={field?.discordUsername || ""}
+          maxLength={32}
         />
       </div>
     </>

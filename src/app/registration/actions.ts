@@ -11,6 +11,8 @@ import {
   VALID_PAGES,
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  MAX_LENGTHS,
+  exceedsMax,
   readRegistrationDraft,
 } from "./utils";
 
@@ -123,6 +125,13 @@ export async function submitRegistrationStep(
         };
       }
 
+      if (exceedsMax(email, "email")) {
+        return {
+          error: `Email must be under ${MAX_LENGTHS.email} characters.`,
+          fields: { email, isConditionalReturningMember },
+        };
+      }
+
       if (
         isConditionalReturningMember !== "yes" &&
         isConditionalReturningMember !== "no"
@@ -148,8 +157,22 @@ export async function submitRegistrationStep(
         return { error: "First name is required.", fields };
       }
 
+      if (exceedsMax(firstName, "firstName")) {
+        return {
+          error: `First name must be under ${MAX_LENGTHS.firstName} characters.`,
+          fields,
+        };
+      }
+
       if (!lastName) {
         return { error: "Last name is required.", fields };
+      }
+
+      if (exceedsMax(lastName, "lastName")) {
+        return {
+          error: `Last name must be under ${MAX_LENGTHS.lastName} characters.`,
+          fields,
+        };
       }
 
       if (isCurrentUoaStudent !== "yes" && isCurrentUoaStudent !== "no") {
@@ -204,9 +227,23 @@ export async function submitRegistrationStep(
         return { error: "Please specify your other faculty.", fields };
       }
 
+      if (exceedsMax(otherFaculty, "otherFaculty")) {
+        return {
+          error: `Other faculty must be under ${MAX_LENGTHS.otherFaculty} characters.`,
+          fields,
+        };
+      }
+
       if (!programme) {
         return {
           error: "Please enter your current programme of study.",
+          fields,
+        };
+      }
+
+      if (exceedsMax(programme, "programme")) {
+        return {
+          error: `Programme must be under ${MAX_LENGTHS.programme} characters.`,
           fields,
         };
       }
@@ -227,6 +264,27 @@ export async function submitRegistrationStep(
 
       if (!primaryAffiliation) {
         return { error: "Primary Affiliation is required.", fields };
+      }
+
+      if (exceedsMax(primaryAffiliation, "primaryAffiliation")) {
+        return {
+          error: `Primary affiliation must be under ${MAX_LENGTHS.primaryAffiliation} characters.`,
+          fields,
+        };
+      }
+
+      if (exceedsMax(nonUoaExcerpt, "nonUoaExcerpt")) {
+        return {
+          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
+          fields,
+        };
+      }
+
+      if (exceedsMax(nonUoaPitch, "nonUoaPitch")) {
+        return {
+          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
+          fields,
+        };
       }
 
       stepData = fields;
@@ -278,6 +336,13 @@ export async function submitRegistrationStep(
         !potentialInvolvement.every((i) => VALID_INVOLVEMENTS.includes(i))
       ) {
         return { error: "Invalid involvement option selected.", fields };
+      }
+
+      if (exceedsMax(discordUsername, "discordUsername")) {
+        return {
+          error: `Discord username must be under ${MAX_LENGTHS.discordUsername} characters.`,
+          fields,
+        };
       }
 
       // Merge otherFaculty into faculty without mutating prev
