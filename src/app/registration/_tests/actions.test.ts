@@ -1,6 +1,33 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
+/**
+ * vi.mock() calls are hoisted to the very top of this file, above every
+ * import and even above ordinary `const` declarations.
+ * Vitest needs to intercept a module before anything else runs, including
+ * the imports further down that pull in ../actions.
+ *
+ * Three mocks are needed here, for two different reasons:
+ *
+ * - next/headers and next/navigation are server-only Next.js APIs that
+ *   don't exist outside a real request/render cycle. Without mocking
+ *   them, importing ../actions here would throw immediately.
+ * - submitMemberRegistration is mocked so this file only exercises
+ *   actions.ts's own logic (routing, merging, redirects) in isolation.
+ *   Letting it run for real would pull in validateMemberRegistration and
+ *   a live Postgres call via createMembershipRegistration - both already
+ *   covered by their own test suites, and not this file's responsibility.
+ *
+ * submitMemberRegistrationMock is created via vi.hoisted() rather than a
+ * plain const, because vi.mock()'s factory runs before ordinary top-level
+ * code in this file. Referencing a plain const from inside the factory
+ * would hit it before it's initialized (this is the exact error Vitest
+ * throws if you try). vi.hoisted() runs in that same early phase, so the
+ * mock exists in time - and the returned reference can still be reset and
+ * asserted on later, in beforeEach and inside individual tests.
+ */
 const cookieStore = new Map<string, string>();
+
+const submitMemberRegistrationMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn(async () => ({
@@ -18,6 +45,10 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn((url: string) => {
     throw new Error(`REDIRECT:${url}`);
   }),
+}));
+
+vi.mock("@/features/membership-registration/submitMemberRegistration", () => ({
+  submitMemberRegistration: submitMemberRegistrationMock,
 }));
 
 import { submitRegistrationStep } from "../actions";
@@ -40,6 +71,8 @@ function setCookieDraft(draft: object) {
 
 beforeEach(() => {
   cookieStore.clear();
+  submitMemberRegistrationMock.mockReset();
+  submitMemberRegistrationMock.mockResolvedValue({ ok: true });
 });
 
 describe("page value validation", () => {
@@ -497,19 +530,32 @@ describe("case: final", () => {
     });
 
     await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/success",
+      "REDIRECT:/registration/success",
     );
     expect(cookieStore.has("formState")).toBe(false);
   });
 
-  // console.log is currently the only observable output of the final merge,
-  // since there's no persistence layer yet (that's domain/member/validation.ts,
-  // still to be built). This spy is a deliberate, temporary seam — once a real
-  // submitMemberRegistration/repository call replaces the console.log, these
-  // assertions should move to checking that call's arguments instead.
+  it("returns the submission's error and does not redirect when submission fails", async () => {
+    submitMemberRegistrationMock.mockResolvedValueOnce({
+      ok: false,
+      error: { message: "It looks like you've already registered." },
+    });
+    setCookieDraft({
+      page: "final",
+      pageStack: ["start", "newMember", "newNonUoa"],
+      primaryAffiliation: "Independent",
+    });
+    const fd = buildFormData({
+      page: "final",
+      linuxSkillLevel: "BEGINNER_USER",
+    });
+
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toBe("It looks like you've already registered.");
+  });
+
   describe("otherFaculty merge into faculty", () => {
     it("folds otherFaculty into faculty and removes the 'other' placeholder", async () => {
-      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       setCookieDraft({
         page: "final",
         pageStack: ["start", "newMember", "newUoa"],
@@ -522,11 +568,11 @@ describe("case: final", () => {
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/success",
+        "REDIRECT:/registration/success",
       );
 
-      const fullDraft = logSpy.mock.calls[0][1];
-      expect(fullDraft.faculty).toEqual([
+      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.faculty).toEqual([
         "science",
         "Faculty of Made Up Studies",
       ]);
@@ -546,12 +592,12 @@ describe("case: final", () => {
         linuxSkillLevel: "BEGINNER_USER",
       });
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/success",
+        "REDIRECT:/registration/success",
       );
 
       // Re-parsing the string captured *before* the call proves nothing
       // mutated the underlying data during the request — this is the
-      // regression test for the prev.faculty = [...] mutation bug.
+      // test for the prev.faculty = [...] mutation bug.
       const reparsed = JSON.parse(rawBefore);
       expect(reparsed.faculty).toEqual(["other"]);
     });
@@ -559,7 +605,6 @@ describe("case: final", () => {
 
   describe("stripIrrelevantFields per branch", () => {
     it("strips UoA-only and non-UoA-only fields when the last page was returningUoa", async () => {
-      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       setCookieDraft({
         page: "final",
         pageStack: ["start", "returningUoa"],
@@ -574,18 +619,17 @@ describe("case: final", () => {
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/success",
+        "REDIRECT:/registration/success",
       );
 
-      const fullDraft = logSpy.mock.calls[0][1];
-      expect(fullDraft.upi).toBe("abcd123");
-      expect(fullDraft.studentId).toBe("123456789");
-      expect(fullDraft.firstName).toBeUndefined();
-      expect(fullDraft.primaryAffiliation).toBeUndefined();
+      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.upi).toBe("abcd123");
+      expect(submittedData.studentId).toBe("123456789");
+      expect(submittedData.firstName).toBeNull();
+      expect(submittedData.primaryAffiliation).toBeNull();
     });
 
     it("keeps UoA fields and strips non-UoA fields when the last page was newUoa", async () => {
-      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       setCookieDraft({
         page: "final",
         pageStack: ["start", "newMember", "newUoa"],
@@ -598,16 +642,15 @@ describe("case: final", () => {
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/success",
+        "REDIRECT:/registration/success",
       );
 
-      const fullDraft = logSpy.mock.calls[0][1];
-      expect(fullDraft.programme).toBe("Bachelor of Science");
-      expect(fullDraft.primaryAffiliation).toBeUndefined();
+      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.programme).toBe("Bachelor of Science");
+      expect(submittedData.primaryAffiliation).toBeNull();
     });
 
     it("keeps non-UoA fields and strips UoA fields when the last page was newNonUoa", async () => {
-      const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
       setCookieDraft({
         page: "final",
         pageStack: ["start", "newMember", "newNonUoa"],
@@ -620,12 +663,12 @@ describe("case: final", () => {
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/success",
+        "REDIRECT:/registration/success",
       );
 
-      const fullDraft = logSpy.mock.calls[0][1];
-      expect(fullDraft.primaryAffiliation).toBe("Independent");
-      expect(fullDraft.upi).toBeUndefined();
+      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.primaryAffiliation).toBe("Independent");
+      expect(submittedData.upi).toBeNull();
     });
   });
 });

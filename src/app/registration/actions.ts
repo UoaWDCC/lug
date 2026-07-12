@@ -23,6 +23,9 @@ import {
   YearLevel,
 } from "@/domain/member/types";
 
+import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
+import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -74,6 +77,29 @@ function stripIrrelevantFields(
     } = draftFields;
     return stripped;
   }
+}
+
+function toParsedSubmission(
+  draft: Partial<RegistrationDraft>,
+): ParsedRegistrationFormSubmission {
+  return {
+    firstName: draft.firstName ?? null,
+    lastName: draft.lastName ?? null,
+    email: draft.email ?? null,
+    isConditionalReturningMember: draft.isConditionalReturningMember ?? null,
+    isCurrentUoaStudent: draft.isCurrentUoaStudent ?? null,
+    upi: draft.upi ?? null,
+    studentId: draft.studentId ?? null,
+    faculty: draft.faculty ?? [],
+    programme: draft.programme ?? null,
+    yearLevel: draft.yearLevel ?? null,
+    primaryAffiliation: draft.primaryAffiliation ?? null,
+    nonUoaExcerpt: draft.nonUoaExcerpt ?? null,
+    nonUoaPitch: draft.nonUoaPitch ?? null,
+    linuxSkillLevel: draft.linuxSkillLevel ?? null,
+    potentialInvolvement: draft.potentialInvolvement ?? [],
+    discordUsername: draft.discordUsername ?? null,
+  };
 }
 
 export async function submitRegistrationStep(
@@ -381,10 +407,16 @@ export async function submitRegistrationStep(
       };
 
       // Final submission logic
-      console.log("Finalizing registration for:", fullDraft);
+      const submission = await submitMemberRegistration(
+        toParsedSubmission(fullDraft),
+      );
+
+      if (!submission.ok) {
+        return { error: submission.error.message, fields };
+      }
 
       cookieStore.delete({ name: "formState", path: "/registration" });
-      redirect("/success");
+      redirect("/registration/success");
       break;
     }
     default:
