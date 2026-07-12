@@ -9,3 +9,8 @@ allowBuilds:
   unrs-resolver: false
 
 strictDepBuilds: true
+
+overrides:
+  "@hono/node-server": "1.19.13"
+  postcss: "8.5.10"
+  diff: "8.0.3"
