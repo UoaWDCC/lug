@@ -25,7 +25,11 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
@@ -39,7 +43,9 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.7.0",
     "@prisma/client": "^7.7.0",
+    "bcryptjs": "^3.0.3",
     "feed": "^5.2.1",
+    "jose": "^6.2.3",
     "next": "16.2.0",
     "pg": "^8.20.0",
     "react": "19.2.4",
@@ -48,6 +54,7 @@
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -59,6 +66,7 @@
     "prettier": "3.8.1",
     "prisma": "^7.7.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.0",
     "typescript": "^5"
   }
 }
