@@ -1,24 +1,12 @@
-export type LinuxSkillLevel =
-  | "NOTHING"
-  | "AWARE_OF_EXISTENCE"
-  | "BEGINNER_USER"
-  | "REGULAR_USER"
-  | "POWER_USER"
-  | "CONTRIBUTOR";
+import type {
+  VALID_SKILL_LEVELS,
+  VALID_INVOLVEMENTS,
+  VALID_YEAR_LEVELS,
+} from "./constants";
 
-export type PotentialInvolvement =
-  | "ATTENDING"
-  | "SPEAKING"
-  | "EXECUTIVE"
-  | "PROJECTS";
-
-export type YearLevel =
-  | "FIRST_YEAR"
-  | "SECOND_YEAR"
-  | "THIRD_YEAR"
-  | "FOURTH_YEAR"
-  | "FIFTH_YEAR_OR_LATER"
-  | "GRADUATED_WITHIN_2_YEARS";
+export type LinuxSkillLevel = (typeof VALID_SKILL_LEVELS)[number];
+export type PotentialInvolvement = (typeof VALID_INVOLVEMENTS)[number];
+export type YearLevel = (typeof VALID_YEAR_LEVELS)[number];
 
 // Shared base fields present on every registration path
 export type BaseMemberRegistration = {

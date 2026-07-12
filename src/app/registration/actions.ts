@@ -7,14 +7,21 @@ import {
 } from "./types";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { VALID_PAGES, readRegistrationDraft } from "./utils";
+
 import {
-  VALID_PAGES,
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  VALID_YEAR_LEVELS,
   MAX_LENGTHS,
-  exceedsMax,
-  readRegistrationDraft,
-} from "./utils";
+} from "@/domain/member/constants";
+
+import { exceedsMax } from "@/domain/member/exceedsMax";
+import {
+  LinuxSkillLevel,
+  PotentialInvolvement,
+  YearLevel,
+} from "@/domain/member/types";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -252,6 +259,10 @@ export async function submitRegistrationStep(
         return { error: "Please select your current year of study.", fields };
       }
 
+      if (!VALID_YEAR_LEVELS.includes(yearLevel as YearLevel)) {
+        return { error: "Please select a valid year of study.", fields };
+      }
+
       stepData = fields;
       nextPage = "final";
       break;
@@ -324,7 +335,10 @@ export async function submitRegistrationStep(
       const discordUsername = formData.get("discordUsername") as string;
       const fields = { linuxSkillLevel, potentialInvolvement, discordUsername };
 
-      if (!linuxSkillLevel || !VALID_SKILL_LEVELS.includes(linuxSkillLevel)) {
+      if (
+        !linuxSkillLevel ||
+        !VALID_SKILL_LEVELS.includes(linuxSkillLevel as LinuxSkillLevel)
+      ) {
         return {
           error: "Please select a valid Linux knowledge level.",
           fields,
@@ -333,7 +347,9 @@ export async function submitRegistrationStep(
 
       if (
         potentialInvolvement.length > 0 &&
-        !potentialInvolvement.every((i) => VALID_INVOLVEMENTS.includes(i))
+        !potentialInvolvement.every((i) =>
+          VALID_INVOLVEMENTS.includes(i as PotentialInvolvement),
+        )
       ) {
         return { error: "Invalid involvement option selected.", fields };
       }

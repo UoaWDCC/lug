@@ -9,30 +9,13 @@ import {
   PotentialInvolvement,
   YearLevel,
 } from "./types";
-import { MAX_LENGTHS } from "@/app/registration/utils";
-
-const validYearLevel = [
-  "FIRST_YEAR",
-  "SECOND_YEAR",
-  "THIRD_YEAR",
-  "FOURTH_YEAR",
-  "FIFTH_YEAR_OR_LATER",
-  "GRADUATED_WITHIN_2_YEARS",
-] as const;
-const validPotentialInvolvement = [
-  "ATTENDING",
-  "SPEAKING",
-  "EXECUTIVE",
-  "PROJECTS",
-] as const;
-const validLinuxSkillLevel = [
-  "NOTHING",
-  "AWARE_OF_EXISTENCE",
-  "BEGINNER_USER",
-  "REGULAR_USER",
-  "POWER_USER",
-  "CONTRIBUTOR",
-] as const;
+import {
+  MAX_LENGTHS,
+  VALID_YEAR_LEVELS,
+  VALID_INVOLVEMENTS,
+  VALID_SKILL_LEVELS,
+} from "./constants";
+import { exceedsMax } from "./exceedsMax";
 
 type RegistrationFormValidationError = {
   message: string;
@@ -231,6 +214,25 @@ function validateFieldValues(
       },
     };
   }
+
+  if (exceedsMax(parsed.firstName, "firstName")) {
+    return {
+      fieldsValid: false,
+      error: {
+        message: `First name must be under ${MAX_LENGTHS.firstName} characters`,
+      },
+    };
+  }
+
+  if (exceedsMax(parsed.lastName, "lastName")) {
+    return {
+      fieldsValid: false,
+      error: {
+        message: `Last name must be under ${MAX_LENGTHS.lastName} characters`,
+      },
+    };
+  }
+
   if (!isLinuxSkillLevel(parsed.linuxSkillLevel)) {
     return {
       fieldsValid: false,
@@ -282,6 +284,15 @@ function validateFieldValues(
       };
     }
 
+    if (exceedsMax(parsed.programme, "programme")) {
+      return {
+        fieldsValid: false,
+        error: {
+          message: `Programme must be under ${MAX_LENGTHS.programme} characters`,
+        },
+      };
+    }
+
     for (const facultyOption of parsed.faculty) {
       if (
         facultyOption.trim() === "" ||
@@ -297,14 +308,40 @@ function validateFieldValues(
     }
   }
 
-  if (
-    parsed.discordUsername !== null &&
-    !isValidDiscordUsername(parsed.discordUsername)
-  ) {
+  if (parsed.isCurrentUoaStudent === "no") {
+    if (exceedsMax(parsed.primaryAffiliation, "primaryAffiliation")) {
+      return {
+        fieldsValid: false,
+        error: {
+          message: `Primary affiliation must be under ${MAX_LENGTHS.primaryAffiliation} characters`,
+        },
+      };
+    }
+
+    if (exceedsMax(parsed.nonUoaExcerpt, "nonUoaExcerpt")) {
+      return {
+        fieldsValid: false,
+        error: {
+          message: `Excerpt must be under ${MAX_LENGTHS.nonUoaExcerpt} characters`,
+        },
+      };
+    }
+
+    if (exceedsMax(parsed.nonUoaPitch, "nonUoaPitch")) {
+      return {
+        fieldsValid: false,
+        error: {
+          message: `Pitch must be under ${MAX_LENGTHS.nonUoaPitch} characters`,
+        },
+      };
+    }
+  }
+
+  if (exceedsMax(parsed.discordUsername, "discordUsername")) {
     return {
       fieldsValid: false,
       error: {
-        message: `discordUsername invalid: '${parsed.discordUsername}', please enter a valid Discord username`,
+        message: `Discord username must be under ${MAX_LENGTHS.discordUsername} characters`,
       },
     };
   }
@@ -406,26 +443,16 @@ function isValidEmail(email: string | null): boolean {
 
 function isLinuxSkillLevel(value: string | null): value is LinuxSkillLevel {
   return (
-    value !== null && validLinuxSkillLevel.includes(value as LinuxSkillLevel)
+    value !== null && VALID_SKILL_LEVELS.includes(value as LinuxSkillLevel)
   );
 }
 
 function isYearLevel(value: string | null): value is YearLevel {
-  return value !== null && validYearLevel.includes(value as YearLevel);
+  return value !== null && VALID_YEAR_LEVELS.includes(value as YearLevel);
 }
 
 function isPotentialInvolvement(value: string): value is PotentialInvolvement {
   return (
-    value !== null &&
-    validPotentialInvolvement.includes(value as PotentialInvolvement)
-  );
-}
-
-function isValidDiscordUsername(username: string): boolean {
-  const discordUsernameRegex = /^(?!.*\.\.)[a-z0-9_.]{2,32}$/;
-  return (
-    discordUsernameRegex.test(username) &&
-    !username.startsWith(".") &&
-    !username.endsWith(".")
+    value !== null && VALID_INVOLVEMENTS.includes(value as PotentialInvolvement)
   );
 }
