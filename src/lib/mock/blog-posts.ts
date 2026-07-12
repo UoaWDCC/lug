@@ -1,9 +1,4 @@
-export type BlogItem = {
-  title: string;
-  slug: string;
-  description: string;
-  publishedAt: string;
-};
+import type { BlogItem } from "@/domain/blog/types";
 
 export async function getMockBlogItems(): Promise<BlogItem[]> {
   return [

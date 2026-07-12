@@ -16,7 +16,6 @@ ENV NODE_ENV="production"
 ARG PNPM_VERSION=10.33.0
 RUN npm install -g pnpm@$PNPM_VERSION
 
-
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
@@ -25,11 +24,14 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
 
 # Install node modules
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod=false
 
 # Copy application code
 COPY . .
+
+# Generate Prisma client
+RUN pnpm run db:generate
 
 # Build application
 RUN pnpm run build
