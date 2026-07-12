@@ -3,10 +3,17 @@
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
 
+import { useRef } from "react";
+
 export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
   const state = useFormError();
   const errorFields = state?.fields;
   const field = errorFields ?? fields;
+
+  /* Client JS enhancement:
+   * Used to create a reference to the Other checkbox so it automatically checks when user enters text
+   */
+  const otherFacultyCheckboxRef = useRef<HTMLInputElement>(null);
 
   return (
     <>
@@ -132,10 +139,14 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
           <label>
             <input
+              ref={otherFacultyCheckboxRef}
               type="checkbox"
               name="faculty"
               value="other"
-              defaultChecked={field?.faculty?.includes("other")}
+              defaultChecked={
+                field?.faculty?.includes("other") ||
+                Boolean(field?.otherFaculty?.trim())
+              }
             />
             Other
           </label>
@@ -149,6 +160,15 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             id="otherFaculty"
             placeholder="Specify other"
             defaultValue={field?.otherFaculty || ""}
+            maxLength={100}
+            onInput={(event) => {
+              const userHasTypedSomething =
+                event.currentTarget.value.trim().length > 0;
+
+              if (userHasTypedSomething && otherFacultyCheckboxRef.current) {
+                otherFacultyCheckboxRef.current.checked = true;
+              }
+            }}
           />
         </div>
       </fieldset>
@@ -167,6 +187,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           type="text"
           placeholder="Your answer"
           defaultValue={field?.programme ?? ""}
+          maxLength={150}
           required
         />
       </div>

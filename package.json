@@ -52,15 +52,15 @@
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.10",
     "@playwright/test": "^1.59.1",
+    "@tailwindcss/postcss": "^4.3.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@tailwindcss/postcss": "^4.3.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.1",
-    "@vitest/coverage-v8": "4.1.5",
+    "@vitest/coverage-v8": "^4.1.5",
     "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.6",
@@ -71,14 +71,6 @@
     "prisma": "^7.8.0",
     "tailwindcss": "^4.3.0",
     "typescript": "^5",
-    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.5"
-  },
-  "pnpm": {
-    "overrides": {
-      "@hono/node-server": "1.19.13",
-      "postcss": "8.5.10",
-      "diff": "8.0.3"
-    }
   }
 }

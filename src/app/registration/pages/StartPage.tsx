@@ -19,6 +19,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           placeholder="name@example.com"
           defaultValue={field?.email || ""} // This is what prevents the clearing
           className={`border p-2 w-full ${state?.error?.includes("email") ? "border-red-500" : "border-gray-300"}`}
+          maxLength={254}
         />
         {state?.error?.includes("email") && (
           <p className="text-red-600 text-sm italic mt-1">{state.error}</p>

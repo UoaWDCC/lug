@@ -7,7 +7,14 @@ import {
 } from "./types";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { readRegistrationDraft } from "./utils";
+import {
+  VALID_PAGES,
+  VALID_INVOLVEMENTS,
+  VALID_SKILL_LEVELS,
+  MAX_LENGTHS,
+  exceedsMax,
+  readRegistrationDraft,
+} from "./utils";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -83,7 +90,21 @@ export async function submitRegistrationStep(
     redirect("/registration");
   }
 
-  const page = formData.get("page") as RegistrationPage;
+  /*
+   * Mainly for robustness: redirect if submitted pageValue is not valid
+   * This can happen since server actions can be reached externally through direct POST requests
+   */
+  const pageValue = formData.get("page");
+
+  if (
+    typeof pageValue !== "string" ||
+    !VALID_PAGES.includes(pageValue as RegistrationPage)
+  ) {
+    redirect("/registration");
+  }
+
+  const page = pageValue as RegistrationPage;
+
   let nextPage: RegistrationPage = "start";
   let stepData: Partial<RegistrationDraft> = {};
 
@@ -104,7 +125,17 @@ export async function submitRegistrationStep(
         };
       }
 
-      if (!isConditionalReturningMember) {
+      if (exceedsMax(email, "email")) {
+        return {
+          error: `Your email must be under ${MAX_LENGTHS.email} characters.`,
+          fields: { email, isConditionalReturningMember },
+        };
+      }
+
+      if (
+        isConditionalReturningMember !== "yes" &&
+        isConditionalReturningMember !== "no"
+      ) {
         return {
           error: "Please select whether you have registered previously.",
           fields: { email },
@@ -126,11 +157,25 @@ export async function submitRegistrationStep(
         return { error: "First name is required.", fields };
       }
 
+      if (exceedsMax(firstName, "firstName")) {
+        return {
+          error: `First name must be under ${MAX_LENGTHS.firstName} characters.`,
+          fields,
+        };
+      }
+
       if (!lastName) {
         return { error: "Last name is required.", fields };
       }
 
-      if (!isCurrentUoaStudent) {
+      if (exceedsMax(lastName, "lastName")) {
+        return {
+          error: `Last name must be under ${MAX_LENGTHS.lastName} characters.`,
+          fields,
+        };
+      }
+
+      if (isCurrentUoaStudent !== "yes" && isCurrentUoaStudent !== "no") {
         return {
           error:
             "Please select whether you attend the University of Auckland (UoA).",
@@ -182,9 +227,23 @@ export async function submitRegistrationStep(
         return { error: "Please specify your other faculty.", fields };
       }
 
+      if (exceedsMax(otherFaculty, "otherFaculty")) {
+        return {
+          error: `Other faculty must be under ${MAX_LENGTHS.otherFaculty} characters.`,
+          fields,
+        };
+      }
+
       if (!programme) {
         return {
           error: "Please enter your current programme of study.",
+          fields,
+        };
+      }
+
+      if (exceedsMax(programme, "programme")) {
+        return {
+          error: `Programme must be under ${MAX_LENGTHS.programme} characters.`,
           fields,
         };
       }
@@ -205,6 +264,27 @@ export async function submitRegistrationStep(
 
       if (!primaryAffiliation) {
         return { error: "Primary Affiliation is required.", fields };
+      }
+
+      if (exceedsMax(primaryAffiliation, "primaryAffiliation")) {
+        return {
+          error: `Primary affiliation must be under ${MAX_LENGTHS.primaryAffiliation} characters.`,
+          fields,
+        };
+      }
+
+      if (exceedsMax(nonUoaExcerpt, "nonUoaExcerpt")) {
+        return {
+          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
+          fields,
+        };
+      }
+
+      if (exceedsMax(nonUoaPitch, "nonUoaPitch")) {
+        return {
+          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
+          fields,
+        };
       }
 
       stepData = fields;
@@ -244,19 +324,41 @@ export async function submitRegistrationStep(
       const discordUsername = formData.get("discordUsername") as string;
       const fields = { linuxSkillLevel, potentialInvolvement, discordUsername };
 
-      if (!linuxSkillLevel) {
-        return { error: "Linux knowledge is required.", fields };
+      if (!linuxSkillLevel || !VALID_SKILL_LEVELS.includes(linuxSkillLevel)) {
+        return {
+          error: "Please select a valid Linux knowledge level.",
+          fields,
+        };
       }
 
-      // Merge otherFaculty to faculty if needed
-      if (prev.otherFaculty) {
-        const withoutOther = (prev.faculty ?? []).filter((f) => f !== "other");
-        prev.faculty = [...withoutOther, prev.otherFaculty];
+      if (
+        potentialInvolvement.length > 0 &&
+        !potentialInvolvement.every((i) => VALID_INVOLVEMENTS.includes(i))
+      ) {
+        return { error: "Invalid involvement option selected.", fields };
       }
+
+      if (exceedsMax(discordUsername, "discordUsername")) {
+        return {
+          error: `Discord username must be under ${MAX_LENGTHS.discordUsername} characters.`,
+          fields,
+        };
+      }
+
+      // Merge otherFaculty into faculty without mutating prev
+      const mergedPrev = prev.otherFaculty
+        ? {
+            ...prev,
+            faculty: [
+              ...(prev.faculty ?? []).filter((f) => f !== "other"),
+              prev.otherFaculty,
+            ],
+          }
+        : prev;
 
       // Merge final step data with full draft
       const fullDraft: Partial<RegistrationDraft> = {
-        ...stripIrrelevantFields(prev),
+        ...stripIrrelevantFields(mergedPrev),
         linuxSkillLevel,
         potentialInvolvement,
         discordUsername,

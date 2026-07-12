@@ -24,6 +24,7 @@ export function NewMemberPage({
           type="text"
           placeholder="Your answer"
           defaultValue={field?.firstName ?? ""}
+          maxLength={100}
           required
         />
       </div>
@@ -37,6 +38,7 @@ export function NewMemberPage({
           type="text"
           placeholder="Your answer"
           defaultValue={field?.lastName ?? ""}
+          maxLength={100}
           required
         />
       </div>

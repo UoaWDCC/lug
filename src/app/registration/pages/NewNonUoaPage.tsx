@@ -30,6 +30,7 @@ export function NewNonUoaPage({
           type="text"
           placeholder="Your answer"
           defaultValue={field?.primaryAffiliation ?? ""}
+          maxLength={150}
           required
         />
       </div>
@@ -45,6 +46,7 @@ export function NewNonUoaPage({
           id="nonUoaExcerpt"
           placeholder="Your answer"
           defaultValue={field?.nonUoaExcerpt ?? ""}
+          maxLength={500}
         />
       </div>
 
@@ -56,6 +58,7 @@ export function NewNonUoaPage({
           id="nonUoaPitch"
           placeholder="Your answer"
           defaultValue={field?.nonUoaPitch ?? ""}
+          maxLength={500}
         />
       </div>
     </>
