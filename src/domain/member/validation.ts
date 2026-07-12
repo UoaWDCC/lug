@@ -1,3 +1,16 @@
+import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
+import {
+  BaseMemberRegistration,
+  ConditionalReturningMember,
+  CurrentUoaStudentMember,
+  LinuxSkillLevel,
+  MemberRegistration,
+  NonCurrentUoaStudentMember,
+  PotentialInvolvement,
+  YearLevel,
+} from "./types";
+import { MAX_LENGTHS } from "@/app/registration/utils";
+
 const validYearLevel = [
   "FIRST_YEAR",
   "SECOND_YEAR",
@@ -31,7 +44,7 @@ export function validateMemberRegistration(
   | { ok: true; data: MemberRegistration }
   | { ok: false; error: RegistrationFormValidationError } {
   const requiredFields = validateRequiredFields(parsedRegistrationForm);
-  if (requiredFields.hasRequiredFields === false) {
+  if (requiredFields.ok === false) {
     return { ok: false, error: requiredFields.error };
   }
 
@@ -46,29 +59,25 @@ export function validateMemberRegistration(
 //validate if required fields exist and are not null/empty string/undefined etc.
 function validateRequiredFields(
   parsed: ParsedRegistrationFormSubmission,
-):
-  | { hasRequiredFields: true }
-  | { hasRequiredFields: false; error: RegistrationFormValidationError } {
+): { ok: true } | { ok: false; error: RegistrationFormValidationError } {
   //Base fields required by all registrations
   const baseRequiredFields = validateBaseRequiredFields(parsed);
-  if (baseRequiredFields.hasRequiredFields === false) {
+  if (baseRequiredFields.ok === false) {
     return baseRequiredFields;
   }
 
-  const conditionalRequiredFields =
+  const registrationPathRrequiredFields =
     validateRegistrationPathRequiredFields(parsed);
-  if (conditionalRequiredFields.hasRequiredFields === false) {
-    return conditionalRequiredFields;
+  if (registrationPathRrequiredFields.ok === false) {
+    return registrationPathRrequiredFields;
   }
 
-  return { hasRequiredFields: true };
+  return { ok: true };
 }
 
 function validateBaseRequiredFields(
   parsed: ParsedRegistrationFormSubmission,
-):
-  | { hasRequiredFields: true }
-  | { hasRequiredFields: false; error: RegistrationFormValidationError } {
+): { ok: true } | { ok: false; error: RegistrationFormValidationError } {
   const requiredFields: string[] = [
     "firstName",
     "lastName",
@@ -89,7 +98,7 @@ function validateBaseRequiredFields(
     if (!(field in parsed) || !parsed[field as keyof typeof parsed]) {
       const displayName = errorDisplayNames[requiredFields.indexOf(field)];
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: {
           message: `'${displayName}' field is required, and must not be null or empty`,
         },
@@ -99,70 +108,66 @@ function validateBaseRequiredFields(
 
   if (parsed.potentialInvolvement.length === 0) {
     return {
-      hasRequiredFields: false,
+      ok: false,
       error: {
         message:
           "At least one option for Potential Involvement must be selected",
       },
     };
   }
-  return { hasRequiredFields: true };
+  return { ok: true };
 }
 
 function validateRegistrationPathRequiredFields(
   parsed: ParsedRegistrationFormSubmission,
-):
-  | { hasRequiredFields: true }
-  | { hasRequiredFields: false; error: RegistrationFormValidationError } {
+): { ok: true } | { ok: false; error: RegistrationFormValidationError } {
   //check if the value of isConditionalReturningMember and isCurrentUoaStudent is valid.
   //It is a validity check(thus should be in validateFields function) but is required for the following checks so is moved here.
-  if (
-    !["true", "false"].includes(parsed.isConditionalReturningMember as string)
-  ) {
+  if (!["yes", "no"].includes(parsed.isConditionalReturningMember as string)) {
     return {
-      hasRequiredFields: false,
+      ok: false,
       error: {
-        message: `isConditionalReturningMember field has value: '${parsed.isConditionalReturningMember}', must either have value 'true' or 'false'`,
+        message: `isConditionalReturningMember field has value: '${parsed.isConditionalReturningMember}', must either have value 'yes' or 'no'`,
       },
     };
   }
 
-  // If Conditional Returning Member is false, then isCurrentUoaStudent becomes a required field
-  if (parsed.isConditionalReturningMember === "false") {
+  // If Conditional Returning Member is "no", then isCurrentUoaStudent becomes a required field
+  if (parsed.isConditionalReturningMember === "no") {
     if (!("isCurrentUoaStudent" in parsed) || !parsed.isCurrentUoaStudent) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: {
           message:
             "'isCurrentUoaStudent' field is required if not a Conditional Returning Member",
         },
       };
     }
-    if (!["true", "false"].includes(parsed.isCurrentUoaStudent as string)) {
+    if (!["yes", "no"].includes(parsed.isCurrentUoaStudent as string)) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: {
-          message: `isCurrentUoaStudent field has value: '${parsed.isCurrentUoaStudent}', must either have value 'true' or 'false'`,
+          message: `isCurrentUoaStudent field has value: '${parsed.isCurrentUoaStudent}', must either have value 'yes' or 'no'`,
         },
       };
     }
   }
 
   // Further check for fields that are only required if specific conditions are met
-  if (parsed.isConditionalReturningMember === "true") {
+  if (parsed.isConditionalReturningMember === "yes") {
     if (!("upi" in parsed) || !parsed.upi) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: { message: "upi field is required for Uoa students" },
       };
     }
     if (!("studentId" in parsed) || !parsed.studentId) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: { message: "Student ID field is required for Uoa students" },
       };
     }
-  } else if (parsed.isCurrentUoaStudent === "true") {
+  } else if (parsed.isCurrentUoaStudent === "yes") {
     const requiredFieldsUoa = [
       "upi",
       "studentId",
@@ -182,7 +187,7 @@ function validateRegistrationPathRequiredFields(
         const displayName =
           errorDisplayNamesUoa[requiredFieldsUoa.indexOf(field)];
         return {
-          hasRequiredFields: false,
+          ok: false,
           error: {
             message: `'${displayName}' field is required for Uoa students, and must not be null or empty`,
           },
@@ -191,18 +196,18 @@ function validateRegistrationPathRequiredFields(
     }
 
     //Extra check for if faculty is empty, at this point existence of faculty field is verified.
-    if (parsed.faculty!.length === 0) {
+    if (parsed.faculty.length === 0) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: {
           message: "'faculty' field must not be an empty array",
         },
       };
     }
-  } else if (parsed.isCurrentUoaStudent === "false") {
+  } else if (parsed.isCurrentUoaStudent === "no") {
     if (!("primaryAffiliation" in parsed) || !parsed.primaryAffiliation) {
       return {
-        hasRequiredFields: false,
+        ok: false,
         error: {
           message:
             "'Primary Affiliation' field is required for non-Uoa candidates, and must not be null or empty",
@@ -210,7 +215,7 @@ function validateRegistrationPathRequiredFields(
       };
     }
   }
-  return { hasRequiredFields: true };
+  return { ok: true };
 }
 
 function validateFieldValues(
@@ -246,10 +251,10 @@ function validateFieldValues(
   }
 
   if (
-    parsed.isConditionalReturningMember === "true" ||
-    parsed.isCurrentUoaStudent === "true"
+    parsed.isConditionalReturningMember === "yes" ||
+    parsed.isCurrentUoaStudent === "yes"
   ) {
-    if (!isValidUPI(parsed.upi!)) {
+    if (!isValidUPI(parsed.upi)) {
       return {
         fieldsValid: false,
         error: {
@@ -257,8 +262,17 @@ function validateFieldValues(
         },
       };
     }
+
+    if (!isValidStudentId(parsed.studentId)) {
+      return {
+        fieldsValid: false,
+        error: {
+          message: `studentId invalid: '${parsed.studentId}', please enter a valid student ID`,
+        },
+      };
+    }
   }
-  if (parsed.isCurrentUoaStudent === "true") {
+  if (parsed.isCurrentUoaStudent === "yes") {
     if (!isYearLevel(parsed.yearLevel)) {
       return {
         fieldsValid: false,
@@ -267,6 +281,32 @@ function validateFieldValues(
         },
       };
     }
+
+    for (const facultyOption of parsed.faculty) {
+      if (
+        facultyOption.trim() === "" ||
+        facultyOption.length > MAX_LENGTHS.otherFaculty
+      ) {
+        return {
+          fieldsValid: false,
+          error: {
+            message: `faculty field contains an invalid entry: '${facultyOption}'`,
+          },
+        };
+      }
+    }
+  }
+
+  if (
+    parsed.discordUsername !== null &&
+    !isValidDiscordUsername(parsed.discordUsername)
+  ) {
+    return {
+      fieldsValid: false,
+      error: {
+        message: `discordUsername invalid: '${parsed.discordUsername}', please enter a valid Discord username`,
+      },
+    };
   }
 
   return { fieldsValid: true };
@@ -275,9 +315,9 @@ function validateFieldValues(
 function toMemberRegistration(
   parsedForm: ParsedRegistrationFormSubmission,
 ): MemberRegistration {
-  if (parsedForm.isConditionalReturningMember === "true") {
+  if (parsedForm.isConditionalReturningMember === "yes") {
     return toConditionalReturningMember(parsedForm);
-  } else if (parsedForm.isCurrentUoaStudent === "true") {
+  } else if (parsedForm.isCurrentUoaStudent === "yes") {
     return toCurrentUoaStudentMember(parsedForm);
   } else {
     return toNonCurrentUoaStudentMember(parsedForm);
@@ -308,7 +348,7 @@ function toCurrentUoaStudentMember(
     studentId: parsed.studentId!,
     faculty: parsed.faculty!,
     programme: parsed.programme!,
-    yearLevel: parsed.yearLevel!,
+    yearLevel: parsed.yearLevel! as YearLevel,
   };
   return uoaMember;
 }
@@ -320,10 +360,10 @@ function toNonCurrentUoaStudentMember(
     isConditionalReturningMember: false,
     isCurrentUoaStudent: false,
     primaryAffiliation: parsed.primaryAffiliation!,
-    ...(parsed.nonUoaExcerpt != null
+    ...(parsed.nonUoaExcerpt !== null
       ? { nonUoaExcerpt: parsed.nonUoaExcerpt }
       : {}),
-    ...(parsed.nonUoaPitch != null ? { nonUoaPitch: parsed.nonUoaPitch } : {}),
+    ...(parsed.nonUoaPitch !== null ? { nonUoaPitch: parsed.nonUoaPitch } : {}),
   };
   return nonUoaMember;
 }
@@ -332,48 +372,60 @@ function toBaseMemberRegistration(
   parsed: ParsedRegistrationFormSubmission,
 ): BaseMemberRegistration {
   const baseRegistration: BaseMemberRegistration = {
-    firstName: parsed.firstName,
-    lastName: parsed.lastName,
-    email: parsed.email,
+    firstName: parsed.firstName!,
+    lastName: parsed.lastName!,
+    email: parsed.email!,
 
-    linuxSkillLevel: parsed.linuxSkillLevel,
-    potentialInvolvement: parsed.potentialInvolvement,
+    linuxSkillLevel: parsed.linuxSkillLevel as LinuxSkillLevel,
+    potentialInvolvement: parsed.potentialInvolvement as PotentialInvolvement[],
     //only create dc username property if property exists in provided info
-    ...(parsed.discordUsername != null
+    ...(parsed.discordUsername !== null
       ? { discordUsername: parsed.discordUsername }
       : {}),
   };
   return baseRegistration;
 }
 
-function isValidUPI(upi: string): boolean {
+function isValidUPI(upi: string | null): boolean {
+  if (upi === null) return false;
   const upiRegex = /^[A-Za-z]{3,4}[0-9]{3}$/;
   return upiRegex.test(upi);
 }
 
-function isValidEmail(email: string): boolean {
+function isValidStudentId(studentId: string | null): boolean {
+  if (studentId === null) return false;
+  const studentIdRegex = /^[0-9]{9,10}$/;
+  return studentIdRegex.test(studentId);
+}
+
+function isValidEmail(email: string | null): boolean {
+  if (email === null) return false;
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (email.length > 254) {
-    return false;
-  }
-  return emailRegex.test(email);
+  return email.length <= 254 && emailRegex.test(email);
 }
 
 function isLinuxSkillLevel(value: string | null): value is LinuxSkillLevel {
   return (
-    value != null && validLinuxSkillLevel.includes(value as LinuxSkillLevel)
+    value !== null && validLinuxSkillLevel.includes(value as LinuxSkillLevel)
   );
 }
 
 function isYearLevel(value: string | null): value is YearLevel {
-  return value != null && validYearLevel.includes(value as YearLevel);
+  return value !== null && validYearLevel.includes(value as YearLevel);
 }
 
-function isPotentialInvolvement(
-  value: string | null,
-): value is PotentialInvolvement {
+function isPotentialInvolvement(value: string): value is PotentialInvolvement {
   return (
-    value != null &&
+    value !== null &&
     validPotentialInvolvement.includes(value as PotentialInvolvement)
+  );
+}
+
+function isValidDiscordUsername(username: string): boolean {
+  const discordUsernameRegex = /^(?!.*\.\.)[a-z0-9_.]{2,32}$/;
+  return (
+    discordUsernameRegex.test(username) &&
+    !username.startsWith(".") &&
+    !username.endsWith(".")
   );
 }
