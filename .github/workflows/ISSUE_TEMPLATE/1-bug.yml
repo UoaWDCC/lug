@@ -1,0 +1,28 @@
+name: 🐞 Bug
+description: Something isn't working as expected
+title: "[scope] "
+type: Bug
+labels: []
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Details
+      value: |
+        ## Description
+
+
+        ## Steps to Reproduce
+        1. 
+        2. 
+
+        ## Expected Behaviour
+
+
+        ## Actual Behaviour
+
+
+        ## Notes
+
+    validations:
+      required: true
