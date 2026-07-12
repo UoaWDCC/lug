@@ -1,4 +1,6 @@
 import { getPrisma } from "../lib/db/prisma";
+import { MemberRegistration } from "@/domain/member/types";
+import { Prisma } from "@/generated/prisma/client";
 
 type CreateMembershipRegistration =
   | { ok: true }
@@ -12,7 +14,7 @@ export async function createMembershipRegistration(
     await getPrisma().member.create({ data: memberData });
     return { ok: true };
   } catch (error: unknown) {
-    if (error instanceof PrismaClientKnownRequestError) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         return { ok: false, error: { type: "duplicate" } };
       }
@@ -24,7 +26,7 @@ export async function createMembershipRegistration(
 
 function toMemberCreateInput(
   registration: MemberRegistration,
-): MemberCreateInput {
+): Prisma.MemberCreateInput {
   const memberData = {
     // Unconditional fields
     firstName: registration.firstName,
