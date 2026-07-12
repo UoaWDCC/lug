@@ -127,7 +127,7 @@ export async function submitRegistrationStep(
 
       if (exceedsMax(email, "email")) {
         return {
-          error: `Email must be under ${MAX_LENGTHS.email} characters.`,
+          error: `Your email must be under ${MAX_LENGTHS.email} characters.`,
           fields: { email, isConditionalReturningMember },
         };
       }
