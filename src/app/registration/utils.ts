@@ -75,7 +75,8 @@ export function readRegistrationDraft(
 
     const parsed = JSON.parse(raw);
 
-    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return freshDefault();
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed))
+      return freshDefault();
 
     // Validate page
     if (parsed.page && !VALID_PAGES.includes(parsed.page))

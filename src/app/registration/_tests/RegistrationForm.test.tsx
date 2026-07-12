@@ -43,7 +43,9 @@ describe("RegistrationForm", () => {
       </RegistrationForm>,
     );
 
-    expect(screen.queryByRole("button", { name: "Prev" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Prev" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows the Prev button on any page other than start", () => {
@@ -83,7 +85,9 @@ describe("RegistrationForm", () => {
       </RegistrationForm>,
     );
 
-    const hiddenInput = container.querySelector('input[type="hidden"][name="page"]');
+    const hiddenInput = container.querySelector(
+      'input[type="hidden"][name="page"]',
+    );
     expect(hiddenInput).toHaveValue("newUoa");
   });
 });
