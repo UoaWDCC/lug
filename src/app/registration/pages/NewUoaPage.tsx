@@ -204,8 +204,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="year1"
-              defaultChecked={field?.yearLevel === "year1"}
+              value="FIRST_YEAR"
+              defaultChecked={field?.yearLevel === "FIRST_YEAR"}
               required
             />
             1st Year
@@ -215,8 +215,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="year2"
-              defaultChecked={field?.yearLevel === "year2"}
+              value="SECOND_YEAR"
+              defaultChecked={field?.yearLevel === "SECOND_YEAR"}
             />
             2nd Year
           </label>
@@ -225,8 +225,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="year3"
-              defaultChecked={field?.yearLevel === "year3"}
+              value="THIRD_YEAR"
+              defaultChecked={field?.yearLevel === "THIRD_YEAR"}
             />
             3rd Year
           </label>
@@ -235,8 +235,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="year4"
-              defaultChecked={field?.yearLevel === "year4"}
+              value="FOURTH_YEAR"
+              defaultChecked={field?.yearLevel === "FOURTH_YEAR"}
             />
             4th Year
           </label>
@@ -245,8 +245,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="year5Above"
-              defaultChecked={field?.yearLevel === "year5Above"}
+              value="FIFTH_YEAR_OR_LATER"
+              defaultChecked={field?.yearLevel === "FIFTH_YEAR_OR_LATER"}
             />
             5th Year or later
           </label>
@@ -255,8 +255,8 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             <input
               type="radio"
               name="yearLevel"
-              value="yearGraduated"
-              defaultChecked={field?.yearLevel === "yearGraduated"}
+              value="GRADUATED_WITHIN_2_YEARS"
+              defaultChecked={field?.yearLevel === "GRADUATED_WITHIN_2_YEARS"}
             />
             Graduated within 2 years
           </label>

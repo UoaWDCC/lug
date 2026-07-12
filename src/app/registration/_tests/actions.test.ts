@@ -227,7 +227,7 @@ describe("case: newUoa", () => {
     studentId: "123456789",
     faculty: ["science"],
     programme: "Bachelor of Science",
-    yearLevel: "year1",
+    yearLevel: "FIRST_YEAR",
   };
 
   it("rejects a missing upi", async () => {
@@ -310,6 +310,14 @@ describe("case: newUoa", () => {
       buildFormData({ ...validBase, yearLevel: "" }),
     );
     expect(result?.error).toMatch(/current year of study/);
+  });
+
+  it("rejects a yearLevel outside the known set", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, yearLevel: "SIXTH_YEAR" }),
+    );
+    expect(result?.error).toMatch(/valid year of study/);
   });
 
   it("routes to final on a fully valid submission", async () => {
