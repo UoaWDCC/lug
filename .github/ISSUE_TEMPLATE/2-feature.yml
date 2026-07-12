@@ -1,0 +1,24 @@
+name: ✨ Feature
+description: A new capability or user-facing addition
+title: "[scope] "
+type: Feature
+labels: []
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Details
+      value: |
+        ## Description
+
+
+        ## Requirements
+        - 
+
+        ## Acceptance Criteria
+        - [ ] 
+
+        ## Notes
+
+    validations:
+      required: true
