@@ -416,7 +416,7 @@ export async function submitRegistrationStep(
       }
 
       cookieStore.delete({ name: "formState", path: "/registration" });
-      redirect("/success");
+      redirect("/registration/success");
       break;
     }
     default:

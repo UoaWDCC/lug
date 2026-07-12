@@ -1,11 +1,11 @@
 import { cookies } from "next/headers";
 
-import { StartPage } from "./pages/StartPage";
-import { ReturningUoaPage } from "./pages/ReturningUoaPage";
-import { NewMemberPage } from "./pages/NewMemberPage";
-import { NewUoaPage } from "./pages/NewUoaPage";
-import { NewNonUoaPage } from "./pages/NewNonUoaPage";
-import { FinalPage } from "./pages/FinalPage";
+import { StartPage } from "./_pages/StartPage";
+import { ReturningUoaPage } from "./_pages/ReturningUoaPage";
+import { NewMemberPage } from "./_pages/NewMemberPage";
+import { NewUoaPage } from "./_pages/NewUoaPage";
+import { NewNonUoaPage } from "./_pages/NewNonUoaPage";
+import { FinalPage } from "./_pages/FinalPage";
 import { RegistrationForm } from "./RegistrationForm";
 import { readRegistrationDraft } from "./utils";
 
