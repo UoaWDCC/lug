@@ -43,5 +43,8 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
+      - name: Run unit tests
+        run: pnpm test:run
+
       - name: Build app
         run: pnpm build
