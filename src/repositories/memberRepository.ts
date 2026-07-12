@@ -2,13 +2,13 @@ import { getPrisma } from "../lib/db/prisma";
 import { MemberRegistration } from "@/domain/member/types";
 import { Prisma } from "@/generated/prisma/client";
 
-type CreateMembershipRegistration =
+type CreateMembershipRegistrationResult =
   | { ok: true }
   | { ok: false; error: { type: "duplicate" | "database" } };
 
 export async function createMembershipRegistration(
   registration: MemberRegistration,
-): Promise<CreateMembershipRegistration> {
+): Promise<CreateMembershipRegistrationResult> {
   const memberData = toMemberCreateInput(registration);
   try {
     await getPrisma().member.create({ data: memberData });
@@ -40,7 +40,8 @@ function toMemberCreateInput(
     isConditionalReturningMember: registration.isConditionalReturningMember,
   };
 
-  const conditionalData = // Non-shared conditional fields
+  // Non-shared conditional fields
+  const conditionalData =
     registration.isConditionalReturningMember === true
       ? {
           upi: registration.upi,
