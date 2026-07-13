@@ -26,10 +26,14 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
+    "db:seed": "prisma db seed",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
@@ -70,6 +74,7 @@
     "prettier": "3.8.1",
     "prisma": "^7.8.0",
     "tailwindcss": "^4.3.0",
+    "tsx": "^4.23.0",
     "typescript": "^5",
     "vitest": "^4.1.5"
   }
