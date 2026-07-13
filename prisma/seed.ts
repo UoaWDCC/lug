@@ -2,6 +2,7 @@ import { getPrisma } from "../src/lib/db/prisma";
 import {
   LinuxSkillLevel,
   PotentialInvolvement,
+  YearLevel,
 } from "../src/generated/prisma/enums";
 
 async function seedMembers() {
@@ -33,11 +34,11 @@ async function seedMembers() {
       email: "efg456@aucklanduni.ac.nz",
       isConditionalReturningMember: false,
       isCurrentUoaStudent: true,
-      upi: "ef456",
+      upi: "efgh456",
       studentId: "000000002",
       faculty: ["science", "business"],
       programme: "Computer Science and Business Conjoint",
-      yearLevel: "SECOND_YEAR",
+      yearLevel: YearLevel.SECOND_YEAR,
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
@@ -56,9 +57,9 @@ async function seedMembers() {
       faculty: [],
       programme: null,
       yearLevel: null,
-      primaryAffiliation: "AuT",
-      nonUoaExcerpt: "i am studying at AuT and love linux very much",
-      nonUoaPitch: "i am the youngest person ever",
+      primaryAffiliation: "AUT",
+      nonUoaExcerpt: "I am studying Computer Science at AUT.",
+      nonUoaPitch: "I want to join because I love Linux.",
       linuxSkillLevel: LinuxSkillLevel.CONTRIBUTOR,
       potentialInvolvement: [
         PotentialInvolvement.ATTENDING,
