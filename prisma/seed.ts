@@ -33,7 +33,7 @@ async function seedMembers() {
       isCurrentUoaStudent: true,
       upi: "efgh456",
       studentId: "000000002",
-      faculty: ["science", "business"],
+      faculty: ["science", "business", "humanities"],
       programme: "Computer Science and Business Conjoint",
       yearLevel: YearLevel.SECOND_YEAR,
       primaryAffiliation: null,
@@ -67,12 +67,33 @@ async function seedMembers() {
       ],
       discordUsername: "sam67",
     },
+    {
+      firstName: "JoJo",
+      lastName: "Siwa",
+      email: "jojo@hotmail.com",
+      isConditionalReturningMember: false,
+      isCurrentUoaStudent: false,
+      upi: null,
+      studentId: null,
+      faculty: [],
+      programme: null,
+      yearLevel: null,
+      primaryAffiliation: "Massey University",
+      nonUoaExcerpt: "currently doing postgrad at massey",
+      nonUoaPitch:
+        "I think joining the Linux User Group will give me good karma since my bad background came back like a boomerang. One of my exes was a member of the Linux User Group and I want to spice things up by joining as well. My guilty pleasure is learning new things, and learning about Linux will help me develop my talents. Starting a new genre of music was a dream but LUG has captured my heart and I can’t wait to connect with other members who might be the next dream guest on my podcast.",
+      linuxSkillLevel: LinuxSkillLevel.CONTRIBUTOR,
+      potentialInvolvement: [
+        PotentialInvolvement.SPEAKING,
+        PotentialInvolvement.EXECUTIVE,
+      ],
+      discordUsername: null,
+    },
   ];
 
   for (const member of members) {
     await getPrisma().member.upsert({
       where: { email: member.email },
-      //   update: {},
       update: member,
       create: member,
     });
