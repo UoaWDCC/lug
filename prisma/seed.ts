@@ -22,10 +22,7 @@ async function seedMembers() {
       nonUoaExcerpt: null,
       nonUoaPitch: null,
       linuxSkillLevel: LinuxSkillLevel.REGULAR_USER,
-      potentialInvolvement: [
-        PotentialInvolvement.ATTENDING,
-        PotentialInvolvement.PROJECTS,
-      ],
+      potentialInvolvement: [PotentialInvolvement.PROJECTS],
       discordUsername: "john_doe",
     },
     {
@@ -43,7 +40,10 @@ async function seedMembers() {
       nonUoaExcerpt: null,
       nonUoaPitch: null,
       linuxSkillLevel: LinuxSkillLevel.NOTHING,
-      potentialInvolvement: [],
+      potentialInvolvement: [
+        PotentialInvolvement.ATTENDING,
+        PotentialInvolvement.EXECUTIVE,
+      ],
       discordUsername: "janedough",
     },
     {
@@ -72,7 +72,8 @@ async function seedMembers() {
   for (const member of members) {
     await getPrisma().member.upsert({
       where: { email: member.email },
-      update: {},
+      //   update: {},
+      update: member,
       create: member,
     });
   }

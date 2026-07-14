@@ -32,9 +32,6 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "lint-staged": {
     "**/*.{ts,tsx}": [
       "eslint --fix",
