@@ -14,13 +14,15 @@ async function login(formData: FormData) {
     redirect("/admin/login?error=invalid");
   }
 
-  redirect("/admin");
+  const next = formData.get("next") as string | null;
+  const target = next?.startsWith("/admin") ? next : "/admin";
+  redirect(target);
 }
 
 export default async function AdminLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
   const session = await getSession();
   if (session) {
@@ -43,6 +45,11 @@ export default async function AdminLoginPage({
         )}
 
         <form action={login} className="mt-6 space-y-4">
+          <input
+            type="hidden"
+            name="next"
+            value={(await searchParams).next ?? ""}
+          />
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
               Email

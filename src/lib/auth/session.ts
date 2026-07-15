@@ -12,6 +12,11 @@ export type AdminSession = {
   role: Role;
 };
 
+/**
+ * Encodes env's AUTH_SECRET as bytes
+ * This string secret is used to sign and verify every JWT; anyone who has it can forge valid tokens
+ */
+
 function getSecretKey() {
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
@@ -20,7 +25,7 @@ function getSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-//Just a function to see how much time they have left on their login session in nice seconds format
+// Reads SESSION_MAX_AGE_SECONDS from env, falls back to 7 days
 function getMaxAgeSeconds() {
   const fromEnv = process.env.SESSION_MAX_AGE_SECONDS;
   if (!fromEnv) return DEFAULT_MAX_AGE_SECONDS;
@@ -36,23 +41,26 @@ export async function createSessionToken(
   const maxAge = getMaxAgeSeconds();
   return (
     new SignJWT({ role: session.role })
-      //Session security settings
+      /* Session security settings */
       .setProtectedHeader({ alg: "HS256" })
-      //The admin id is the subject of the token
       .setSubject(String(session.adminId))
-      //The token is issued at this time
       .setIssuedAt()
-      //The token expires in the amount of time set i set in the env
       .setExpirationTime(`${maxAge}s`)
-      //The token is signed with the secret key
       .sign(getSecretKey())
   );
 }
 
+/**
+ * The jwtVerify call does three things:
+ * Checks the signature matches the secret (proving nobody tampered with it), checks exp hasn't passed (auto-rejects expired tokens), and returns the payload.
+ *
+ * Then, the function pulls the payload's adminId and role, returning them as the AdminSession object.
+ * If anything fails (bad signature, expired, malformed), it catches and returns null.
+ */
+
 export async function verifySessionToken(
   token: string,
 ): Promise<AdminSession | null> {
-  //Try to verify the token
   try {
     const { payload } = await jwtVerify(token, getSecretKey());
     const adminId = Number(payload.sub);
@@ -76,14 +84,15 @@ export async function getSession(): Promise<AdminSession | null> {
 
 export async function setSessionCookie(token: string): Promise<void> {
   (await cookies()).set(SESSION_COOKIE_NAME, token, {
-    httpOnly: true,
+    httpOnly: true, // JavaScript in the browser can't read this cookie (protects against XSS stealing the token)
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax", // Cookie sent on same-site requests and top-level navigations, but not on cross-site POST requests (basic CSRF protection)
     path: "/",
     maxAge: getMaxAgeSeconds(),
   });
 }
 
+// Since JWTs are stateless, this is the only logout mechanism
 export async function clearSessionCookie(): Promise<void> {
   (await cookies()).delete(SESSION_COOKIE_NAME);
 }
