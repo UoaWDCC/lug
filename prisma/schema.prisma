@@ -29,8 +29,9 @@ model Member {
 
   // Only for current UoA students.
   faculty   String[]
-  programme String?
-  yearLevel YearLevel?
+  programmeType ProgrammeType?
+  majors String[]
+  yearsRemaining Int?
 
   // Only for non-current UoA students.
   primaryAffiliation String?
@@ -62,11 +63,10 @@ enum PotentialInvolvement {
   PROJECTS
 }
 
-enum YearLevel {
-  FIRST_YEAR
-  SECOND_YEAR
-  THIRD_YEAR
-  FOURTH_YEAR
-  FIFTH_YEAR_OR_LATER
-  GRADUATED_WITHIN_2_YEARS
+enum ProgrammeType {
+  TFC_PRE_UNI
+  BACHELOR
+  MASTER
+  PHD
+  OTHER
 }

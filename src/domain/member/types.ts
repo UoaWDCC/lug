@@ -1,12 +1,12 @@
 import type {
   VALID_SKILL_LEVELS,
   VALID_INVOLVEMENTS,
-  VALID_YEAR_LEVELS,
+  VALID_PROGRAMME_TYPES,
 } from "./constants";
 
 export type LinuxSkillLevel = (typeof VALID_SKILL_LEVELS)[number];
 export type PotentialInvolvement = (typeof VALID_INVOLVEMENTS)[number];
-export type YearLevel = (typeof VALID_YEAR_LEVELS)[number];
+export type ProgrammeType = (typeof VALID_PROGRAMME_TYPES)[number];
 
 // Shared base fields present on every registration path
 export type BaseMemberRegistration = {
@@ -32,8 +32,9 @@ export type CurrentUoaStudentMember = BaseMemberRegistration & {
   upi: string;
   studentId: string;
   faculty: string[];
-  programme: string;
-  yearLevel: YearLevel;
+  programmeType: ProgrammeType;
+  majors: string[];
+  yearsRemaining?: number;
 };
 
 // Case 3: Non-current UoA student
