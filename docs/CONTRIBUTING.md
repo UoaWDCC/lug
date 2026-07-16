@@ -5,7 +5,6 @@ There are some basic guidelines to be adhered to when contributing to this proje
 ## Core rules
 
 - Do not work directly on `main`.
-- At this stage, do **not** add `"use client"`.
 - Build server-first. Core functionality must still work when browser JavaScript is disabled.
 - Keep changes focused and easy to review.
 
