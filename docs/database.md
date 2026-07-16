@@ -46,6 +46,11 @@ pnpm db:deploy
 pnpm db:generate
 ```
 
+6. Seed the local database with example development data:
+
+```bash
+pnpm db:seed
+
 At this point, your local database schema and generated Prisma client should match the current repository state.
 
 ## Prisma location
@@ -115,6 +120,9 @@ Use the package scripts from the repo root rather than typing Docker/Prisma comm
 - `pnpm db:studio`  
   Opens Prisma Studio to inspect the database in a browser.
 
+- `pnpm db:seed`
+  Inserts sample data into the local database. The seed is designed to be safe to run multiple times by updating existing seeded members based on their unique email addresses rather than creating duplicates.
+
 ## When to use each database command
 
 ### Normal local setup
@@ -125,6 +133,7 @@ Use these when setting up the project locally for the first time:
 pnpm db:up
 pnpm db:deploy
 pnpm db:generate
+pnpm db:seed
 ```
 
 ### After pulling database-related changes
