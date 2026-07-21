@@ -28,9 +28,9 @@ model Member {
   studentId String?
 
   // Only for current UoA students.
-  faculty   String[]
-  programmeType ProgrammeType?
-  majors String[]
+  faculty        String[]
+  programmeType  ProgrammeType?
+  majors         String[]
   yearsRemaining Int?
 
   // Only for non-current UoA students.
