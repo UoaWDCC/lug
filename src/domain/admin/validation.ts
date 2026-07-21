@@ -1,3 +1,5 @@
+import { ROLES, type Role } from "./types";
+
 export type LoginInput = {
   email: string;
   password: string;
@@ -8,6 +10,12 @@ type ValidationFailure = { ok: false; error: string };
 export type ValidationResult<T> = ValidationSuccess<T> | ValidationFailure;
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function isRole(value: unknown): value is Role {
+  return (
+    typeof value === "string" && (ROLES as readonly string[]).includes(value)
+  );
+}
 
 export function validateLoginInput(raw: {
   email: unknown;
