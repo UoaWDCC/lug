@@ -6,6 +6,18 @@ type CreateMembershipRegistrationResult =
   | { ok: true }
   | { ok: false; error: { type: "duplicate" | "database" } };
 
+export async function findMemberByUpiAndStudentId(
+  upi: string,
+  studentId: string,
+) {
+  return getPrisma().member.findFirst({
+    where: {
+      upi,
+      studentId,
+    },
+  });
+}
+
 export async function createMembershipRegistration(
   registration: MemberRegistration,
 ): Promise<CreateMembershipRegistrationResult> {
