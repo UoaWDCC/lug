@@ -14,6 +14,8 @@ import {
   VALID_SKILL_LEVELS,
   VALID_YEAR_LEVELS,
   MAX_LENGTHS,
+  MAX_FACULTIES,
+  MAX_MAJORS,
 } from "@/domain/member/constants";
 
 import { exceedsMax } from "@/domain/member/exceedsMax";
@@ -47,7 +49,6 @@ function stripIrrelevantFields(
       lastName,
       isCurrentUoaStudent,
       faculty,
-      otherFaculty,
       programme,
       yearLevel,
       primaryAffiliation,
@@ -57,24 +58,12 @@ function stripIrrelevantFields(
     } = draftFields;
     return stripped;
   } else if (lastPage == "newUoa") {
-    const {
-      primaryAffiliation,
-      nonUoaExcerpt,
-      nonUoaPitch,
-      otherFaculty,
-      ...stripped
-    } = draftFields;
+    const { primaryAffiliation, nonUoaExcerpt, nonUoaPitch, ...stripped } =
+      draftFields;
     return stripped;
   } else {
-    const {
-      upi,
-      studentId,
-      faculty,
-      otherFaculty,
-      programme,
-      yearLevel,
-      ...stripped
-    } = draftFields;
+    const { upi, studentId, faculty, programme, yearLevel, ...stripped } =
+      draftFields;
     return stripped;
   }
 }
@@ -91,6 +80,7 @@ function toParsedSubmission(
     upi: draft.upi ?? null,
     studentId: draft.studentId ?? null,
     faculty: draft.faculty ?? [],
+    majors: draft.majors ?? [],
     programme: draft.programme ?? null,
     yearLevel: draft.yearLevel ?? null,
     primaryAffiliation: draft.primaryAffiliation ?? null,
@@ -227,17 +217,35 @@ export async function submitRegistrationStep(
       const upi = formData.get("upi") as string;
       const studentId = formData.get("studentId") as string;
       const faculty = formData.getAll("faculty") as string[];
-      const otherFaculty = formData.get("otherFaculty") as string;
+      const majors = (formData.getAll("majors") as string[])
+        .map((major) => major.trim())
+        .filter((major) => major !== "");
+      const majorCount = Math.min(
+        Number(formData.get("majorCount")) || prev.majorCount || 1,
+        MAX_MAJORS,
+      );
       const programme = formData.get("programme") as string;
       const yearLevel = formData.get("yearLevel") as string;
       const fields = {
         upi,
         studentId,
         faculty,
-        otherFaculty,
+        majors,
+        majorCount,
         programme,
         yearLevel,
       };
+
+      if (intent == "addMajor") {
+        const newDraft: Partial<RegistrationDraft> = {
+          ...prev,
+          ...fields,
+          majorCount: Math.min(majorCount + 1, MAX_MAJORS),
+        };
+
+        cookieStore.set("formState", JSON.stringify(newDraft), COOKIE_OPTIONS);
+        redirect("/registration");
+      }
 
       if (!upi) {
         return { error: "UPI is required.", fields };
@@ -252,17 +260,27 @@ export async function submitRegistrationStep(
         return { error: "Student ID must be 9-10 digits.", fields };
       }
 
-      if (faculty.length == 0 && !otherFaculty) {
+      if (faculty.length == 0) {
         return { error: "Please select at least 1 faculty.", fields };
       }
 
-      if (faculty.includes("other") && !otherFaculty) {
-        return { error: "Please specify your other faculty.", fields };
+      if (faculty.length > MAX_FACULTIES) {
+        return {
+          error: `Please select at most ${MAX_FACULTIES} faculties.`,
+          fields,
+        };
       }
 
-      if (exceedsMax(otherFaculty, "otherFaculty")) {
+      if (majors.length > MAX_MAJORS) {
         return {
-          error: `Other faculty must be under ${MAX_LENGTHS.otherFaculty} characters.`,
+          error: `Please enter at most ${MAX_MAJORS} majors.`,
+          fields,
+        };
+      }
+
+      if (majors.some((major) => exceedsMax(major, "major"))) {
+        return {
+          error: `Each major must be under ${MAX_LENGTHS.major} characters.`,
           fields,
         };
       }
@@ -387,20 +405,9 @@ export async function submitRegistrationStep(
         };
       }
 
-      // Merge otherFaculty into faculty without mutating prev
-      const mergedPrev = prev.otherFaculty
-        ? {
-            ...prev,
-            faculty: [
-              ...(prev.faculty ?? []).filter((f) => f !== "other"),
-              prev.otherFaculty,
-            ],
-          }
-        : prev;
-
       // Merge final step data with full draft
       const fullDraft: Partial<RegistrationDraft> = {
-        ...stripIrrelevantFields(mergedPrev),
+        ...stripIrrelevantFields(prev),
         linuxSkillLevel,
         potentialInvolvement,
         discordUsername,
