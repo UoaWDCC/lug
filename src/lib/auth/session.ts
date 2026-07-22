@@ -2,6 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Role } from "@/domain/admin/types";
+import { isRole } from "@/domain/admin/validation";
 
 export const SESSION_COOKIE_NAME = "lug_admin_session";
 
@@ -66,11 +67,11 @@ export async function verifySessionToken(
     const adminId = Number(payload.sub);
     const role = payload.role;
 
-    if (!Number.isInteger(adminId) || typeof role !== "string") {
+    if (!Number.isInteger(adminId) || adminId <= 0 || !isRole(role)) {
       return null;
     }
 
-    return { adminId, role: role as Role };
+    return { adminId, role };
   } catch {
     return null;
   }
