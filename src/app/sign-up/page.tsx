@@ -17,7 +17,7 @@ export default function SignUp() {
       {/* Centered card */}
       <div className="relative z-10 flex items-center justify-center h-full px-4 py-8">
         <div className="fade-up fade-up-1 w-full max-w-lg">
-        <div className="terminal-glow bg-black/90 border border-[var(--color-accent)]/50 rounded-3xl px-8 py-10 sm:px-12">
+        <div className="bg-black/90 border border-white/50 rounded-3xl px-8 py-10 sm:px-12">
 
           {/* Step progress */}
           <div className="flex flex-col items-center mb-8">

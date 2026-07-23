@@ -29,20 +29,20 @@ export default function Home() {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-32 sm:pt-36 pb-24">
         <div className="max-w-2xl">
 
-          {/* heading */}
+          {/* subheading */}
           <div className="fade-up fade-up-1">
+            <p className="shimmer-accent font-mono text-xl sm:text-2xl">
+              University of Auckland
+            </p>
+          </div>
+
+          {/* heading */}
+          <div className="fade-up fade-up-2 mt-4">
             <h1 className="font-mono font-bold text-white text-5xl sm:text-6xl md:text-7xl leading-[1.05] tracking-tight">
               Linux Users
               <br />
               Group
             </h1>
-          </div>
-
-          {/* subheading */}
-          <div className="fade-up fade-up-2 mt-4">
-            <p className="shimmer-accent font-mono text-xl sm:text-2xl">
-              at University of Auckland
-            </p>
           </div>
 
           {/* description */}
@@ -55,12 +55,14 @@ export default function Home() {
 
           {/* terminal menu */}
           <div className="fade-up fade-up-4 mt-10 max-w-xl">
-            <div className="terminal-glow rounded-md border border-white/70 bg-black/85 backdrop-blur-sm overflow-hidden">
+            <div className="rounded-md border border-white/70 bg-black/85 backdrop-blur-sm overflow-hidden">
               {/* title bar */}
               <div className="flex items-center justify-between px-3 py-2 border-b border-white/30 text-white text-sm">
                 <span className="font-mono">lug@uoa:~</span>
-                <span className="font-mono tracking-widest select-none" aria-hidden>
-                  — □ ×
+                <span className="font-mono tracking-widest select-none flex items-center gap-2" aria-hidden>
+                  <span className="text-lg leading-none">—</span>
+                  <span className="text-lg leading-none">□</span>
+                  <span className="text-2xl leading-none">×</span>
                 </span>
               </div>
 

@@ -91,36 +91,6 @@ body {
   animation-delay: 0.8s;
 }
 
-/* terminal glow pulse */
-@keyframes terminal-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 30px rgba(63, 204, 168, 0.15);
-  }
-  50% {
-    box-shadow: 0 0 55px rgba(63, 204, 168, 0.35);
-  }
-}
-
-.terminal-glow {
-  animation: terminal-glow 4s ease-in-out infinite;
-}
-
-/* logo float */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-.float {
-  animation: float 4s ease-in-out infinite;
-}
-
 /* shimmer accent text */
 @keyframes shimmer {
   0%,
