@@ -17,10 +17,10 @@ We use **Squash and merge**, so your pull request should represent one clear pie
 
 ### Branch names
 
-Use short, descriptive branch names.
+Branches follow one of the 2 formats below, where `type` matches one of the conventional commit types listed in the **Commit messages** section below.
 
-- With an issue number: `type/issue-number-short-description`
-- Without an issue number: `type/short-description`
+- With an issue number: `<type>/<issue-number>-<short-description>`
+- Without an issue number: `<type>/<short-description>`
 
 Examples:
 
@@ -32,12 +32,30 @@ chore/update-readme
 
 ### Commit messages
 
-We follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+We follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification.
 
 Write the description in the **imperative mood**.
 
 - Use: `add login form`
 - Not: `added login form`
+
+
+**Example types :**
+
+| Type       | Use for                                  |
+| ---------- | ---------------------------------------- |
+| `feat`     | New user-facing functionality            |
+| `fix`      | Bug fix                                  |
+| `docs`     | Documentation only                       |
+| `style`    | Formatting, whitespace — no logic change |
+| `refactor` | Restructure with no behaviour change     |
+| `perf`     | Performance improvement                  |
+| `test`     | Adding or correcting tests               |
+| `chore`    | Tooling, dependencies, config            |
+| `ci`       | CI/CD pipeline changes                   |
+| `build`    | Build system changes                     |
+| `revert`   | Reverts a previous commit                |
+
 
 
 Format:
@@ -93,6 +111,7 @@ This project uses:
 | `pnpm format` | Runs Prettier across the repository and rewrites files. Use intentionally. |
 | `pnpm format:check` | Checks whether files match the expected Prettier formatting without modifying them. |
 | `pnpm build` | Builds the application for production. |
+| `pnpm check` | Runs the standard pre-PR checks: Prisma client generation, lint, typecheck, format check, and build. |
 
 ### Pre-commit hook
 
@@ -107,17 +126,14 @@ This only checks **staged files**. Before opening a pull request, still run the 
 Run:
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm format:check
-pnpm build
+pnpm check
 ```
 
 Also make sure:
 
 - the app still runs locally with `pnpm dev`
 - the PR only contains relevant changes
-- the PR title is clear
+- the PR title is clear and follows the required format
 - the PR description explains what changed and why
 
 ## Documentation

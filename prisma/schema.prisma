@@ -1,0 +1,72 @@
+// This is the Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Member {
+  id Int @id @default(autoincrement())
+
+  firstName String
+  lastName  String
+  email     String @unique
+
+  isConditionalReturningMember Boolean
+
+  // Only asked directly for non-conditional-returning members.
+  // For conditional returning members, this is not collected in the form.
+  isCurrentUoaStudent Boolean?
+
+  // UoA student fields: returning eligible UoA students and new current UoA students.
+  upi       String?
+  studentId String?
+
+  // Only for current UoA students.
+  faculty   String[]
+  programme String?
+  yearLevel YearLevel?
+
+  // Only for non-current UoA students.
+  primaryAffiliation String?
+  nonUoaExcerpt      String?
+  nonUoaPitch        String?
+
+  // Final questions for everyone.
+  linuxSkillLevel      LinuxSkillLevel
+  potentialInvolvement PotentialInvolvement[]
+  discordUsername      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum LinuxSkillLevel {
+  NOTHING
+  AWARE_OF_EXISTENCE
+  BEGINNER_USER
+  REGULAR_USER
+  POWER_USER
+  CONTRIBUTOR
+}
+
+enum PotentialInvolvement {
+  ATTENDING
+  SPEAKING
+  EXECUTIVE
+  PROJECTS
+}
+
+enum YearLevel {
+  FIRST_YEAR
+  SECOND_YEAR
+  THIRD_YEAR
+  FOURTH_YEAR
+  FIFTH_YEAR_OR_LATER
+  GRADUATED_WITHIN_2_YEARS
+}

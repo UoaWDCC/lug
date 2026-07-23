@@ -34,11 +34,17 @@ jobs:
       - name: Run lint
         run: pnpm lint
 
+      - name: Generate Prisma client
+        run: pnpm db:generate
+
       - name: Run typecheck
         run: pnpm typecheck
 
       - name: Check formatting
         run: pnpm format:check
+
+      - name: Run unit tests
+        run: pnpm test:run
 
       - name: Build app
         run: pnpm build

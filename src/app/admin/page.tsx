@@ -1,12 +1,16 @@
-import Container from "@/components/primitive/Container";
 
-export default function Admin() {
+import Link from "next/link";
+
+export default function AdminPage() {
   return (
-    <Container>
-      <section className="pt-32 pb-16">
-        <h1 className="font-mono text-4xl font-bold mb-4">Admin</h1>
-        <p className="text-white/80">Placeholder Admin</p>
-      </section>
-    </Container>
+    <main className="p-6">
+      <h1 className="text-2xl font-semibold">Admin</h1>
+
+      <div className="mt-6">
+        <Link href="/admin/members" className="underline">
+          View members
+        </Link>
+      </div>
+    </main>
   );
 }

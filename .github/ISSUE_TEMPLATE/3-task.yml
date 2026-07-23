@@ -1,0 +1,24 @@
+name: 🔧 Task
+description: Internal work eg. refactoring, tests, tooling, chores
+title: "[scope] "
+type: Task
+labels: []
+body:
+  - type: textarea
+    id: content
+    attributes:
+      label: Details
+      value: |
+        ## Description
+
+
+        ## Requirements
+        - 
+
+        ## Acceptance Criteria
+        - [ ] 
+
+        ## Notes
+
+    validations:
+      required: true

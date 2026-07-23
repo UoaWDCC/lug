@@ -30,9 +30,6 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env.local
-
 # vercel
 .vercel
 
@@ -40,11 +37,25 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Supabase
-.branches
-.temp
+# Generated Prisma Client + query engine
+/src/generated/prisma
 
 # dotenvx
 .env.keys
 .env.local
 .env.*.local
+.env
+
+# IDE / Editor
+.idea
+.vscode
+.zed/
+/src/generated/prisma
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
