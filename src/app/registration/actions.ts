@@ -51,6 +51,8 @@ function stripIrrelevantFields(
       faculty,
       programme,
       yearLevel,
+      majors,
+      majorCount,
       primaryAffiliation,
       nonUoaExcerpt,
       nonUoaPitch,
@@ -62,8 +64,16 @@ function stripIrrelevantFields(
       draftFields;
     return stripped;
   } else {
-    const { upi, studentId, faculty, programme, yearLevel, ...stripped } =
-      draftFields;
+    const {
+      upi,
+      studentId,
+      faculty,
+      programme,
+      yearLevel,
+      majors,
+      majorCount,
+      ...stripped
+    } = draftFields;
     return stripped;
   }
 }
