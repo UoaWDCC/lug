@@ -24,6 +24,18 @@ export async function createMembershipRegistration(
   }
 }
 
+export async function findMemberByUpiAndStudentId(
+  upi: string,
+  studentId: string,
+) {
+  const currentYear = new Date().getFullYear();
+
+  return getPrisma().member.findFirst({
+    where: { upi, studentId, registrationYear: { lt: currentYear } },
+    orderBy: { registrationYear: "desc" },
+  });
+}
+
 function toMemberCreateInput(
   registration: MemberRegistration,
 ): Prisma.MemberCreateInput {

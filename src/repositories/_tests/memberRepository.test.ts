@@ -2,6 +2,13 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import type { MemberRegistration } from "@/domain/member/types";
 
 const mockCreate = vi.hoisted(() => vi.fn());
+const mockFindFirst = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/db/prisma", () => ({
+  getPrisma: () => ({
+    member: { create: mockCreate, findFirst: mockFindFirst },
+  }),
+}));
 
 const { FakePrismaClientKnownRequestError } = vi.hoisted(() => {
   class FakePrismaClientKnownRequestError extends Error {
@@ -15,19 +22,16 @@ const { FakePrismaClientKnownRequestError } = vi.hoisted(() => {
   return { FakePrismaClientKnownRequestError };
 });
 
-vi.mock("@/lib/db/prisma", () => ({
-  getPrisma: () => ({
-    member: { create: mockCreate },
-  }),
-}));
-
 vi.mock("@/generated/prisma/client", () => ({
   Prisma: {
     PrismaClientKnownRequestError: FakePrismaClientKnownRequestError,
   },
 }));
 
-import { createMembershipRegistration } from "../memberRepository";
+import {
+  createMembershipRegistration,
+  findMemberByUpiAndStudentId,
+} from "../memberRepository";
 
 const currentYear = new Date().getFullYear();
 
@@ -157,5 +161,44 @@ describe("createMembershipRegistration", () => {
     const result = await createMembershipRegistration(currentUoaStudent);
 
     expect(result).toEqual({ ok: false, error: { type: "database" } });
+  });
+});
+
+describe("findMemberByUpiAndStudentId", () => {
+  it("queries for the most recent registration before the current year", async () => {
+    mockFindFirst.mockResolvedValueOnce(null);
+
+    await findMemberByUpiAndStudentId("abc123", "123456789");
+
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: {
+        upi: "abc123",
+        studentId: "123456789",
+        registrationYear: { lt: currentYear },
+      },
+      orderBy: { registrationYear: "desc" },
+    });
+  });
+
+  it("returns the member record when a match exists", async () => {
+    const previousMember = {
+      id: 1,
+      firstName: "Amy",
+      email: "amy@example.com",
+      registrationYear: currentYear - 1,
+    };
+    mockFindFirst.mockResolvedValueOnce(previousMember);
+
+    const result = await findMemberByUpiAndStudentId("abc123", "123456789");
+
+    expect(result).toEqual(previousMember);
+  });
+
+  it("returns null when no prior registration exists", async () => {
+    mockFindFirst.mockResolvedValueOnce(null);
+
+    const result = await findMemberByUpiAndStudentId("xyz999", "000000000");
+
+    expect(result).toBeNull();
   });
 });
