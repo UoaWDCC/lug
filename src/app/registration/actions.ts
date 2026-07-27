@@ -12,13 +12,20 @@ import { VALID_PAGES, readRegistrationDraft } from "./utils";
 import {
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  VALID_PROGRAMME_TYPES,
+  VALID_YEARS_REMAINING,
   MAX_LENGTHS,
   MAX_FACULTIES,
   MAX_MAJORS,
 } from "@/domain/member/constants";
 
+import {
+  LinuxSkillLevel,
+  PotentialInvolvement,
+  ProgrammeType,
+} from "@/domain/member/types";
+
 import { exceedsMax } from "@/domain/member/exceedsMax";
-import { LinuxSkillLevel, PotentialInvolvement } from "@/domain/member/types";
 
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
 import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
@@ -46,6 +53,8 @@ function stripIrrelevantFields(
       faculty,
       majors,
       majorCount,
+      programmeType,
+      yearsRemaining,
       primaryAffiliation,
       nonUoaExcerpt,
       nonUoaPitch,
@@ -57,8 +66,16 @@ function stripIrrelevantFields(
       draftFields;
     return stripped;
   } else {
-    const { upi, studentId, faculty, majors, majorCount, ...stripped } =
-      draftFields;
+    const {
+      upi,
+      studentId,
+      faculty,
+      majors,
+      majorCount,
+      programmeType,
+      yearsRemaining,
+      ...stripped
+    } = draftFields;
     return stripped;
   }
 }
@@ -221,12 +238,21 @@ export async function submitRegistrationStep(
         Number(formData.get("majorCount")) || prev.majorCount || 1,
         MAX_MAJORS,
       );
+
+      const programmeType = formData.get("programmeType") as string;
+      const yearsRemaining =
+        programmeType === "BACHELOR"
+          ? Number(formData.get("yearsRemaining"))
+          : undefined;
+
       const fields = {
         upi,
         studentId,
         faculty,
         majors,
         majorCount,
+        programmeType,
+        yearsRemaining,
       };
 
       if (intent == "addMajor") {
@@ -276,6 +302,27 @@ export async function submitRegistrationStep(
           error: `Each major must be under ${MAX_LENGTHS.major} characters.`,
           fields,
         };
+      }
+
+      if (
+        !programmeType ||
+        !VALID_PROGRAMME_TYPES.includes(programmeType as ProgrammeType)
+      ) {
+        return { error: "Please select a programme type.", fields };
+      }
+
+      if (programmeType === "BACHELOR") {
+        if (
+          isNaN(yearsRemaining as number) ||
+          !VALID_YEARS_REMAINING.includes(
+            yearsRemaining as (typeof VALID_YEARS_REMAINING)[number],
+          )
+        ) {
+          return {
+            error: "Please select how many years you have remaining.",
+            fields,
+          };
+        }
       }
 
       stepData = fields;

@@ -164,95 +164,136 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
         )}
       </fieldset>
 
-      <div>
-        <label htmlFor="programme">
-          What is your current programme of study?*
-        </label>
-        <p>
-          e.g. Bachelor of Engineering (Honours), Bachelor of Science, Master of
-          Arts, etc.
-        </p>
-        <input
-          name="programme"
-          id="programme"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.programme ?? ""}
-          maxLength={150}
-          required
-        />
+      <div className="programme-years-wrapper">
+        <fieldset>
+          <legend>What type of programme are you in?*</legend>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="programmeType"
+                value="TFC_PRE_UNI"
+                defaultChecked={field?.programmeType === "TFC_PRE_UNI"}
+                required
+              />
+              TFC / Pre-Uni
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="programmeType"
+                value="BACHELOR"
+                defaultChecked={field?.programmeType === "BACHELOR"}
+              />
+              Bachelor
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="programmeType"
+                value="MASTER"
+                defaultChecked={field?.programmeType === "MASTER"}
+              />
+              Master
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="programmeType"
+                value="PHD"
+                defaultChecked={field?.programmeType === "PHD"}
+              />
+              PhD
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="programmeType"
+                value="OTHER"
+                defaultChecked={field?.programmeType === "OTHER"}
+              />
+              Other
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset className="years-remaining-group">
+          <legend>How many years do you have remaining?*</legend>
+          <div>
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="0"
+                defaultChecked={field?.yearsRemaining === 0}
+                required
+              />
+              Less than 1
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="1"
+                defaultChecked={field?.yearsRemaining === 1}
+              />
+              1
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="2"
+                defaultChecked={field?.yearsRemaining === 2}
+              />
+              2
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="3"
+                defaultChecked={field?.yearsRemaining === 3}
+              />
+              3
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="4"
+                defaultChecked={field?.yearsRemaining === 4}
+              />
+              4
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="yearsRemaining"
+                value="5"
+                defaultChecked={field?.yearsRemaining === 5}
+              />
+              More than 4
+            </label>
+          </div>
+        </fieldset>
       </div>
 
-      <fieldset>
-        <legend>What is your current year of study?</legend>
-        <p>
-          {
-            "Note to those who have progressed from one degree to another at UoA (e.g. from undergrad to postgrad, from one Bachelor degree to another): Your year of study is based on your current degree, not the total number of years that you have accumulated at UoA.  For instance, if it is your first year doing a Master's degree after doing a Bachelor's degree, then you are at your 1st Year."
-          }
-        </p>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="FIRST_YEAR"
-              defaultChecked={field?.yearLevel === "FIRST_YEAR"}
-              required
-            />
-            1st Year
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="SECOND_YEAR"
-              defaultChecked={field?.yearLevel === "SECOND_YEAR"}
-            />
-            2nd Year
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="THIRD_YEAR"
-              defaultChecked={field?.yearLevel === "THIRD_YEAR"}
-            />
-            3rd Year
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="FOURTH_YEAR"
-              defaultChecked={field?.yearLevel === "FOURTH_YEAR"}
-            />
-            4th Year
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="FIFTH_YEAR_OR_LATER"
-              defaultChecked={field?.yearLevel === "FIFTH_YEAR_OR_LATER"}
-            />
-            5th Year or later
-          </label>
-
-          <label>
-            <input
-              type="radio"
-              name="yearLevel"
-              value="GRADUATED_WITHIN_2_YEARS"
-              defaultChecked={field?.yearLevel === "GRADUATED_WITHIN_2_YEARS"}
-            />
-            Graduated within 2 years
-          </label>
-        </div>
-      </fieldset>
+      <style>{`
+        .years-remaining-group { display: none; }
+        .programme-years-wrapper:has(input[value="BACHELOR"]:checked) .years-remaining-group {
+          display: block;
+        }
+      `}</style>
     </>
   );
 }
