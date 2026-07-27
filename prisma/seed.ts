@@ -1,8 +1,10 @@
+// TEMP: programmeType/majors/yearsRemaining intentionally omitted — real reseed is #92,
+// blocked until #87 settles the final field shape.
+
 import { getPrisma } from "../src/lib/db/prisma";
 import {
   LinuxSkillLevel,
   PotentialInvolvement,
-  YearLevel,
 } from "../src/generated/prisma/enums";
 
 async function seedMembers() {
@@ -33,9 +35,7 @@ async function seedMembers() {
       isCurrentUoaStudent: true,
       upi: "efgh456",
       studentId: "000000002",
-      faculty: ["science", "business", "humanities"],
-      programme: "Computer Science and Business Conjoint",
-      yearLevel: YearLevel.SECOND_YEAR,
+      faculty: ["science", "business"],
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
