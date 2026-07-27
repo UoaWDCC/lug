@@ -50,8 +50,8 @@ function toMemberCreateInput(
       : registration.isCurrentUoaStudent === true
         ? {
             faculty: registration.faculty,
-            programme: registration.programme,
-            yearLevel: registration.yearLevel,
+            majors: registration.majors,
+            programmeType: registration.programmeType,
             upi: registration.upi,
             studentId: registration.studentId,
             isCurrentUoaStudent: registration.isCurrentUoaStudent,
