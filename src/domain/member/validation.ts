@@ -7,11 +7,10 @@ import {
   MemberRegistration,
   NonCurrentUoaStudentMember,
   PotentialInvolvement,
-  YearLevel,
+  ProgrammeType,
 } from "./types";
 import {
   MAX_LENGTHS,
-  VALID_YEAR_LEVELS,
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
 } from "./constants";
@@ -151,20 +150,8 @@ function validateRegistrationPathRequiredFields(
       };
     }
   } else if (parsed.isCurrentUoaStudent === "yes") {
-    const requiredFieldsUoa = [
-      "upi",
-      "studentId",
-      "faculty",
-      "programme",
-      "yearLevel",
-    ];
-    const errorDisplayNamesUoa = [
-      "upi",
-      "Student ID",
-      "Faculty",
-      "Programme",
-      "Year level",
-    ];
+    const requiredFieldsUoa = ["upi", "studentId", "faculty"];
+    const errorDisplayNamesUoa = ["upi", "Student ID", "Faculty"];
     for (const field of requiredFieldsUoa) {
       if (!(field in parsed) || !parsed[field as keyof typeof parsed]) {
         const displayName =
@@ -275,24 +262,6 @@ function validateFieldValues(
     }
   }
   if (parsed.isCurrentUoaStudent === "yes") {
-    if (!isYearLevel(parsed.yearLevel)) {
-      return {
-        fieldsValid: false,
-        error: {
-          message: `yearLevel property has invalid value: ${parsed.yearLevel}`,
-        },
-      };
-    }
-
-    if (exceedsMax(parsed.programme, "programme")) {
-      return {
-        fieldsValid: false,
-        error: {
-          message: `Programme must be under ${MAX_LENGTHS.programme} characters`,
-        },
-      };
-    }
-
     for (const facultyOption of parsed.faculty) {
       if (facultyOption.trim() === "") {
         return {
@@ -381,8 +350,10 @@ function toCurrentUoaStudentMember(
     upi: parsed.upi!,
     studentId: parsed.studentId!,
     faculty: parsed.faculty!,
-    programme: parsed.programme!,
-    yearLevel: parsed.yearLevel! as YearLevel,
+
+    // TEMP placeholder until #86 adds parsed.programmeType to the parser — remove once real data is available
+    programmeType: "OTHER" as ProgrammeType,
+    majors: parsed.majors ?? [],
   };
   return uoaMember;
 }
@@ -442,10 +413,6 @@ function isLinuxSkillLevel(value: string | null): value is LinuxSkillLevel {
   return (
     value !== null && VALID_SKILL_LEVELS.includes(value as LinuxSkillLevel)
   );
-}
-
-function isYearLevel(value: string | null): value is YearLevel {
-  return value !== null && VALID_YEAR_LEVELS.includes(value as YearLevel);
 }
 
 function isPotentialInvolvement(value: string): value is PotentialInvolvement {

@@ -12,18 +12,13 @@ import { VALID_PAGES, readRegistrationDraft } from "./utils";
 import {
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
-  VALID_YEAR_LEVELS,
   MAX_LENGTHS,
   MAX_FACULTIES,
   MAX_MAJORS,
 } from "@/domain/member/constants";
 
 import { exceedsMax } from "@/domain/member/exceedsMax";
-import {
-  LinuxSkillLevel,
-  PotentialInvolvement,
-  YearLevel,
-} from "@/domain/member/types";
+import { LinuxSkillLevel, PotentialInvolvement } from "@/domain/member/types";
 
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
 import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
@@ -49,8 +44,6 @@ function stripIrrelevantFields(
       lastName,
       isCurrentUoaStudent,
       faculty,
-      programme,
-      yearLevel,
       majors,
       majorCount,
       primaryAffiliation,
@@ -64,16 +57,8 @@ function stripIrrelevantFields(
       draftFields;
     return stripped;
   } else {
-    const {
-      upi,
-      studentId,
-      faculty,
-      programme,
-      yearLevel,
-      majors,
-      majorCount,
-      ...stripped
-    } = draftFields;
+    const { upi, studentId, faculty, majors, majorCount, ...stripped } =
+      draftFields;
     return stripped;
   }
 }
@@ -91,8 +76,10 @@ function toParsedSubmission(
     studentId: draft.studentId ?? null,
     faculty: draft.faculty ?? [],
     majors: draft.majors ?? [],
-    programme: draft.programme ?? null,
-    yearLevel: draft.yearLevel ?? null,
+    // TEMP: dead fields kept only to satisfy ParsedRegistrationFormSubmission's
+    // unchanged type — see parseRegistrationFormData.ts, which is dead code.
+    programme: null,
+    yearLevel: null,
     primaryAffiliation: draft.primaryAffiliation ?? null,
     nonUoaExcerpt: draft.nonUoaExcerpt ?? null,
     nonUoaPitch: draft.nonUoaPitch ?? null,
@@ -234,16 +221,12 @@ export async function submitRegistrationStep(
         Number(formData.get("majorCount")) || prev.majorCount || 1,
         MAX_MAJORS,
       );
-      const programme = formData.get("programme") as string;
-      const yearLevel = formData.get("yearLevel") as string;
       const fields = {
         upi,
         studentId,
         faculty,
         majors,
         majorCount,
-        programme,
-        yearLevel,
       };
 
       if (intent == "addMajor") {
@@ -293,28 +276,6 @@ export async function submitRegistrationStep(
           error: `Each major must be under ${MAX_LENGTHS.major} characters.`,
           fields,
         };
-      }
-
-      if (!programme) {
-        return {
-          error: "Please enter your current programme of study.",
-          fields,
-        };
-      }
-
-      if (exceedsMax(programme, "programme")) {
-        return {
-          error: `Programme must be under ${MAX_LENGTHS.programme} characters.`,
-          fields,
-        };
-      }
-
-      if (!yearLevel) {
-        return { error: "Please select your current year of study.", fields };
-      }
-
-      if (!VALID_YEAR_LEVELS.includes(yearLevel as YearLevel)) {
-        return { error: "Please select a valid year of study.", fields };
       }
 
       stepData = fields;
