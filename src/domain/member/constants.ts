@@ -35,3 +35,5 @@ export const MAX_LENGTHS = {
 
 export const MAX_FACULTIES = 2;
 export const MAX_MAJORS = 4;
+
+export const VALID_YEARS_REMAINING = [0, 1, 2, 3, 4, 5] as const;
