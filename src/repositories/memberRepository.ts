@@ -32,6 +32,7 @@ function toMemberCreateInput(
     firstName: registration.firstName,
     lastName: registration.lastName,
     email: registration.email,
+    registrationYear: new Date().getFullYear(),
     linuxSkillLevel: registration.linuxSkillLevel,
     potentialInvolvement: registration.potentialInvolvement,
     discordUsername: registration.discordUsername,

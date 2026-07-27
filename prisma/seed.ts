@@ -93,7 +93,12 @@ async function seedMembers() {
 
   for (const member of members) {
     await getPrisma().member.upsert({
-      where: { email: member.email },
+      where: {
+        email_registrationYear: {
+          email: member.email,
+          registrationYear: member.registrationYear,
+        },
+      },
       update: member,
       create: member,
     });
