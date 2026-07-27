@@ -26,7 +26,7 @@ export const MAX_LENGTHS = {
   email: 254,
   firstName: 100,
   lastName: 100,
-  otherFaculty: 100,
+  major: 40,
   primaryAffiliation: 150,
   nonUoaExcerpt: 500,
   nonUoaPitch: 500,

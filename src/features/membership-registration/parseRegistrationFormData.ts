@@ -10,6 +10,7 @@ export type ParsedRegistrationFormSubmission = {
   studentId: string | null;
 
   faculty: string[];
+  majors: string[];
   programme: string | null;
   yearLevel: string | null;
 
@@ -65,6 +66,7 @@ export function parseRegistrationFormData(
     upi: getLowercaseTextField(formData, "upi"),
     studentId: getTextField(formData, "studentId"),
     faculty: getCheckboxGroup(formData, "faculty"),
+    majors: getCheckboxGroup(formData, "majors"),
     programme: getTextField(formData, "programme"),
     yearLevel: getTextField(formData, "yearLevel"),
 

@@ -294,10 +294,7 @@ function validateFieldValues(
     }
 
     for (const facultyOption of parsed.faculty) {
-      if (
-        facultyOption.trim() === "" ||
-        facultyOption.length > MAX_LENGTHS.otherFaculty
-      ) {
+      if (facultyOption.trim() === "") {
         return {
           fieldsValid: false,
           error: {

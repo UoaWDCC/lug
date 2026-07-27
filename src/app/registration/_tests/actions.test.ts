@@ -295,7 +295,7 @@ describe("case: newUoa", () => {
     expect(result?.error).toMatch(/9-10 digits/);
   });
 
-  it("rejects when no faculty is selected and no otherFaculty is given", async () => {
+  it("rejects when no faculty is selected", async () => {
     const result = await submitRegistrationStep(
       null,
       buildFormData({ ...validBase, faculty: [] }),
@@ -303,24 +303,31 @@ describe("case: newUoa", () => {
     expect(result?.error).toMatch(/at least 1 faculty/);
   });
 
-  it("rejects 'other' selected without otherFaculty text", async () => {
+  it("rejects more than MAX_FACULTIES faculties", async () => {
     const fd = buildFormData({
       ...validBase,
-      faculty: ["other"],
-      otherFaculty: "",
+      faculty: ["science", "law", "business"],
     });
     const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/specify your other faculty/);
+    expect(result?.error).toMatch(/at most 2 faculties/);
   });
 
-  it("rejects an otherFaculty value over the max length", async () => {
+  it("rejects more than MAX_MAJORS majors", async () => {
     const fd = buildFormData({
       ...validBase,
-      faculty: ["other"],
-      otherFaculty: "a".repeat(101),
+      majors: ["a", "b", "c", "d", "e"],
     });
     const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/Other faculty must be under 100 characters/);
+    expect(result?.error).toMatch(/at most 4 majors/);
+  });
+
+  it("rejects a major value over the max length", async () => {
+    const fd = buildFormData({
+      ...validBase,
+      majors: ["a".repeat(41)],
+    });
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toMatch(/Each major must be under 40 characters/);
   });
 
   it("rejects a missing programme", async () => {
@@ -358,6 +365,45 @@ describe("case: newUoa", () => {
       submitRegistrationStep(null, buildFormData(validBase)),
     ).rejects.toThrow("REDIRECT:/registration");
     expect(JSON.parse(cookieStore.get("formState")!).page).toBe("final");
+  });
+
+  describe("addMajor intent", () => {
+    it("increments majorCount and preserves already-typed fields without advancing the page", async () => {
+      setCookieDraft({ page: "newUoa", pageStack: ["start", "newMember"] });
+      const fd = buildFormData({
+        ...validBase,
+        intent: "addMajor",
+        majorCount: "1",
+        majors: ["Computer Science"],
+      });
+
+      await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
+        "REDIRECT:/registration",
+      );
+
+      const saved = JSON.parse(cookieStore.get("formState")!);
+      expect(saved.page).toBe("newUoa");
+      expect(saved.pageStack).toEqual(["start", "newMember"]);
+      expect(saved.majorCount).toBe(2);
+      expect(saved.majors).toEqual(["Computer Science"]);
+      expect(saved.upi).toBe("abcd123");
+    });
+
+    it("caps majorCount at MAX_MAJORS", async () => {
+      setCookieDraft({ page: "newUoa", pageStack: ["start", "newMember"] });
+      const fd = buildFormData({
+        ...validBase,
+        intent: "addMajor",
+        majorCount: "4",
+      });
+
+      await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
+        "REDIRECT:/registration",
+      );
+
+      const saved = JSON.parse(cookieStore.get("formState")!);
+      expect(saved.majorCount).toBe(4);
+    });
   });
 });
 
@@ -554,13 +600,13 @@ describe("case: final", () => {
     expect(result?.error).toBe("It looks like you've already registered.");
   });
 
-  describe("otherFaculty merge into faculty", () => {
-    it("folds otherFaculty into faculty and removes the 'other' placeholder", async () => {
+  describe("majors flow through to submission", () => {
+    it("includes majors from the draft in the parsed submission", async () => {
       setCookieDraft({
         page: "final",
         pageStack: ["start", "newMember", "newUoa"],
-        faculty: ["science", "other"],
-        otherFaculty: "Faculty of Made Up Studies",
+        faculty: ["science"],
+        majors: ["Computer Science", "Statistics"],
       });
       const fd = buildFormData({
         page: "final",
@@ -572,34 +618,26 @@ describe("case: final", () => {
       );
 
       const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
-      expect(submittedData.faculty).toEqual([
-        "science",
-        "Faculty of Made Up Studies",
-      ]);
+      expect(submittedData.majors).toEqual(["Computer Science", "Statistics"]);
     });
 
-    it("does not mutate the object read from the cookie", async () => {
+    it("defaults majors to an empty array when absent from the draft", async () => {
       setCookieDraft({
         page: "final",
         pageStack: ["start", "newMember", "newUoa"],
-        faculty: ["other"],
-        otherFaculty: "Faculty of Made Up Studies",
+        faculty: ["science"],
       });
-      const rawBefore = cookieStore.get("formState")!;
-
       const fd = buildFormData({
         page: "final",
         linuxSkillLevel: "BEGINNER_USER",
       });
+
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
         "REDIRECT:/registration/success",
       );
 
-      // Re-parsing the string captured *before* the call proves nothing
-      // mutated the underlying data during the request — this is the
-      // test for the prev.faculty = [...] mutation bug.
-      const reparsed = JSON.parse(rawBefore);
-      expect(reparsed.faculty).toEqual(["other"]);
+      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.majors).toEqual([]);
     });
   });
 

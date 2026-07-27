@@ -2,18 +2,14 @@
 
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
-
-import { useRef } from "react";
+import { MAX_MAJORS } from "@/domain/member/constants";
 
 export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
   const state = useFormError();
   const errorFields = state?.fields;
   const field = errorFields ?? fields;
 
-  /* Client JS enhancement:
-   * Used to create a reference to the Other checkbox so it automatically checks when user enters text
-   */
-  const otherFacultyCheckboxRef = useRef<HTMLInputElement>(null);
+  const majorCount = Math.min(field?.majorCount ?? 1, MAX_MAJORS);
 
   return (
     <>
@@ -136,41 +132,36 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             />
             Auckland Bioengineering Institute
           </label>
-
-          <label>
-            <input
-              ref={otherFacultyCheckboxRef}
-              type="checkbox"
-              name="faculty"
-              value="other"
-              defaultChecked={
-                field?.faculty?.includes("other") ||
-                Boolean(field?.otherFaculty?.trim())
-              }
-            />
-            Other
-          </label>
-
-          <label htmlFor="otherFaculty" className="sr-only">
-            Please specify other faculty
-          </label>
-          <input
-            type="text"
-            name="otherFaculty"
-            id="otherFaculty"
-            placeholder="Specify other"
-            defaultValue={field?.otherFaculty || ""}
-            maxLength={100}
-            onInput={(event) => {
-              const userHasTypedSomething =
-                event.currentTarget.value.trim().length > 0;
-
-              if (userHasTypedSomething && otherFacultyCheckboxRef.current) {
-                otherFacultyCheckboxRef.current.checked = true;
-              }
-            }}
-          />
         </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>What are you majoring/specialising in?</legend>
+        <p>Majors are independent of the faculties you selected above.</p>
+
+        {Array.from({ length: majorCount }).map((_, i) => (
+          <div key={i}>
+            <label htmlFor={`majors-${i}`} className="sr-only">
+              Major/specialisation {i + 1}
+            </label>
+            <input
+              type="text"
+              name="majors"
+              id={`majors-${i}`}
+              placeholder="Your answer"
+              defaultValue={field?.majors?.[i] ?? ""}
+              maxLength={40}
+            />
+          </div>
+        ))}
+
+        <input type="hidden" name="majorCount" value={majorCount} />
+
+        {majorCount < MAX_MAJORS && (
+          <button type="submit" name="intent" value="addMajor">
+            Add another major
+          </button>
+        )}
       </fieldset>
 
       <div>
