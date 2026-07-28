@@ -1,10 +1,8 @@
-// TEMP: programmeType/majors/yearsRemaining intentionally omitted — real reseed is #92,
-// blocked until #87 settles the final field shape.
-
 import { getPrisma } from "../src/lib/db/prisma";
 import {
   LinuxSkillLevel,
   PotentialInvolvement,
+  ProgrammeType,
 } from "../src/generated/prisma/enums";
 
 const registrationYear = new Date().getFullYear();
@@ -21,6 +19,9 @@ async function seedMembers() {
       upi: "abcd123",
       studentId: "000000001",
       faculty: [],
+      programmeType: ProgrammeType.MASTER,
+      majors: ["Software Engineering", "Mathematics"],
+      yearsRemaining: 1,
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
@@ -38,6 +39,9 @@ async function seedMembers() {
       upi: "efgh456",
       studentId: "000000002",
       faculty: ["science", "business"],
+      programmeType: ProgrammeType.BACHELOR,
+      majors: ["Computer Science", "Finance"],
+      yearsRemaining: 2,
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
