@@ -6,8 +6,10 @@ import type { Role } from "../src/domain/admin/types";
 import {
   LinuxSkillLevel,
   PotentialInvolvement,
-  YearLevel,
+  ProgrammeType,
 } from "../src/generated/prisma/enums";
+
+const registrationYear = new Date().getFullYear();
 
 async function seedMembers() {
   const members = [
@@ -15,13 +17,15 @@ async function seedMembers() {
       firstName: "John",
       lastName: "Doe",
       email: "abcd123@aucklanduni.ac.nz",
+      registrationYear,
       isConditionalReturningMember: true,
       isCurrentUoaStudent: null,
       upi: "abcd123",
       studentId: "000000001",
       faculty: [],
-      programme: null,
-      yearLevel: null,
+      programmeType: ProgrammeType.MASTER,
+      majors: ["Software Engineering", "Mathematics"],
+      yearsRemaining: 1,
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
@@ -33,13 +37,15 @@ async function seedMembers() {
       firstName: "Jane",
       lastName: "Dough",
       email: "efg456@aucklanduni.ac.nz",
+      registrationYear: registrationYear - 1,
       isConditionalReturningMember: false,
       isCurrentUoaStudent: true,
       upi: "efgh456",
       studentId: "000000002",
-      faculty: ["science", "business", "humanities"],
-      programme: "Computer Science and Business Conjoint",
-      yearLevel: YearLevel.SECOND_YEAR,
+      faculty: ["science", "business"],
+      programmeType: ProgrammeType.BACHELOR,
+      majors: ["Computer Science", "Finance"],
+      yearsRemaining: 2,
       primaryAffiliation: null,
       nonUoaExcerpt: null,
       nonUoaPitch: null,
@@ -54,13 +60,12 @@ async function seedMembers() {
       firstName: "Samantha",
       lastName: "Collins",
       email: "sam67@gmail.com",
+      registrationYear,
       isConditionalReturningMember: false,
       isCurrentUoaStudent: false,
       upi: null,
       studentId: null,
       faculty: [],
-      programme: null,
-      yearLevel: null,
       primaryAffiliation: "AUT",
       nonUoaExcerpt: "I am studying Computer Science at AUT.",
       nonUoaPitch: "I want to join because I love Linux.",
@@ -75,13 +80,12 @@ async function seedMembers() {
       firstName: "JoJo",
       lastName: "Siwa",
       email: "jojo@hotmail.com",
+      registrationYear,
       isConditionalReturningMember: false,
       isCurrentUoaStudent: false,
       upi: null,
       studentId: null,
       faculty: [],
-      programme: null,
-      yearLevel: null,
       primaryAffiliation: "Massey University",
       nonUoaExcerpt: "currently doing postgrad at massey",
       nonUoaPitch:
@@ -97,7 +101,12 @@ async function seedMembers() {
 
   for (const member of members) {
     await getPrisma().member.upsert({
-      where: { email: member.email },
+      where: {
+        email_registrationYear: {
+          email: member.email,
+          registrationYear: member.registrationYear,
+        },
+      },
       update: member,
       create: member,
     });

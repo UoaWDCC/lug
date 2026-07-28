@@ -18,6 +18,9 @@ describe("parseRegistrationFormData", () => {
     formData.append("faculty", "science");
     formData.append("faculty", "  engineeringDesign  ");
 
+    formData.append("majors", "  Computer Science  ");
+    formData.append("majors", "  Software Engineering  ");
+
     formData.set("programme", "  Bachelor of Science  ");
     formData.set("yearLevel", "  year2  ");
 
@@ -44,6 +47,7 @@ describe("parseRegistrationFormData", () => {
       studentId: "123456789",
 
       faculty: ["science", "engineeringDesign"],
+      majors: ["Computer Science", "Software Engineering"],
       programme: "Bachelor of Science",
       yearLevel: "year2",
 
@@ -71,6 +75,7 @@ describe("parseRegistrationFormData", () => {
       studentId: null,
 
       faculty: [],
+      majors: [],
       programme: null,
       yearLevel: null,
 

@@ -14,23 +14,26 @@ export const VALID_INVOLVEMENTS = [
   "PROJECTS",
 ] as const;
 
-export const VALID_YEAR_LEVELS = [
-  "FIRST_YEAR",
-  "SECOND_YEAR",
-  "THIRD_YEAR",
-  "FOURTH_YEAR",
-  "FIFTH_YEAR_OR_LATER",
-  "GRADUATED_WITHIN_2_YEARS",
+export const VALID_PROGRAMME_TYPES = [
+  "TFC_PRE_UNI",
+  "BACHELOR",
+  "MASTER",
+  "PHD",
+  "OTHER",
 ] as const;
 
 export const MAX_LENGTHS = {
   email: 254,
   firstName: 100,
   lastName: 100,
-  otherFaculty: 100,
-  programme: 150,
+  major: 40,
   primaryAffiliation: 150,
   nonUoaExcerpt: 500,
   nonUoaPitch: 500,
   discordUsername: 32,
 } as const;
+
+export const MAX_FACULTIES = 2;
+export const MAX_MAJORS = 4;
+
+export const VALID_YEARS_REMAINING = [0, 1, 2, 3, 4, 5] as const;

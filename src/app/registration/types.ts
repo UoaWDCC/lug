@@ -25,9 +25,10 @@ export type RegistrationDraft = {
 
   // Current UoA only
   faculty?: string[];
-  otherFaculty?: string;
-  programme?: string;
-  yearLevel?: string;
+  programmeType?: string;
+  yearsRemaining?: number;
+  majors?: string[];
+  majorCount?: number;
 
   // Non-UoA only
   primaryAffiliation?: string;
