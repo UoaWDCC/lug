@@ -10,22 +10,6 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
   return (
     <>
-      <div>
-        <label htmlFor="email">Email*</label>
-        <input
-          name="email"
-          id="email"
-          type="email"
-          placeholder="name@example.com"
-          defaultValue={field?.email || ""} // This is what prevents the clearing
-          className={`border p-2 w-full ${state?.error?.includes("email") ? "border-red-500" : "border-gray-300"}`}
-          maxLength={254}
-        />
-        {state?.error?.includes("email") && (
-          <p className="text-red-600 text-sm italic mt-1">{state.error}</p>
-        )}
-      </div>
-
       <fieldset>
         <legend>
           Have you registered with us previously and meet the following
@@ -58,9 +42,9 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           <label>
             <input
               type="radio"
-              name="isConditionalReturningMember"
+              name="isCurrentUoaStudent"
               value="yes"
-              defaultChecked={field?.isConditionalReturningMember === "yes"}
+              defaultChecked={field?.isCurrentUoaStudent === "yes"}
               required
             />
             Yes
@@ -69,15 +53,43 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           <label>
             <input
               type="radio"
-              name="isConditionalReturningMember"
+              name="isCurrentUoaStudent"
               value="no"
-              defaultChecked={field?.isConditionalReturningMember === "no"}
+              defaultChecked={field?.isCurrentUoaStudent === "no"}
               required
             />
             No
           </label>
         </div>
       </fieldset>
+
+      <div>
+        <label htmlFor="upi">What is your username/UPI?*</label>
+        <p>i.e. jbon007</p>
+        <input
+          name="upi"
+          id="upi"
+          type="text"
+          placeholder="Your answer"
+          defaultValue={field?.upi ?? ""}
+          pattern="[a-z]{3,4}[0-9]{3}"
+          required
+        />
+      </div>
+
+      <div>
+        <label htmlFor="studentId">And your student ID?*</label>
+        <p>i.e. 825179213</p>
+        <input
+          name="studentId"
+          id="studentId"
+          type="text"
+          placeholder="Your answer"
+          defaultValue={field?.studentId ?? ""}
+          pattern="[0-9]{9,10}"
+          required
+        />
+      </div>
     </>
   );
 }
