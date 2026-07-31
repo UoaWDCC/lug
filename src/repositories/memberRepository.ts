@@ -36,6 +36,14 @@ export async function findMemberByUpiAndStudentId(
   });
 }
 
+export async function findAllMembers() {
+  return getPrisma().member.findMany({
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
+
 function toMemberCreateInput(
   registration: MemberRegistration,
 ): Prisma.MemberCreateInput {
