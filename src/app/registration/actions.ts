@@ -29,6 +29,7 @@ import { exceedsMax } from "@/domain/member/exceedsMax";
 
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
 import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
+import { findMemberByUpiAndStudentId } from "@/repositories/memberRepository";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -148,20 +149,51 @@ export async function submitRegistrationStep(
         };
       }
 
-      if (isCurrentUoaStudent === "yes" && !upi) {
-        return { error: "UPI is required.", fields };
-      }
-      if (isCurrentUoaStudent === "yes" && !upiRegex.test(upi)) {
-        return { error: "Invalid UPI format (e.g., abcd123).", fields };
-      }
-      if (isCurrentUoaStudent === "yes" && !studentId) {
-        return { error: "Student ID is required.", fields };
-      }
-      if (isCurrentUoaStudent === "yes" && !studentIdRegex.test(studentId)) {
-        return { error: "Student ID must be 9-10 digits.", fields };
+      if (isCurrentUoaStudent === "yes") {
+        if (!upi) {
+          return { error: "UPI is required.", fields };
+        }
+        if (!upiRegex.test(upi)) {
+          return { error: "Invalid UPI format (e.g., abcd123).", fields };
+        }
+        if (!studentId) {
+          return { error: "Student ID is required.", fields };
+        }
+        if (!studentIdRegex.test(studentId)) {
+          return { error: "Student ID must be 9-10 digits.", fields };
+        }
+
+        const existingMember = await findMemberByUpiAndStudentId(
+          upi,
+          studentId,
+        );
+        if (existingMember) {
+          console.log("Existing member found:", existingMember);
+
+          stepData = {
+            ...fields,
+            firstName: existingMember.firstName,
+            lastName: existingMember.lastName,
+            email: existingMember.email,
+            isConditionalReturningMember: "yes",
+            faculty: existingMember.faculty ?? [],
+            majors: existingMember.majors ?? [],
+            majorCount: Math.max(existingMember.majors?.length ?? 1, 1),
+            programmeType: existingMember.programmeType ?? undefined,
+            yearsRemaining: existingMember.yearsRemaining ?? undefined,
+          };
+        } else {
+          console.log(
+            "No existing member found for UPI:",
+            upi,
+            "and Student ID:",
+            studentId,
+          );
+        }
+      } else {
+        stepData = fields;
       }
 
-      stepData = fields;
       nextPage = isCurrentUoaStudent === "yes" ? "uoaDetails" : "newNonUoa";
       break;
     }
