@@ -1,14 +1,24 @@
 import { Metadata } from "next";
 
+import { scrollableMainClass } from "@/components/primitive/buttonStyles";
+
 export default function Blog() {
   return (
-    <div>
-      <section>
-        <h1>Blog</h1>
+    <main className={scrollableMainClass}>
+      <div className="mx-auto max-w-[900px]">
+        <div className="mb-1.5 font-mono text-sm text-[var(--accent-text)]">
+          $ ls ./blog
+        </div>
 
-        <p>Placeholder Blog</p>
-      </section>
-    </div>
+        <h1 className="m-0 mb-3.5 text-[clamp(30px,4.5vw,46px)] font-black tracking-[-1px]">
+          Blog
+        </h1>
+
+        <p className="m-0 text-base leading-[1.6] text-[var(--muted)]">
+          Placeholder Blog
+        </p>
+      </div>
+    </main>
   );
 }
 

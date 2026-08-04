@@ -1,11 +1,11 @@
+import { scrollableMainClass } from "@/components/primitive/buttonStyles";
+
 export default function AdminMembers() {
   return (
-    <div>
-      <section>
-        <h1>Admin Members</h1>
+    <main className={scrollableMainClass}>
+      <h1 className="text-2xl font-semibold">Admin Members</h1>
 
-        <p>Placeholder Admin Members</p>
-      </section>
-    </div>
+      <p className="mt-6 text-[var(--muted)]">Placeholder Admin Members</p>
+    </main>
   );
 }

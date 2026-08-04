@@ -8,6 +8,7 @@ import { NewNonUoaPage } from "./_pages/NewNonUoaPage";
 import { FinalPage } from "./_pages/FinalPage";
 import { RegistrationForm } from "./RegistrationForm";
 import { readRegistrationDraft } from "./utils";
+import { getStepProgress } from "./_components/steps";
 
 export default async function FormPage() {
   const cookieStore = await cookies();
@@ -16,25 +17,20 @@ export default async function FormPage() {
   const { page = "start" } = draft;
 
   return (
-    <section className="max-w-2xl border-2 border-green-500">
-      <h1>LUG@UoA Member Registration Form 2026</h1>
-      <p className="mb-6">{`Thank you for registering your interest to become a member of the
-          University of Auckland Linux User Group (also known as LUG@UoA)! It's
-          great to have you with us. The details collected in this form will be
-          used for record-keeping purposes as mandated by Student Groups and to
-          send you relevant communication about the user group, as well as to
-          identify areas of interest for the club. We will not otherwise use or
-          transfer your information. You can modify or withdraw your response by
-          contacting lug.aucklanduni@gmail.com.`}</p>
-
-      <RegistrationForm currentPage={page}>
-        {page === "start" && <StartPage fields={draft} />}
-        {page === "returningUoa" && <ReturningUoaPage fields={draft} />}
-        {page === "newMember" && <NewMemberPage fields={draft} />}
-        {page === "newUoa" && <NewUoaPage fields={draft} />}
-        {page === "newNonUoa" && <NewNonUoaPage fields={draft} />}
-        {page === "final" && <FinalPage fields={draft} />}
-      </RegistrationForm>
-    </section>
+    <main className="relative z-10 flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-5 pt-2 pb-10">
+      <div className="w-full max-w-[480px] rounded-[18px] border border-[var(--accent)] bg-[var(--card-bg)] p-[30px] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <RegistrationForm
+          currentPage={page}
+          step={getStepProgress(page, draft)}
+        >
+          {page === "start" && <StartPage fields={draft} />}
+          {page === "returningUoa" && <ReturningUoaPage fields={draft} />}
+          {page === "newMember" && <NewMemberPage fields={draft} />}
+          {page === "newUoa" && <NewUoaPage fields={draft} />}
+          {page === "newNonUoa" && <NewNonUoaPage fields={draft} />}
+          {page === "final" && <FinalPage fields={draft} />}
+        </RegistrationForm>
+      </div>
+    </main>
   );
 }

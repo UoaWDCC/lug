@@ -2,6 +2,10 @@
 
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
+import TextField, {
+  isValidStudentId,
+  isValidUpi,
+} from "../_components/TextField";
 
 export function ReturningUoaPage({
   fields,
@@ -14,44 +18,62 @@ export function ReturningUoaPage({
 
   return (
     <>
-      <h2>Returning UoA Students</h2>
-      <p>
-        We have two questions from you in this section, and then a few more
-        questions to wrap things up.
+      <h2 className="m-0 text-center text-[23px] font-black">
+        Your student login
+      </h2>
+
+      <p className="m-0 text-center text-sm leading-[1.5] text-[var(--muted)]">
+        A few details here, then we&apos;ll wrap things up.
       </p>
 
-      <div>
-        <label htmlFor="upi">What is your username/UPI?*</label>
-        <p>i.e. jbon007</p>
-        <input
-          name="upi"
-          id="upi"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.upi ?? ""}
-          pattern="[a-z]{3,4}[0-9]{3}"
-          required
-        />
-        {state?.error?.includes("upi") && (
-          <p className="text-red-600 text-sm italic mt-1">{state.error}</p>
-        )}
-      </div>
+      <TextField
+        name="firstName"
+        label="What is your first name?"
+        required
+        placeholder="Your answer"
+        defaultValue={field?.firstName ?? ""}
+        maxLength={100}
+      />
 
-      <div>
-        <label htmlFor="studentId">And your student ID?*</label>
-        <p>i.e. 825179213</p>
-        <input
-          name="studentId"
-          id="studentId"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.studentId ?? ""}
-          pattern="[0-9]{9,10}"
-          required
-        />
-        {state?.error?.includes("Student") && (
-          <p className="text-red-600 text-sm italic mt-1">{state.error}</p>
-        )}
+      <TextField
+        name="lastName"
+        label="And your last name?"
+        description="If you do not have a last name, type N/A."
+        required
+        placeholder="Your answer"
+        defaultValue={field?.lastName ?? ""}
+        maxLength={100}
+      />
+
+      <TextField
+        name="upi"
+        label="What is your username/UPI?"
+        required
+        placeholder=""
+        defaultValue={field?.upi ?? ""}
+        pattern="[a-zA-Z]{3,4}[0-9]{3}"
+        hint="Format: 3–4 letters + 3 digits, e.g. jbon007"
+        validate={isValidUpi}
+        okHint="✓ looks right"
+        errorHint="Should look like jbon007"
+      />
+
+      <TextField
+        name="studentId"
+        label="And your student ID?"
+        required
+        placeholder=""
+        defaultValue={field?.studentId ?? ""}
+        pattern="[0-9]{9,10}"
+        hint="Your 9–10 digit university ID"
+        validate={isValidStudentId}
+        okHint="✓ looks right"
+        errorHint="Enter your 9–10 digit ID"
+      />
+
+      <div className="rounded-lg border border-[var(--row-border)] bg-[var(--row-bg)] px-3.5 py-3 text-[12.5px] leading-[1.55] text-[var(--muted)]">
+        We&apos;ll use these to match you against last year&apos;s membership so
+        you don&apos;t have to re-enter your study details.
       </div>
     </>
   );

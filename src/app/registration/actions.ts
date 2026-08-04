@@ -47,8 +47,6 @@ function stripIrrelevantFields(
 
   if (lastPage == "returningUoa") {
     const {
-      firstName,
-      lastName,
       isCurrentUoaStudent,
       faculty,
       majors,
@@ -368,9 +366,33 @@ export async function submitRegistrationStep(
       const upiRegex = /^[a-z]{3,4}\d{3}$/i;
       const studentIdRegex = /^\d{9,10}$/;
 
+      const firstName = formData.get("firstName") as string;
+      const lastName = formData.get("lastName") as string;
       const upi = formData.get("upi") as string;
       const studentId = formData.get("studentId") as string;
-      const fields = { upi, studentId };
+      const fields = { firstName, lastName, upi, studentId };
+
+      if (!firstName) {
+        return { error: "First name is required.", fields };
+      }
+
+      if (exceedsMax(firstName, "firstName")) {
+        return {
+          error: `First name must be under ${MAX_LENGTHS.firstName} characters.`,
+          fields,
+        };
+      }
+
+      if (!lastName) {
+        return { error: "Last name is required.", fields };
+      }
+
+      if (exceedsMax(lastName, "lastName")) {
+        return {
+          error: `Last name must be under ${MAX_LENGTHS.lastName} characters.`,
+          fields,
+        };
+      }
 
       if (!upi) {
         return { error: "UPI is required.", fields };

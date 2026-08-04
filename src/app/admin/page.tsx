@@ -1,8 +1,10 @@
 import Link from "next/link";
 
+import { scrollableMainClass } from "@/components/primitive/buttonStyles";
+
 export default function AdminPage() {
   return (
-    <main className="p-6">
+    <main className={scrollableMainClass}>
       <h1 className="text-2xl font-semibold">Admin</h1>
 
       <div className="mt-6">

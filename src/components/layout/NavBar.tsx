@@ -1,35 +1,30 @@
 import Link from "next/link";
 import Image from "next/image";
 
-import Container from "../primitive/Container";
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function NavBar() {
   return (
-    <header className="border-b border-black/5 shadow-sm">
-      <Container>
-        <nav className="flex w-full justify-between items-center py-4">
-          {/* Logo and Title */}
-          <Link href="/" className="flex gap-2">
-            <Image
-              src="/logo.svg"
-              alt="UoA Linux User Group Logo"
-              width={24}
-              height={24}
-              className="h-6 w-auto"
-            />
-            <span className="font-bold">UoA Linux User Group</span>
-          </Link>
+    <header className="relative z-20 mx-auto flex w-full max-w-[1400px] items-center justify-between gap-4 px-7 py-[18px]">
+      <Link
+        href="/"
+        aria-label="LUG@UoA home"
+        className="flex items-center gap-3 transition-opacity duration-150 hover:opacity-70 active:opacity-55"
+      >
+        <Image
+          src="/logo.svg"
+          alt="LUG@UoA penguin logo"
+          width={44}
+          height={44}
+          priority
+          className="h-11 w-11 shrink-0 rounded-full"
+        />
+        <span className="font-sans text-xl font-black tracking-[-0.3px] text-[var(--fg)]">
+          LUG@UoA
+        </span>
+      </Link>
 
-          <ul className="hidden lg:flex items-center gap-4 text-sm">
-            <li>
-              <Link href="/about">About Us</Link>
-            </li>
-            <li>
-              <Link href="/blog">Blog</Link>
-            </li>
-          </ul>
-        </nav>
-      </Container>
+      <ThemeToggle />
     </header>
   );
 }

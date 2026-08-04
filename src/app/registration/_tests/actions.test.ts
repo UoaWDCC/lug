@@ -458,55 +458,74 @@ describe("case: newNonUoa", () => {
 });
 
 describe("case: returningUoa", () => {
+  const validReturningBase = {
+    page: "returningUoa",
+    firstName: "Ada",
+    lastName: "Lovelace",
+    upi: "abcd123",
+    studentId: "123456789",
+  };
+
+  it("rejects a missing firstName", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, firstName: "" }),
+    );
+    expect(result?.error).toBe("First name is required.");
+  });
+
+  it("rejects a firstName over the max length", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, firstName: "a".repeat(101) }),
+    );
+    expect(result?.error).toMatch(/First name must be under 100 characters/);
+  });
+
+  it("rejects a missing lastName", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, lastName: "" }),
+    );
+    expect(result?.error).toBe("Last name is required.");
+  });
+
   it("rejects a missing upi", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "",
-      studentId: "123456789",
-    });
-    const result = await submitRegistrationStep(null, fd);
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, upi: "" }),
+    );
     expect(result?.error).toBe("UPI is required.");
   });
 
   it("rejects an invalid upi format", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "notvalid!",
-      studentId: "123456789",
-    });
-    const result = await submitRegistrationStep(null, fd);
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, upi: "notvalid!" }),
+    );
     expect(result?.error).toMatch(/Invalid UPI format/);
   });
 
   it("rejects a missing studentId", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "",
-    });
-    const result = await submitRegistrationStep(null, fd);
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, studentId: "" }),
+    );
     expect(result?.error).toBe("Student ID is required.");
   });
 
   it("rejects a studentId with the wrong number of digits", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "42",
-    });
-    const result = await submitRegistrationStep(null, fd);
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validReturningBase, studentId: "42" }),
+    );
     expect(result?.error).toMatch(/9-10 digits/);
   });
 
   it("routes to final on a valid submission", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "123456789",
-    });
-    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/registration",
-    );
+    await expect(
+      submitRegistrationStep(null, buildFormData(validReturningBase)),
+    ).rejects.toThrow("REDIRECT:/registration");
     expect(JSON.parse(cookieStore.get("formState")!).page).toBe("final");
   });
 });
@@ -642,14 +661,15 @@ describe("case: final", () => {
   });
 
   describe("stripIrrelevantFields per branch", () => {
-    it("strips UoA-only and non-UoA-only fields when the last page was returningUoa", async () => {
+    it("keeps name and UoA fields but strips non-UoA fields when the last page was returningUoa", async () => {
       setCookieDraft({
         page: "final",
         pageStack: ["start", "returningUoa"],
+        firstName: "Ada",
+        lastName: "Lovelace",
         upi: "abcd123",
         studentId: "123456789",
-        firstName: "Should not appear",
-        primaryAffiliation: "Should not appear either",
+        primaryAffiliation: "Should not appear",
       });
       const fd = buildFormData({
         page: "final",
@@ -661,9 +681,10 @@ describe("case: final", () => {
       );
 
       const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
+      expect(submittedData.firstName).toBe("Ada");
+      expect(submittedData.lastName).toBe("Lovelace");
       expect(submittedData.upi).toBe("abcd123");
       expect(submittedData.studentId).toBe("123456789");
-      expect(submittedData.firstName).toBeNull();
       expect(submittedData.primaryAffiliation).toBeNull();
     });
 

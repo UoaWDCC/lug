@@ -1,31 +1,166 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Design tokens from the handoff prototype. Dark is default; light is opt-in via [data-theme="light"]. */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --accent: #3fcca8;
+  --accent-text: #3fcca8;
+  --bg: #000000;
+  --fg: #ffffff;
+  --muted: rgba(255, 255, 255, 0.66);
+  --danger: #ff8b8b;
+
+  --input-bg: rgba(255, 255, 255, 0.04);
+  --input-border: rgba(63, 204, 168, 0.35);
+  --card-bg: rgba(6, 14, 12, 0.85);
+  --chip-bg: rgba(255, 255, 255, 0.05);
+  --chip-hover-bg: rgba(63, 204, 168, 0.16);
+  --menu-bg: rgba(6, 14, 12, 0.92);
+  --term-bg: rgba(4, 10, 9, 0.82);
+  --term-border: rgba(63, 204, 168, 0.55);
+
+  /* command rows in the terminal panel */
+  --row-bg: rgba(63, 204, 168, 0.1);
+  --row-border: rgba(63, 204, 168, 0.28);
+  --row-cmd: #3fcca8;
+  --row-desc: rgba(255, 255, 255, 0.72);
+  --row-hover-bg: rgba(63, 204, 168, 0.2);
+
+  /* hero backdrop */
+  --hero-image: url("/background.png");
+  --hero-opacity: 1;
+  --hero-scrim: linear-gradient(
+    90deg,
+    #000 0%,
+    rgba(0, 0, 0, 0.9) 34%,
+    rgba(0, 0, 0, 0.35) 58%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  --rain-base-opacity: 0.34;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Light theme - no background image yet, the handoff asset was never supplied. */
+:root[data-theme="light"] {
+  color-scheme: light;
 
-  html {
-    color-scheme: dark;
-  }
+  --accent: #3fcca8;
+  --accent-text: #0f7a60;
+  --bg: #ffffff;
+  --fg: #08201a;
+  --muted: rgba(8, 32, 26, 0.68);
+  --danger: #c0392b;
+
+  --input-bg: #ffffff;
+  --input-border: rgba(15, 122, 96, 0.3);
+  --card-bg: rgba(255, 255, 255, 0.92);
+  --chip-bg: rgba(255, 255, 255, 0.7);
+  --chip-hover-bg: rgba(15, 122, 96, 0.1);
+  --menu-bg: rgba(255, 255, 255, 0.95);
+  --term-bg: rgba(255, 255, 255, 0.9);
+  --term-border: rgba(15, 122, 96, 0.35);
+
+  --row-bg: rgba(15, 122, 96, 0.06);
+  --row-border: rgba(15, 122, 96, 0.25);
+  --row-cmd: #0f7a60;
+  --row-desc: rgba(8, 32, 26, 0.72);
+  --row-hover-bg: rgba(15, 122, 96, 0.12);
+
+  --hero-image: none;
+  --hero-opacity: 0;
+  --hero-scrim: none;
+  --rain-base-opacity: 0.28;
 }
 
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden; /* tells browser: if anything sticks out horizontally, don’t show, just clip it */
+  overflow-x: hidden; /* clip horizontal overflow */
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-primary), system-ui, sans-serif;
+  margin: 0;
+  height: 100%;
+  color: var(--fg);
+  background: var(--bg);
+  font-family: var(--font-sans), "Lato", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition:
+    background 0.25s,
+    color 0.25s;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(63, 204, 168, 0.4);
+  border-radius: 8px;
+}
+
+/* CSS picks the visible theme label - no client state, no hydration mismatch. */
+:root[data-theme="light"] .theme-label-dark,
+:root:not([data-theme="light"]) .theme-label-light {
+  display: none;
+}
+
+/* Must stay in @layer base or it overrides Tailwind's text-color utilities. */
+@layer base {
+  a {
+    color: var(--accent);
+  }
+
+  a:hover {
+    color: #2fae8f;
+  }
+}
+
+/* Animations */
+
+/* Falling command "rain" down the right half of the hero. */
+@keyframes rainFall {
+  0% {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--rain-op, 0.35);
+  }
+  82% {
+    opacity: var(--rain-op, 0.35);
+  }
+  100% {
+    transform: translateY(240%);
+    opacity: 0;
+  }
+}
+
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink 1s step-start infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rain-column {
+    animation: none !important;
+    opacity: var(--rain-op, 0.35) !important;
+  }
+
+  .cursor-blink {
+    animation: none;
+  }
 }

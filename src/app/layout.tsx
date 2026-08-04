@@ -1,19 +1,26 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Fira_Code, Lato } from "next/font/google";
 import "./globals.css";
 
 import NavBar from "@/components/layout/NavBar";
-import Footer from "@/components/layout/Footer";
-import Container from "@/components/primitive/Container";
+import ThemeScript from "@/components/theme/ThemeScript";
 
-const primaryFont = Geist({
-  variable: "--font-primary",
+const firaCode = Fira_Code({
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+});
+
+const lato = Lato({
+  variable: "--font-sans",
+  weight: ["400", "700", "900"],
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "UoA Linux User Group",
-  description: "Website for UoA Linux User Group",
+  title: "LUG@UoA - Linux Users Group at University of Auckland",
+  description:
+    "A club where we build, share, and talk about Linux, the free and open-source operating system.",
 };
 
 export default function RootLayout({
@@ -22,15 +29,28 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={primaryFont.variable}>
-      <body className="bg-white text-black">
-        <div className="flex flex-col min-h-screen">
+    <html
+      lang="en"
+      data-theme="dark"
+      className={`${firaCode.variable} ${lato.variable}`}
+    >
+      <head>
+        <ThemeScript />
+      </head>
+      <body>
+        {/* Fixed-viewport shell - the page never scrolls, each screen's <main> does. */}
+        <div className="relative flex h-screen flex-col overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
+          <div
+            aria-hidden
+            className="absolute inset-0 z-0 bg-[image:var(--hero-image)] bg-cover bg-[position:right_center] opacity-[var(--hero-opacity)]"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 z-[1] bg-[image:var(--hero-scrim)]"
+          />
+
           <NavBar />
-          <main className="flex-1">
-            <Container>{children}</Container>
-          </main>
-          {/* flex-1 ensures page content takes up the full space between navbar and footer */}
-          <Footer />
+          {children}
         </div>
       </body>
     </html>

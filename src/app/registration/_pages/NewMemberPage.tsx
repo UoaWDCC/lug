@@ -2,6 +2,8 @@
 
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
+import TextField from "../_components/TextField";
+import OptionButton from "../_components/OptionButton";
 
 export function NewMemberPage({
   fields,
@@ -14,60 +16,62 @@ export function NewMemberPage({
 
   return (
     <>
-      <h2>Name & University Status</h2>
+      <h2 className="m-0 text-center text-[23px] font-black">About you</h2>
 
-      <div>
-        <label htmlFor="firstName">What is your first name?*</label>
-        <input
-          name="firstName"
-          id="firstName"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.firstName ?? ""}
-          maxLength={100}
-          required
-        />
-      </div>
+      <TextField
+        name="firstName"
+        label="What is your first name?"
+        required
+        placeholder="Your answer"
+        defaultValue={field?.firstName ?? ""}
+        maxLength={100}
+      />
 
-      <div>
-        <label htmlFor="lastName">And your last name?*</label>
-        <p>If you do not have a last name, type N/A.</p>
-        <input
-          name="lastName"
-          id="lastName"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.lastName ?? ""}
-          maxLength={100}
-          required
-        />
-      </div>
+      <TextField
+        name="lastName"
+        label="And your last name?"
+        description="If you do not have a last name, type N/A."
+        required
+        placeholder="Your answer"
+        defaultValue={field?.lastName ?? ""}
+        maxLength={100}
+      />
 
-      <fieldset>
-        <legend>Do you attend The University of Auckland (UoA)?*</legend>
-        <div>
-          <label>
-            <input
-              type="radio"
-              name="isCurrentUoaStudent"
-              value="yes"
-              defaultChecked={field?.isCurrentUoaStudent === "yes"}
-              required
-            />
-            Yes
-          </label>
+      <fieldset className="m-0 border-none p-0">
+        <legend className="mb-2.5 text-sm font-bold">
+          Do you attend The University of Auckland (UoA)?
+          <span
+            aria-hidden
+            className="ml-[3px] font-extrabold text-[var(--danger)]"
+          >
+            *
+          </span>
+        </legend>
 
-          <label>
-            <input
-              type="radio"
-              name="isCurrentUoaStudent"
-              value="no"
-              defaultChecked={field?.isCurrentUoaStudent === "no"}
-              required
-            />
-            No
-          </label>
+        <div className="flex gap-4">
+          <OptionButton
+            type="radio"
+            name="isCurrentUoaStudent"
+            value="yes"
+            label="Yes"
+            className="flex-1"
+            defaultChecked={field?.isCurrentUoaStudent === "yes"}
+            required
+          />
+          <OptionButton
+            type="radio"
+            name="isCurrentUoaStudent"
+            value="no"
+            label="No"
+            className="flex-1"
+            defaultChecked={field?.isCurrentUoaStudent === "no"}
+            required
+          />
         </div>
+
+        <p className="mt-2 text-xs text-[var(--muted)]">
+          Students get access to member events, resources, and perks.
+        </p>
       </fieldset>
     </>
   );
