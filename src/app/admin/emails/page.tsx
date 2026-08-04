@@ -1,7 +1,9 @@
 import { getMockMembers } from "@/lib/mock/members";
+import { requireAdmin } from "@/lib/auth/session";
 
 async function sendEmail(formData: FormData) {
   "use server";
+  await requireAdmin();
   // TODO: Fix with real mailing list later
   const email = {
     subject: formData.get("subject"),
