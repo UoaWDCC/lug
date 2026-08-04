@@ -13,6 +13,7 @@ import {
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
   VALID_YEAR_LEVELS,
+  VALID_FACULTIES,
   MAX_LENGTHS,
   MAX_FACULTIES,
   MAX_MAJORS,
@@ -20,6 +21,7 @@ import {
 
 import { exceedsMax } from "@/domain/member/exceedsMax";
 import {
+  Faculty,
   LinuxSkillLevel,
   PotentialInvolvement,
   YearLevel,
@@ -279,6 +281,10 @@ export async function submitRegistrationStep(
           error: `Please select at most ${MAX_FACULTIES} faculties.`,
           fields,
         };
+      }
+
+      if (!faculty.every((f) => VALID_FACULTIES.includes(f as Faculty))) {
+        return { error: "Please select a valid faculty.", fields };
       }
 
       if (majors.length > MAX_MAJORS) {

@@ -312,6 +312,15 @@ describe("case: newUoa", () => {
     expect(result?.error).toMatch(/at most 2 faculties/);
   });
 
+  it("rejects a faculty value not in VALID_FACULTIES", async () => {
+    const fd = buildFormData({
+      ...validBase,
+      faculty: ["astrology"],
+    });
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toMatch(/valid faculty/);
+  });
+
   it("rejects more than MAX_MAJORS majors", async () => {
     const fd = buildFormData({
       ...validBase,

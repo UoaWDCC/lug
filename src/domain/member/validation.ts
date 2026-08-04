@@ -3,6 +3,7 @@ import {
   BaseMemberRegistration,
   ConditionalReturningMember,
   CurrentUoaStudentMember,
+  Faculty,
   LinuxSkillLevel,
   MemberRegistration,
   NonCurrentUoaStudentMember,
@@ -14,6 +15,7 @@ import {
   VALID_YEAR_LEVELS,
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  VALID_FACULTIES,
 } from "./constants";
 import { exceedsMax } from "./exceedsMax";
 
@@ -294,11 +296,11 @@ function validateFieldValues(
     }
 
     for (const facultyOption of parsed.faculty) {
-      if (facultyOption.trim() === "") {
+      if (!isFaculty(facultyOption)) {
         return {
           fieldsValid: false,
           error: {
-            message: `faculty field contains an invalid entry: '${facultyOption}'`,
+            message: `faculty field contains a selection with invalid value: '${facultyOption}'`,
           },
         };
       }
@@ -380,7 +382,7 @@ function toCurrentUoaStudentMember(
 
     upi: parsed.upi!,
     studentId: parsed.studentId!,
-    faculty: parsed.faculty!,
+    faculty: parsed.faculty as Faculty[],
     programme: parsed.programme!,
     yearLevel: parsed.yearLevel! as YearLevel,
   };
@@ -452,4 +454,8 @@ function isPotentialInvolvement(value: string): value is PotentialInvolvement {
   return (
     value !== null && VALID_INVOLVEMENTS.includes(value as PotentialInvolvement)
   );
+}
+
+function isFaculty(value: string): value is Faculty {
+  return value !== null && VALID_FACULTIES.includes(value as Faculty);
 }
