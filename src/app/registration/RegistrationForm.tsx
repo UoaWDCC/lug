@@ -12,7 +12,7 @@ import type { StepProgress } from "./_components/steps";
 const FormStateContext = createContext<RegistrationFormState>(null);
 
 const backButtonClass =
-  "mb-4 flex cursor-pointer items-center gap-1.5 self-start rounded-lg border border-[var(--input-border)] bg-transparent px-3.5 py-2 font-mono text-[13px] text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.96]";
+  "mb-2.5 flex cursor-pointer items-center gap-1.5 self-start rounded-lg border border-[var(--input-border)] bg-transparent px-4 py-1.5 font-mono text-base text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.96]";
 
 export function RegistrationForm({
   currentPage,
@@ -55,13 +55,13 @@ export function RegistrationForm({
         {state?.error && (
           <div
             role="alert"
-            className="mb-4 rounded-lg border border-[var(--danger)] px-3.5 py-3 text-[13px] leading-[1.5] text-[var(--danger)]"
+            className="mb-4 rounded-lg border border-[var(--danger)] px-4 py-3 text-base leading-[1.5] text-[var(--danger)]"
           >
             <strong>Error:</strong> {state.error}
           </div>
         )}
 
-        <div className="flex flex-col gap-3.5">{children}</div>
+        <div className="flex flex-col gap-2.5">{children}</div>
 
         <SubmitButton isFinalPage={isFinalPage} />
       </form>
@@ -78,7 +78,7 @@ function SubmitButton({ isFinalPage }: { isFinalPage: boolean }) {
       name="intent"
       value="submit"
       disabled={pending}
-      className={`${accentButtonClass} mt-5 w-full`}
+      className={`${accentButtonClass} mt-3.5 w-full`}
     >
       {pending
         ? "Processing…"

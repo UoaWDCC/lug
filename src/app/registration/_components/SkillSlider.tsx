@@ -40,7 +40,7 @@ export default function SkillSlider({
     <div>
       <label
         htmlFor="linuxSkillLevelRange"
-        className="mb-2.5 block text-sm font-bold"
+        className="mb-2.5 block text-lg font-bold"
       >
         How much do you currently know about Linux?
         <span
@@ -51,7 +51,7 @@ export default function SkillSlider({
         </span>
       </label>
 
-      <p className="mb-2.5 text-xs leading-[1.5] text-[var(--muted)]">
+      <p className="mb-2.5 text-[15px] leading-[1.5] text-[var(--muted)]">
         Everyone is welcome, regardless of skill level or operating system
         choice!
       </p>
@@ -75,7 +75,7 @@ export default function SkillSlider({
         {DISPLAY_LEVELS.map((value, i) => (
           <span
             key={value}
-            className={`flex-1 text-center font-mono text-[10px] ${
+            className={`flex-1 text-center font-mono text-[13px] ${
               i === index
                 ? "font-extrabold text-[var(--accent-text)]"
                 : "text-[var(--muted)]"
@@ -86,7 +86,7 @@ export default function SkillSlider({
         ))}
       </div>
 
-      <div className="mt-2.5 text-center text-[15px] font-extrabold text-[var(--accent-text)]">
+      <div className="mt-2.5 text-center text-lg font-extrabold text-[var(--accent-text)]">
         {FULL_LABELS[level]}
       </div>
     </div>

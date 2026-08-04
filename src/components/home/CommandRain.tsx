@@ -22,7 +22,7 @@ export default function CommandRain() {
       {COMMANDS.map((text, i) => (
         <div
           key={text}
-          className="rain-column pointer-events-none absolute top-0 font-mono text-xs whitespace-nowrap text-[var(--accent)] [writing-mode:vertical-rl]"
+          className="rain-column pointer-events-none absolute top-0 font-mono text-base whitespace-nowrap text-[var(--accent)] [writing-mode:vertical-rl]"
           style={{
             left: `${6 + i * 10}%`,
             opacity: 0,

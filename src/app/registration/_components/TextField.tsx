@@ -28,7 +28,7 @@ type TextFieldProps = {
 };
 
 const controlClass =
-  "w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] p-3 font-mono text-sm text-[var(--fg)] outline-none transition-colors duration-200 placeholder:text-[var(--muted)] focus:border-[var(--accent)]";
+  "w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-2.5 font-mono text-lg text-[var(--fg)] outline-none transition-colors duration-200 placeholder:text-[var(--muted)] focus:border-[var(--accent)]";
 
 export default function TextField({
   name,
@@ -63,7 +63,7 @@ export default function TextField({
 
   return (
     <div>
-      <label htmlFor={name} className="mb-1.5 block text-sm font-bold">
+      <label htmlFor={name} className="mb-1.5 block text-lg font-bold">
         {label}
         {required && (
           <span
@@ -76,7 +76,7 @@ export default function TextField({
       </label>
 
       {description && (
-        <p className="mb-1.5 text-xs leading-[1.5] text-[var(--muted)]">
+        <p className="mb-1.5 text-[15px] leading-[1.4] text-[var(--muted)]">
           {description}
         </p>
       )}
@@ -113,7 +113,7 @@ export default function TextField({
       )}
 
       {hintText && (
-        <div className={`mt-1.5 font-mono text-xs ${hintClass}`}>
+        <div className={`mt-1.5 font-mono text-[15px] ${hintClass}`}>
           {hintText}
         </div>
       )}

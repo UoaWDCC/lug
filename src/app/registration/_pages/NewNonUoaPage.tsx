@@ -15,7 +15,7 @@ export function NewNonUoaPage({
 
   return (
     <>
-      <h2 className="m-0 text-center text-[23px] font-black">Why LUG?</h2>
+      <h2 className="m-0 text-center text-[32px] font-black">Why LUG?</h2>
 
       <TextField
         name="primaryAffiliation"
@@ -32,6 +32,7 @@ export function NewNonUoaPage({
         label="Tell us more about yourself"
         description="A nice excerpt about yourself can allow us to identify you in future club events."
         multiline
+        rows={2}
         placeholder="Tell us a bit about who you are..."
         defaultValue={field?.nonUoaExcerpt ?? ""}
         maxLength={500}
@@ -42,6 +43,7 @@ export function NewNonUoaPage({
         label="Why do you want to join our club?"
         description="Here is your chance to pitch yourself to us!"
         multiline
+        rows={2}
         placeholder="Tell us a bit about what drew you to the club..."
         defaultValue={field?.nonUoaPitch ?? ""}
         maxLength={500}

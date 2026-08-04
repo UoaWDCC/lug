@@ -24,38 +24,38 @@ const PILLARS = [
 export default function About() {
   return (
     <main className={scrollableMainClass}>
-      <div className="mx-auto max-w-[900px]">
-        <div className="mb-1.5 font-mono text-sm text-[var(--accent-text)]">
+      <div className="mx-auto max-w-[1080px]">
+        <div className="mb-2 font-mono text-xl text-[var(--accent-text)]">
           $ cat about-us.md
         </div>
 
-        <h1 className="m-0 mb-3.5 text-[clamp(30px,4.5vw,46px)] font-black tracking-[-1px]">
+        <h1 className="m-0 mb-4 text-[clamp(48px,7vw,73px)] font-black tracking-[-1px]">
           What does LUG do?
         </h1>
 
-        <p className="m-0 mb-8 max-w-[620px] text-base leading-[1.6] text-[var(--muted)]">
+        <p className="m-0 mb-8 max-w-[820px] text-[22px] leading-[1.6] text-[var(--muted)]">
           We&apos;re a student-run community for anyone curious about Linux and
           open source, from your very first terminal command to your first
           kernel patch. No experience required, just curiosity.
         </p>
 
-        <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-4">
+        <div className="mb-8 grid grid-cols-[repeat(auto-fit,minmax(230px,1fr))] gap-5">
           {PILLARS.map((pillar) => (
             <div
               key={pillar.title}
-              className="rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-[22px]"
+              className="rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-6"
             >
-              <div className="mb-[9px] font-mono text-[17px] font-bold text-[var(--accent-text)]">
+              <div className="mb-2.5 font-mono text-2xl font-bold text-[var(--accent-text)]">
                 {pillar.title}
               </div>
-              <div className="text-[14.5px] leading-[1.55] text-[var(--muted)]">
+              <div className="text-lg leading-[1.5] text-[var(--muted)]">
                 {pillar.desc}
               </div>
             </div>
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3.5">
           <Link href="/registration" className={accentButtonClass}>
             Join us
           </Link>

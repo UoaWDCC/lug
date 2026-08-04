@@ -27,27 +27,29 @@ const EVENTS = [
 export default function Events() {
   return (
     <main className={scrollableMainClass}>
-      <div className="mx-auto max-w-[900px]">
-        <div className="mb-1.5 font-mono text-sm text-[var(--accent-text)]">
+      <div className="mx-auto max-w-[1080px]">
+        <div className="mb-2 font-mono text-xl text-[var(--accent-text)]">
           $ ls ./events
         </div>
 
-        <h1 className="m-0 mb-6 text-[clamp(30px,4.5vw,46px)] font-black tracking-[-1px]">
+        <h1 className="m-0 mb-5 text-[clamp(48px,7vw,73px)] font-black tracking-[-1px]">
           What&apos;s coming up?
         </h1>
 
-        <div className="mb-8 flex flex-col gap-3">
+        <div className="mb-7 flex flex-col gap-2.5">
           {EVENTS.map((event) => (
             <div
               key={event.title}
-              className="flex flex-wrap items-start gap-[18px] rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-5"
+              className="flex flex-wrap items-start gap-5 rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-5"
             >
-              <div className="min-w-[150px] font-mono text-[13px] font-semibold text-[var(--accent-text)]">
+              <div className="min-w-[175px] font-mono text-[18px] font-semibold text-[var(--accent-text)]">
                 {event.date}
               </div>
               <div className="min-w-[200px] flex-1">
-                <div className="mb-[5px] text-lg font-bold">{event.title}</div>
-                <div className="text-[14.5px] leading-[1.5] text-[var(--muted)]">
+                <div className="mb-1.5 text-[27px] font-bold">
+                  {event.title}
+                </div>
+                <div className="text-lg leading-[1.5] text-[var(--muted)]">
                   {event.desc}
                 </div>
               </div>

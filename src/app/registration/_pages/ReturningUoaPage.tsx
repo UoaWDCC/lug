@@ -18,11 +18,11 @@ export function ReturningUoaPage({
 
   return (
     <>
-      <h2 className="m-0 text-center text-[23px] font-black">
+      <h2 className="m-0 text-center text-[32px] font-black">
         Your student login
       </h2>
 
-      <p className="m-0 text-center text-sm leading-[1.5] text-[var(--muted)]">
+      <p className="m-0 text-center text-lg leading-[1.5] text-[var(--muted)]">
         A few details here, then we&apos;ll wrap things up.
       </p>
 
@@ -71,7 +71,7 @@ export function ReturningUoaPage({
         errorHint="Enter your 9–10 digit ID"
       />
 
-      <div className="rounded-lg border border-[var(--row-border)] bg-[var(--row-bg)] px-3.5 py-3 text-[12.5px] leading-[1.55] text-[var(--muted)]">
+      <div className="rounded-lg border border-[var(--row-border)] bg-[var(--row-bg)] px-4 py-3.5 text-[16px] leading-[1.5] text-[var(--muted)]">
         We&apos;ll use these to match you against last year&apos;s membership so
         you don&apos;t have to re-enter your study details.
       </div>

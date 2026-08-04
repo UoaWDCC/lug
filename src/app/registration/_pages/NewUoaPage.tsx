@@ -42,7 +42,7 @@ const YEARS_REMAINING = [
 ];
 
 const addMajorButtonClass =
-  "self-start rounded-lg border border-[var(--input-border)] bg-transparent px-3 py-1.5 font-mono text-xs font-semibold text-[var(--fg)] transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] active:scale-[0.97]";
+  "self-start rounded-lg border border-[var(--input-border)] bg-transparent px-3.5 py-2 font-mono text-[15px] font-semibold text-[var(--fg)] transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] active:scale-[0.97]";
 
 export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
   const state = useFormError();
@@ -53,9 +53,9 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
   return (
     <>
-      <h2 className="m-0 text-center text-[23px] font-black">Study details</h2>
+      <h2 className="m-0 text-center text-[32px] font-black">Study details</h2>
 
-      <p className="m-0 text-sm leading-[1.5] text-[var(--muted)]">
+      <p className="m-0 text-lg leading-[1.5] text-[var(--muted)]">
         As a registered club at the University of Auckland, we are required to
         collect information about our members who are UoA students or staff.
       </p>
@@ -87,7 +87,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
       />
 
       <fieldset className="m-0 border-none p-0">
-        <legend className="mb-1.5 text-sm font-bold">
+        <legend className="mb-2 text-lg font-bold">
           What faculty or faculties are you enrolled in?
           <span
             aria-hidden
@@ -96,12 +96,12 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             *
           </span>
         </legend>
-        <p className="mb-2 text-xs text-[var(--muted)]">
+        <p className="mb-2.5 text-[15px] text-[var(--muted)]">
           Select up to {MAX_FACULTIES}. If we miss your faculty, let us know
           below.
         </p>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {FACULTIES.map((faculty) => (
             <OptionButton
               key={faculty.value}
@@ -109,7 +109,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
               name="faculty"
               value={faculty.value}
               label={faculty.label}
-              surfaceClassName="justify-start px-3.5 py-[11px] text-left"
+              surfaceClassName="justify-start px-4 py-3.5 text-left"
               defaultChecked={field?.faculty?.includes(faculty.value)}
             />
           ))}
@@ -117,14 +117,14 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
       </fieldset>
 
       <fieldset className="m-0 border-none p-0">
-        <legend className="mb-1.5 text-sm font-bold">
+        <legend className="mb-2 text-lg font-bold">
           What are you majoring/specialising in?
         </legend>
-        <p className="mb-2 text-xs leading-[1.5] text-[var(--muted)]">
+        <p className="mb-2.5 text-[15px] leading-[1.5] text-[var(--muted)]">
           Majors are independent of the faculties you selected above.
         </p>
 
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {Array.from({ length: majorCount }).map((_, i) => (
             <TextField
               key={i}
@@ -151,9 +151,9 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
         </div>
       </fieldset>
 
-      <div className="programme-years-wrapper flex flex-col gap-3.5">
+      <div className="programme-years-wrapper flex flex-col gap-4">
         <fieldset className="m-0 border-none p-0">
-          <legend className="mb-1.5 text-sm font-bold">
+          <legend className="mb-2 text-lg font-bold">
             What type of programme are you in?
             <span
               aria-hidden
@@ -163,7 +163,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             </span>
           </legend>
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(120px,1fr))] gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2.5">
             {PROGRAMME_TYPES.map((programme) => (
               <OptionButton
                 key={programme.value}
@@ -171,7 +171,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
                 name="programmeType"
                 value={programme.value}
                 label={programme.label}
-                surfaceClassName="justify-center px-2 py-[11px] text-center text-[13px]"
+                surfaceClassName="justify-center px-2.5 py-3.5 text-center text-base"
                 defaultChecked={field?.programmeType === programme.value}
                 required
               />
@@ -180,7 +180,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
         </fieldset>
 
         <fieldset className="years-remaining-group m-0 border-none p-0">
-          <legend className="mb-1.5 text-sm font-bold">
+          <legend className="mb-2 text-lg font-bold">
             How many years do you have remaining?
             <span
               aria-hidden
@@ -190,7 +190,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             </span>
           </legend>
 
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(78px,1fr))] gap-2.5">
             {YEARS_REMAINING.map((year) => (
               <OptionButton
                 key={year.value}
@@ -198,7 +198,7 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
                 name="yearsRemaining"
                 value={year.value}
                 label={year.label}
-                surfaceClassName="justify-center px-2 py-[11px] text-center text-[13px]"
+                surfaceClassName="justify-center px-2.5 py-3.5 text-center text-base"
                 defaultChecked={field?.yearsRemaining === Number(year.value)}
               />
             ))}

@@ -16,7 +16,7 @@ export function NewMemberPage({
 
   return (
     <>
-      <h2 className="m-0 text-center text-[23px] font-black">About you</h2>
+      <h2 className="m-0 text-center text-[32px] font-black">About you</h2>
 
       <TextField
         name="firstName"
@@ -38,7 +38,7 @@ export function NewMemberPage({
       />
 
       <fieldset className="m-0 border-none p-0">
-        <legend className="mb-2.5 text-sm font-bold">
+        <legend className="mb-2.5 text-lg font-bold">
           Do you attend The University of Auckland (UoA)?
           <span
             aria-hidden
@@ -69,7 +69,7 @@ export function NewMemberPage({
           />
         </div>
 
-        <p className="mt-2 text-xs text-[var(--muted)]">
+        <p className="mt-2.5 text-[15px] text-[var(--muted)]">
           Students get access to member events, resources, and perks.
         </p>
       </fieldset>

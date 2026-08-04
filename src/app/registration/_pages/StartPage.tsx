@@ -14,18 +14,18 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-2.5 text-center">
+      <div className="flex flex-col items-center gap-1.5 text-center">
         <Image
           src="/logo.svg"
           alt="LUG@UoA logo"
-          width={84}
-          height={84}
-          className="h-[84px] w-[84px] rounded-full"
+          width={60}
+          height={60}
+          className="h-[60px] w-[60px] rounded-full"
         />
-        <h2 className="mt-1.5 mb-0.5 text-[25px] leading-[1.2] font-black">
+        <h2 className="m-0 text-[26px] leading-[1.2] font-black">
           Join LUG@UoA
         </h2>
-        <p className="m-0 max-w-[320px] text-sm leading-[1.5] text-[var(--muted)]">
+        <p className="m-0 max-w-[460px] text-[15px] leading-[1.4] text-[var(--muted)]">
           A club where we build, share, and talk about Linux, the free and
           open-source operating system.
         </p>
@@ -46,7 +46,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
       />
 
       <fieldset className="m-0 border-none p-0">
-        <legend className="mb-1.5 text-sm font-bold">
+        <legend className="mb-1.5 text-lg font-bold">
           Have you registered with us previously and meet all of these
           conditions?
           <span
@@ -57,7 +57,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           </span>
         </legend>
 
-        <ul className="mb-2.5 list-disc pl-5 text-xs leading-[1.6] text-[var(--muted)]">
+        <ul className="mb-2 list-disc pl-5 text-[15px] leading-[1.4] text-[var(--muted)]">
           <li>You are a current student at the University of Auckland</li>
           <li>
             You previously gave us your UPI or Student ID when registering your
@@ -90,7 +90,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           />
         </div>
 
-        <p className="mt-2 text-xs text-[var(--muted)]">
+        <p className="mt-1.5 text-[15px] text-[var(--muted)]">
           If you are signing up for the first time, select “No”.
         </p>
       </fieldset>

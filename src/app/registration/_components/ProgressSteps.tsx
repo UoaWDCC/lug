@@ -7,7 +7,7 @@ export default function ProgressSteps({ current, total, label }: StepProgress) {
   return (
     <>
       <div
-        className="mb-2 flex items-center justify-center"
+        className="mb-1.5 flex items-center justify-center"
         role="progressbar"
         aria-valuenow={current}
         aria-valuemin={1}
@@ -17,7 +17,7 @@ export default function ProgressSteps({ current, total, label }: StepProgress) {
         {dots.map((i) => (
           <div key={i} className="flex items-center">
             <div
-              className="h-3 w-3 shrink-0 rounded-full"
+              className="h-3.5 w-3.5 shrink-0 rounded-full"
               style={{
                 background:
                   i < current ? "var(--accent)" : "var(--input-border)",
@@ -25,7 +25,7 @@ export default function ProgressSteps({ current, total, label }: StepProgress) {
             />
             {i < total - 1 && (
               <div
-                className="h-0.5 w-[34px]"
+                className="h-0.5 w-[40px]"
                 style={{
                   background:
                     i + 1 < current ? "var(--accent)" : "var(--input-border)",
@@ -36,7 +36,7 @@ export default function ProgressSteps({ current, total, label }: StepProgress) {
         ))}
       </div>
 
-      <div className="mb-[22px] text-center font-mono text-xs text-[var(--muted)]">
+      <div className="mb-3 text-center font-mono text-[15px] text-[var(--muted)]">
         Step {current} of {total} · {label}
       </div>
     </>

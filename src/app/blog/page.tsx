@@ -5,16 +5,16 @@ import { scrollableMainClass } from "@/components/primitive/buttonStyles";
 export default function Blog() {
   return (
     <main className={scrollableMainClass}>
-      <div className="mx-auto max-w-[900px]">
-        <div className="mb-1.5 font-mono text-sm text-[var(--accent-text)]">
+      <div className="mx-auto max-w-[1080px]">
+        <div className="mb-2 font-mono text-xl text-[var(--accent-text)]">
           $ ls ./blog
         </div>
 
-        <h1 className="m-0 mb-3.5 text-[clamp(30px,4.5vw,46px)] font-black tracking-[-1px]">
+        <h1 className="m-0 mb-4 text-[clamp(48px,7vw,73px)] font-black tracking-[-1px]">
           Blog
         </h1>
 
-        <p className="m-0 text-base leading-[1.6] text-[var(--muted)]">
+        <p className="m-0 text-xl leading-[1.6] text-[var(--muted)]">
           Placeholder Blog
         </p>
       </div>

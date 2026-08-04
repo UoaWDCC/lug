@@ -25,7 +25,7 @@ export default function OptionButton({
   label,
   defaultChecked,
   required,
-  surfaceClassName = "justify-center px-4 py-3.5",
+  surfaceClassName = "justify-center px-5 py-3",
   className = "",
   inputRef,
 }: OptionButtonProps) {
@@ -41,12 +41,12 @@ export default function OptionButton({
         className="sr-only"
       />
       <span
-        className={`flex items-center rounded-lg border border-[var(--input-border)] bg-transparent font-sans text-[13.5px] font-semibold text-[var(--fg)] transition-[filter,transform,background,border-color] duration-150 group-hover:brightness-[1.12] group-active:scale-[0.98] group-has-[:checked]:border-[var(--accent)] group-has-[:checked]:bg-[var(--accent)] group-has-[:checked]:text-black group-has-[:focus-visible]:ring-2 group-has-[:focus-visible]:ring-[var(--accent)] group-has-[:focus-visible]:ring-offset-2 group-has-[:focus-visible]:ring-offset-[var(--bg)] ${surfaceClassName}`}
+        className={`flex items-center rounded-lg border border-[var(--input-border)] bg-transparent font-sans text-[18px] font-semibold text-[var(--fg)] transition-[filter,transform,background,border-color] duration-150 group-hover:brightness-[1.12] group-active:scale-[0.98] group-has-[:checked]:border-[var(--accent)] group-has-[:checked]:bg-[var(--accent)] group-has-[:checked]:text-black group-has-[:focus-visible]:ring-2 group-has-[:focus-visible]:ring-[var(--accent)] group-has-[:focus-visible]:ring-offset-2 group-has-[:focus-visible]:ring-offset-[var(--bg)] ${surfaceClassName}`}
       >
         {type === "checkbox" && (
           <span
             aria-hidden
-            className="mr-2 flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-[var(--input-border)] bg-transparent text-[10px] leading-none font-black text-[var(--accent)] group-has-[:checked]:border-black group-has-[:checked]:bg-black"
+            className="mr-2.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-[var(--input-border)] bg-transparent text-[13px] leading-none font-black text-[var(--accent)] group-has-[:checked]:border-black group-has-[:checked]:bg-black"
           >
             <span className="hidden group-has-[:checked]:inline">&#10003;</span>
           </span>

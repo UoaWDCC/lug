@@ -21,14 +21,14 @@ export function FinalPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
   return (
     <>
-      <h2 className="m-0 text-center text-[23px] font-black">
+      <h2 className="m-0 text-center text-[32px] font-black">
         Your Linux journey
       </h2>
 
       <SkillSlider defaultValue={field?.linuxSkillLevel} />
 
       <fieldset className="m-0 border-none p-0">
-        <legend className="mb-1.5 text-sm font-bold">
+        <legend className="mb-2 text-lg font-bold">
           What is your potential involvement in the LUG?
           <span
             aria-hidden
@@ -37,13 +37,13 @@ export function FinalPage({ fields }: { fields: Partial<RegistrationDraft> }) {
             *
           </span>
         </legend>
-        <p className="mb-2 text-xs leading-[1.5] text-[var(--muted)]">
+        <p className="mb-2.5 text-[15px] leading-[1.5] text-[var(--muted)]">
           Pick at least one. Checking any of these adds you to our email
           newsletter - you can unsubscribe any time by emailing
           lug.aucklanduni@gmail.com.
         </p>
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-2">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(165px,1fr))] gap-2">
           {INVOLVEMENTS.map((involvement) => (
             <OptionButton
               key={involvement.value}
@@ -51,7 +51,7 @@ export function FinalPage({ fields }: { fields: Partial<RegistrationDraft> }) {
               name="potentialInvolvement"
               value={involvement.value}
               label={involvement.label}
-              surfaceClassName="justify-start px-2 py-3 text-left text-[13px]"
+              surfaceClassName="justify-start px-2.5 py-3 text-left text-sm"
               defaultChecked={field?.potentialInvolvement?.includes(
                 involvement.value,
               )}
