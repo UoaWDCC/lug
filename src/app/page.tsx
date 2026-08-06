@@ -1,7 +1,7 @@
-import CommandRain from "@/components/home/CommandRain";
+import AsciiAurora from "@/components/home/AsciiAurora";
 import TerminalPanel from "@/components/home/TerminalPanel";
 
-/* Home hero: copy column on the left, falling commands on the right. */
+/* Home hero: copy column on the left, shimmering glyphs on the right. */
 export default function Home() {
   return (
     <main
@@ -27,9 +27,9 @@ export default function Home() {
         <TerminalPanel />
       </div>
 
-      {/* Rain needs real height to fall through, so it is desktop-only. */}
+      {/* Aurora needs enough horizontal space for its columns, so it is desktop-only. */}
       <div className="hidden h-full min-h-0 md:block">
-        <CommandRain />
+        <AsciiAurora />
       </div>
     </main>
   );

@@ -38,7 +38,10 @@
     rgba(0, 0, 0, 0.35) 58%,
     rgba(0, 0, 0, 0.1) 100%
   );
-  --rain-base-opacity: 0.34;
+  /* Bright afterglow followed by a faint resting trace between passes. */
+  --aurora-dim-opacity: 0.2;
+  --aurora-rest-opacity: 0.05;
+  --aurora-peak-opacity: 0.72;
 }
 
 /* Light theme - no background image yet, the handoff asset was never supplied. */
@@ -70,7 +73,9 @@
   --hero-image: none;
   --hero-opacity: 0;
   --hero-scrim: none;
-  --rain-base-opacity: 0.28;
+  --aurora-dim-opacity: 0.2;
+  --aurora-rest-opacity: 0.05;
+  --aurora-peak-opacity: 0.65;
 }
 
 html,
@@ -121,22 +126,26 @@ body {
 
 /* Animations */
 
-/* Falling command "rain" down the right half of the hero. */
-@keyframes rainFall {
-  0% {
-    transform: translateY(-120%);
-    opacity: 0;
-  }
-  12% {
-    opacity: var(--rain-op, 0.35);
-  }
-  82% {
-    opacity: var(--rain-op, 0.35);
-  }
+/* Each stationary glyph column flashes in sequence, lingers, then fades. */
+@keyframes auroraShimmer {
+  0%,
   100% {
-    transform: translateY(240%);
-    opacity: 0;
+    opacity: var(--aurora-rest-opacity);
   }
+  2% {
+    opacity: var(--aurora-peak-opacity);
+  }
+  8% {
+    opacity: var(--aurora-peak-opacity);
+  }
+  24% {
+    opacity: var(--aurora-dim-opacity);
+  }
+}
+
+.aurora-column {
+  color: var(--accent);
+  opacity: var(--aurora-rest-opacity);
 }
 
 @keyframes blink {
@@ -155,9 +164,9 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rain-column {
+  .aurora-column {
     animation: none !important;
-    opacity: var(--rain-op, 0.35) !important;
+    opacity: 0.22;
   }
 
   .cursor-blink {
