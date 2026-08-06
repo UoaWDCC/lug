@@ -31,13 +31,13 @@ const AURORA_GROUPS = [
   // Shorter top-left group, rising at roughly 20 degrees.
   {
     barCount: 32,
-    leftStart: 42,
-    leftEnd: 78,
-    topStart: 16,
-    topEnd: 3,
+    leftStart: 20,
+    leftEnd: 55,
+    topStart: 4,
+    topEnd: -20,
     viewportAnchored: false,
     viewportTopAnchored: false,
-    heightStart: 0.5,
+    heightStart: 0.2,
     heightEnd: 1,
     bottomAnchoredTaper: true,
     cycleDuration: 4,
@@ -46,15 +46,15 @@ const AURORA_GROUPS = [
   },
   // Longer bottom-right group, anchored directly against the top-right edge.
   {
-    barCount: 44,
-    leftStart: 48,
+    barCount: 64,
+    leftStart: 40,
     leftEnd: 101,
-    topStart: 36,
-    topEnd: 0,
+    topStart: 53,
+    topEnd: -15,
     viewportAnchored: true,
     viewportTopAnchored: true,
-    heightStart: 0.5,
-    heightEnd: 1,
+    heightStart: 0.4,
+    heightEnd: 0.7,
     bottomAnchoredTaper: false,
     cycleDuration: 4.6,
     traversalFraction: 0.737,
@@ -65,7 +65,7 @@ const AURORA_GROUPS = [
 const POSITION_JITTER = [0, -0.8, 1.2, -0.4, 0.7, -1.1, 0.4, -0.6];
 const HEIGHT_SCALES = [0.84, 0.92, 1.03, 1.16, 0.88, 1.1, 0.97, 1.18];
 const WAVE_STAGGER_WEIGHTS = [0.12, 0.18, 0.15, 0.22, 0.14, 0.2, 0.16, 0.19];
-const DENSITY_BREAKPOINTS = [0.1, 0.4, 0.5];
+const DENSITY_BREAKPOINTS = [0.1, 0.4, 0.5, 0.8, 0.9];
 const DENSITY_SUBDIVISIONS = [0.25, 0.5, 0.75];
 
 function getBarProgresses(barCount: number) {
