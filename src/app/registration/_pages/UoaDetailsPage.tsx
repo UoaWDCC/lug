@@ -4,7 +4,11 @@ import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
 import { MAX_MAJORS } from "@/domain/member/constants";
 
-export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
+export function UoaDetailsPage({
+  fields,
+}: {
+  fields: Partial<RegistrationDraft>;
+}) {
   const state = useFormError();
   const errorFields = state?.fields;
   const field = errorFields ?? fields;
@@ -20,32 +24,49 @@ export function NewUoaPage({ fields }: { fields: Partial<RegistrationDraft> }) {
         staff.{" "}
       </p>
 
+      <h2>Name & Email</h2>
+
       <div>
-        <label htmlFor="upi">What is your username/UPI?*</label>
-        <p>i.e. jbon007</p>
+        <label htmlFor="firstName">What is your first name?*</label>
         <input
-          name="upi"
-          id="upi"
+          name="firstName"
+          id="firstName"
           type="text"
           placeholder="Your answer"
-          defaultValue={field?.upi ?? ""}
-          pattern="[a-z]{3,4}[0-9]{3}"
+          defaultValue={field?.firstName ?? ""}
+          maxLength={100}
           required
         />
       </div>
 
       <div>
-        <label htmlFor="studentId">And your student ID?*</label>
-        <p>i.e. 825179213</p>
+        <label htmlFor="lastName">And your last name?*</label>
+        <p>If you do not have a last name, type N/A.</p>
         <input
-          name="studentId"
-          id="studentId"
+          name="lastName"
+          id="lastName"
           type="text"
           placeholder="Your answer"
-          defaultValue={field?.studentId ?? ""}
-          pattern="[0-9]{9,10}"
+          defaultValue={field?.lastName ?? ""}
+          maxLength={100}
           required
         />
+      </div>
+
+      <div>
+        <label htmlFor="email">Email*</label>
+        <input
+          name="email"
+          id="email"
+          type="email"
+          placeholder="name@example.com"
+          defaultValue={field?.email || ""} // This is what prevents the clearing
+          className={`border p-2 w-full ${state?.error?.includes("email") ? "border-red-500" : "border-gray-300"}`}
+          maxLength={254}
+        />
+        {state?.error?.includes("email") && (
+          <p className="text-red-600 text-sm italic mt-1">{state.error}</p>
+        )}
       </div>
 
       <fieldset>
