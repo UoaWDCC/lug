@@ -168,8 +168,6 @@ export async function submitRegistrationStep(
           studentId,
         );
         if (existingMember) {
-          console.log("Existing member found:", existingMember);
-
           stepData = {
             ...fields,
             firstName: existingMember.firstName,
@@ -183,15 +181,32 @@ export async function submitRegistrationStep(
             yearsRemaining: existingMember.yearsRemaining ?? undefined,
           };
         } else {
-          console.log(
-            "No existing member found for UPI:",
-            upi,
-            "and Student ID:",
-            studentId,
-          );
+          stepData = {
+            ...fields,
+            firstName: undefined,
+            lastName: undefined,
+            email: undefined,
+            isConditionalReturningMember: undefined,
+            faculty: undefined,
+            majors: undefined,
+            majorCount: undefined,
+            programmeType: undefined,
+            yearsRemaining: undefined,
+          };
         }
       } else {
-        stepData = fields;
+        stepData = {
+          ...fields,
+          firstName: undefined,
+          lastName: undefined,
+          email: undefined,
+          isConditionalReturningMember: undefined,
+          faculty: undefined,
+          majors: undefined,
+          majorCount: undefined,
+          programmeType: undefined,
+          yearsRemaining: undefined,
+        };
       }
 
       nextPage = isCurrentUoaStudent === "yes" ? "uoaDetails" : "newNonUoa";
