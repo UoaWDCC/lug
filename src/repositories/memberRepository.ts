@@ -1,7 +1,6 @@
 import { getPrisma } from "../lib/db/prisma";
 import { MemberRegistration } from "@/domain/member/types";
 import { Prisma } from "@/generated/prisma/client";
-import { requireAdmin } from "@/lib/auth/session";
 
 type RepositoryResult<TError extends string> =
   | { ok: true }
