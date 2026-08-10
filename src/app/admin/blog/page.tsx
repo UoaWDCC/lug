@@ -1,7 +1,9 @@
 import { getMockBlogItems } from "@/lib/mock/blog-posts";
+import { requireAdmin } from "@/lib/auth/session";
 
 async function createBlogPost(formData: FormData) {
   "use server";
+  await requireAdmin();
   // TODO: persist to the database via a blog repo
   const post = {
     title: formData.get("title"),
