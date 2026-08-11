@@ -13,5 +13,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  app:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - blog_uploads:/data/uploads
+    depends_on:
+      - db
+
 volumes:
   postgres_data:
+  blog_uploads:
