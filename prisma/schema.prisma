@@ -15,7 +15,9 @@ model Member {
 
   firstName String
   lastName  String
-  email     String @unique
+  email     String
+
+  registrationYear Int
 
   isConditionalReturningMember Boolean
 
@@ -45,6 +47,9 @@ model Member {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([email, registrationYear])
+  @@unique([upi, studentId, registrationYear])
 }
 
 enum LinuxSkillLevel {

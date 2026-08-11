@@ -6,28 +6,29 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
  * Vitest needs to intercept a module before anything else runs, including
  * the imports further down that pull in ../actions.
  *
- * Three mocks are needed here, for two different reasons:
+ * Four mocks are needed here, for two different reasons:
  *
  * - next/headers and next/navigation are server-only Next.js APIs that
  *   don't exist outside a real request/render cycle. Without mocking
  *   them, importing ../actions here would throw immediately.
- * - submitMemberRegistration is mocked so this file only exercises
- *   actions.ts's own logic (routing, merging, redirects) in isolation.
- *   Letting it run for real would pull in validateMemberRegistration and
- *   a live Postgres call via createMembershipRegistration - both already
+ * - submitMemberRegistration and findMemberByUpiAndStudentId are mocked
+ *   so this file only exercises actions.ts's own logic (routing, merging,
+ *   redirects) in isolation. Letting them run for real would pull in
+ *   validateMemberRegistration and a live Postgres call - both already
  *   covered by their own test suites, and not this file's responsibility.
  *
- * submitMemberRegistrationMock is created via vi.hoisted() rather than a
- * plain const, because vi.mock()'s factory runs before ordinary top-level
- * code in this file. Referencing a plain const from inside the factory
- * would hit it before it's initialized (this is the exact error Vitest
- * throws if you try). vi.hoisted() runs in that same early phase, so the
- * mock exists in time - and the returned reference can still be reset and
- * asserted on later, in beforeEach and inside individual tests.
+ * The mocks below are created via vi.hoisted() rather than plain consts,
+ * because vi.mock()'s factory runs before ordinary top-level code in this
+ * file. Referencing a plain const from inside the factory would hit it
+ * before it's initialized (this is the exact error Vitest throws if you
+ * try). vi.hoisted() runs in that same early phase, so the mock exists in
+ * time - and the returned reference can still be reset and asserted on
+ * later, in beforeEach and inside individual tests.
  */
 const cookieStore = new Map<string, string>();
 
 const submitMemberRegistrationMock = vi.hoisted(() => vi.fn());
+const findMemberByUpiAndStudentIdMock = vi.hoisted(() => vi.fn());
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn(async () => ({
@@ -51,11 +52,18 @@ vi.mock("@/features/membership-registration/submitMemberRegistration", () => ({
   submitMemberRegistration: submitMemberRegistrationMock,
 }));
 
+vi.mock("@/repositories/memberRepository", () => ({
+  findMemberByUpiAndStudentId: findMemberByUpiAndStudentIdMock,
+}));
+
 import { submitRegistrationStep } from "../actions";
 
-function buildFormData(fields: Record<string, string | string[]>): FormData {
+function buildFormData(
+  fields: Record<string, string | string[] | undefined>,
+): FormData {
   const fd = new FormData();
   for (const [key, value] of Object.entries(fields)) {
+    if (value === undefined) continue;
     if (Array.isArray(value)) {
       value.forEach((v) => fd.append(key, v));
     } else {
@@ -73,6 +81,8 @@ beforeEach(() => {
   cookieStore.clear();
   submitMemberRegistrationMock.mockReset();
   submitMemberRegistrationMock.mockResolvedValue({ ok: true });
+  findMemberByUpiAndStudentIdMock.mockReset();
+  findMemberByUpiAndStudentIdMock.mockResolvedValue(null);
 });
 
 describe("page value validation", () => {
@@ -93,11 +103,11 @@ describe("page value validation", () => {
 describe("back navigation", () => {
   it("pops the last page off the stack and saves it as the current page", async () => {
     setCookieDraft({
-      page: "newMember",
+      page: "uoaDetails",
       pageStack: ["start"],
-      email: "test@example.com",
+      faculty: ["science"],
     });
-    const fd = buildFormData({ page: "newMember", intent: "back" });
+    const fd = buildFormData({ page: "uoaDetails", intent: "back" });
 
     await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
       "REDIRECT:/registration",
@@ -122,177 +132,175 @@ describe("back navigation", () => {
 });
 
 describe("case: start", () => {
-  it("rejects an invalid email format", async () => {
-    const fd = buildFormData({
-      page: "start",
-      email: "not-an-email",
-      isConditionalReturningMember: "no",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/valid email address/);
-  });
-
-  it("rejects an email over the max length", async () => {
-    const longEmail = `${"a".repeat(250)}@example.com`; // valid shape, 262 chars
-    const fd = buildFormData({
-      page: "start",
-      email: longEmail,
-      isConditionalReturningMember: "no",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/Your email must be under 254 characters/);
-  });
-
-  it("rejects an isConditionalReturningMember value that isn't yes/no", async () => {
-    const fd = buildFormData({
-      page: "start",
-      email: "test@example.com",
-      isConditionalReturningMember: "maybe",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/registered previously/);
-  });
-
-  it("routes to returningUoa on 'yes', appending start to the page stack", async () => {
-    const fd = buildFormData({
-      page: "start",
-      email: "test@example.com",
-      isConditionalReturningMember: "yes",
-    });
-    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/registration",
-    );
-
-    const saved = JSON.parse(cookieStore.get("formState")!);
-    expect(saved.page).toBe("returningUoa");
-    expect(saved.pageStack).toEqual(["start"]);
-  });
-
-  it("routes to newMember on 'no'", async () => {
-    const fd = buildFormData({
-      page: "start",
-      email: "test@example.com",
-      isConditionalReturningMember: "no",
-    });
-    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/registration",
-    );
-
-    const saved = JSON.parse(cookieStore.get("formState")!);
-    expect(saved.page).toBe("newMember");
-  });
-});
-
-describe("case: newMember", () => {
-  it("rejects a missing firstName", async () => {
-    const fd = buildFormData({
-      page: "newMember",
-      lastName: "Lovelace",
-      isCurrentUoaStudent: "no",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toBe("First name is required.");
-  });
-
-  it("rejects a firstName over the max length", async () => {
-    const fd = buildFormData({
-      page: "newMember",
-      firstName: "a".repeat(101),
-      lastName: "Lovelace",
-      isCurrentUoaStudent: "no",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/First name must be under 100 characters/);
-  });
-
-  it("rejects a missing lastName", async () => {
-    const fd = buildFormData({
-      page: "newMember",
-      firstName: "Ada",
-      isCurrentUoaStudent: "no",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toBe("Last name is required.");
-  });
-
   it("rejects an isCurrentUoaStudent value that isn't yes/no", async () => {
-    const fd = buildFormData({
-      page: "newMember",
-      firstName: "Ada",
-      lastName: "Lovelace",
-      isCurrentUoaStudent: "maybe",
-    });
+    const fd = buildFormData({ page: "start", isCurrentUoaStudent: "maybe" });
     const result = await submitRegistrationStep(null, fd);
     expect(result?.error).toMatch(/attend the University of Auckland/);
   });
 
-  it("routes to newUoa on 'yes'", async () => {
+  it("rejects a missing upi when isCurrentUoaStudent is yes", async () => {
     const fd = buildFormData({
-      page: "newMember",
-      firstName: "Ada",
-      lastName: "Lovelace",
+      page: "start",
       isCurrentUoaStudent: "yes",
+      upi: "",
+      studentId: "123456789",
     });
-    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/registration",
-    );
-    expect(JSON.parse(cookieStore.get("formState")!).page).toBe("newUoa");
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toBe("UPI is required.");
+  });
+
+  it("rejects an invalid upi format", async () => {
+    const fd = buildFormData({
+      page: "start",
+      isCurrentUoaStudent: "yes",
+      upi: "12345",
+      studentId: "123456789",
+    });
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toMatch(/Invalid UPI format/);
+  });
+
+  it("rejects a missing studentId", async () => {
+    const fd = buildFormData({
+      page: "start",
+      isCurrentUoaStudent: "yes",
+      upi: "abcd123",
+      studentId: "",
+    });
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toBe("Student ID is required.");
+  });
+
+  it("rejects a studentId with the wrong number of digits", async () => {
+    const fd = buildFormData({
+      page: "start",
+      isCurrentUoaStudent: "yes",
+      upi: "abcd123",
+      studentId: "123",
+    });
+    const result = await submitRegistrationStep(null, fd);
+    expect(result?.error).toMatch(/9-10 digits/);
   });
 
   it("routes to newNonUoa on 'no'", async () => {
-    const fd = buildFormData({
-      page: "newMember",
-      firstName: "Ada",
-      lastName: "Lovelace",
-      isCurrentUoaStudent: "no",
-    });
+    const fd = buildFormData({ page: "start", isCurrentUoaStudent: "no" });
     await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
       "REDIRECT:/registration",
     );
     expect(JSON.parse(cookieStore.get("formState")!).page).toBe("newNonUoa");
   });
+
+  it("routes to uoaDetails with cleared fields when no existing member is found", async () => {
+    const fd = buildFormData({
+      page: "start",
+      isCurrentUoaStudent: "yes",
+      upi: "abcd123",
+      studentId: "123456789",
+    });
+    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
+      "REDIRECT:/registration",
+    );
+
+    expect(findMemberByUpiAndStudentIdMock).toHaveBeenCalledWith(
+      "abcd123",
+      "123456789",
+    );
+
+    const saved = JSON.parse(cookieStore.get("formState")!);
+    expect(saved.page).toBe("uoaDetails");
+    expect(saved.firstName).toBeUndefined();
+    expect(saved.isConditionalReturningMember).toBeUndefined();
+  });
+
+  it("routes to uoaDetails and prefills fields when an existing member is found", async () => {
+    findMemberByUpiAndStudentIdMock.mockResolvedValueOnce({
+      firstName: "Ada",
+      lastName: "Lovelace",
+      email: "ada@example.com",
+      faculty: ["science"],
+      majors: ["Computer Science"],
+      programmeType: "MASTER",
+      yearsRemaining: 1,
+    });
+    const fd = buildFormData({
+      page: "start",
+      isCurrentUoaStudent: "yes",
+      upi: "abcd123",
+      studentId: "123456789",
+    });
+    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
+      "REDIRECT:/registration",
+    );
+
+    const saved = JSON.parse(cookieStore.get("formState")!);
+    expect(saved.page).toBe("uoaDetails");
+    expect(saved.isConditionalReturningMember).toBe("yes");
+    expect(saved.firstName).toBe("Ada");
+    expect(saved.email).toBe("ada@example.com");
+    expect(saved.faculty).toEqual(["science"]);
+    expect(saved.majors).toEqual(["Computer Science"]);
+    expect(saved.majorCount).toBe(1);
+    expect(saved.programmeType).toBe("MASTER");
+  });
 });
 
-describe("case: newUoa", () => {
+describe("case: uoaDetails", () => {
   const validBase = {
-    page: "newUoa",
-    upi: "abcd123",
-    studentId: "123456789",
+    page: "uoaDetails",
+    firstName: "Ada",
+    lastName: "Lovelace",
+    email: "ada@example.com",
     faculty: ["science"],
-    programme: "Bachelor of Science",
-    yearLevel: "FIRST_YEAR",
+    programmeType: "MASTER",
   };
 
-  it("rejects a missing upi", async () => {
+  it("rejects a missing firstName", async () => {
     const result = await submitRegistrationStep(
       null,
-      buildFormData({ ...validBase, upi: "" }),
+      buildFormData({ ...validBase, firstName: "" }),
     );
-    expect(result?.error).toBe("UPI is required.");
+    expect(result?.error).toBe("First name is required.");
   });
 
-  it("rejects an invalid upi format", async () => {
+  it("rejects a firstName over the max length", async () => {
     const result = await submitRegistrationStep(
       null,
-      buildFormData({ ...validBase, upi: "12345" }),
+      buildFormData({ ...validBase, firstName: "a".repeat(101) }),
     );
-    expect(result?.error).toMatch(/Invalid UPI format/);
+    expect(result?.error).toMatch(/First name must be under 100 characters/);
   });
 
-  it("rejects a missing studentId", async () => {
+  it("rejects a missing lastName", async () => {
     const result = await submitRegistrationStep(
       null,
-      buildFormData({ ...validBase, studentId: "" }),
+      buildFormData({ ...validBase, lastName: "" }),
     );
-    expect(result?.error).toBe("Student ID is required.");
+    expect(result?.error).toBe("Last name is required.");
   });
 
-  it("rejects a studentId with the wrong number of digits", async () => {
+  it("rejects a lastName over the max length", async () => {
     const result = await submitRegistrationStep(
       null,
-      buildFormData({ ...validBase, studentId: "123" }),
+      buildFormData({ ...validBase, lastName: "a".repeat(101) }),
     );
-    expect(result?.error).toMatch(/9-10 digits/);
+    expect(result?.error).toMatch(/Last name must be under 100 characters/);
+  });
+
+  it("rejects an invalid email format", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, email: "not-an-email" }),
+    );
+    expect(result?.error).toMatch(/valid email address/);
+  });
+
+  it("rejects an email over the max length", async () => {
+    const longEmail = `${"a".repeat(250)}@example.com`; // valid shape, 262 chars
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, email: longEmail }),
+    );
+    expect(result?.error).toMatch(/Your email must be under 254 characters/);
   });
 
   it("rejects when no faculty is selected", async () => {
@@ -339,34 +347,42 @@ describe("case: newUoa", () => {
     expect(result?.error).toMatch(/Each major must be under 40 characters/);
   });
 
-  it("rejects a missing programme", async () => {
+  it("rejects a missing programmeType", async () => {
     const result = await submitRegistrationStep(
       null,
-      buildFormData({ ...validBase, programme: "" }),
+      buildFormData({ ...validBase, programmeType: "" }),
     );
-    expect(result?.error).toMatch(/current programme of study/);
+    expect(result?.error).toMatch(/select a programme type/);
   });
 
-  it("rejects a programme value over the max length", async () => {
-    const fd = buildFormData({ ...validBase, programme: "a".repeat(151) });
+  it("rejects a programmeType outside the known set", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, programmeType: "WIZARDRY" }),
+    );
+    expect(result?.error).toMatch(/select a programme type/);
+  });
+
+  it("rejects a BACHELOR programme with a yearsRemaining outside the known set", async () => {
+    const fd = buildFormData({
+      ...validBase,
+      programmeType: "BACHELOR",
+      yearsRemaining: "9",
+    });
     const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/Programme must be under 150 characters/);
+    expect(result?.error).toMatch(/years you have remaining/);
   });
 
-  it("rejects a missing yearLevel", async () => {
-    const result = await submitRegistrationStep(
-      null,
-      buildFormData({ ...validBase, yearLevel: "" }),
+  it("accepts a BACHELOR programme with a valid yearsRemaining", async () => {
+    const fd = buildFormData({
+      ...validBase,
+      programmeType: "BACHELOR",
+      yearsRemaining: "2",
+    });
+    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
+      "REDIRECT:/registration",
     );
-    expect(result?.error).toMatch(/current year of study/);
-  });
-
-  it("rejects a yearLevel outside the known set", async () => {
-    const result = await submitRegistrationStep(
-      null,
-      buildFormData({ ...validBase, yearLevel: "SIXTH_YEAR" }),
-    );
-    expect(result?.error).toMatch(/valid year of study/);
+    expect(JSON.parse(cookieStore.get("formState")!).page).toBe("final");
   });
 
   it("routes to final on a fully valid submission", async () => {
@@ -378,7 +394,7 @@ describe("case: newUoa", () => {
 
   describe("addMajor intent", () => {
     it("increments majorCount and preserves already-typed fields without advancing the page", async () => {
-      setCookieDraft({ page: "newUoa", pageStack: ["start", "newMember"] });
+      setCookieDraft({ page: "uoaDetails", pageStack: ["start"] });
       const fd = buildFormData({
         ...validBase,
         intent: "addMajor",
@@ -391,15 +407,15 @@ describe("case: newUoa", () => {
       );
 
       const saved = JSON.parse(cookieStore.get("formState")!);
-      expect(saved.page).toBe("newUoa");
-      expect(saved.pageStack).toEqual(["start", "newMember"]);
+      expect(saved.page).toBe("uoaDetails");
+      expect(saved.pageStack).toEqual(["start"]);
       expect(saved.majorCount).toBe(2);
       expect(saved.majors).toEqual(["Computer Science"]);
-      expect(saved.upi).toBe("abcd123");
+      expect(saved.firstName).toBe("Ada");
     });
 
     it("caps majorCount at MAX_MAJORS", async () => {
-      setCookieDraft({ page: "newUoa", pageStack: ["start", "newMember"] });
+      setCookieDraft({ page: "uoaDetails", pageStack: ["start"] });
       const fd = buildFormData({
         ...validBase,
         intent: "addMajor",
@@ -417,15 +433,55 @@ describe("case: newUoa", () => {
 });
 
 describe("case: newNonUoa", () => {
+  const validBase = {
+    page: "newNonUoa",
+    firstName: "Ada",
+    lastName: "Lovelace",
+    email: "ada@example.com",
+    primaryAffiliation: "Independent",
+  };
+
+  it("rejects a missing firstName", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, firstName: "" }),
+    );
+    expect(result?.error).toBe("First name is required.");
+  });
+
+  it("rejects a firstName over the max length", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, firstName: "a".repeat(101) }),
+    );
+    expect(result?.error).toMatch(/First name must be under 100 characters/);
+  });
+
+  it("rejects a missing lastName", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, lastName: "" }),
+    );
+    expect(result?.error).toBe("Last name is required.");
+  });
+
+  it("rejects an invalid email format", async () => {
+    const result = await submitRegistrationStep(
+      null,
+      buildFormData({ ...validBase, email: "not-an-email" }),
+    );
+    expect(result?.error).toMatch(/valid email address/);
+  });
+
   it("rejects a missing primaryAffiliation", async () => {
-    const fd = buildFormData({ page: "newNonUoa", primaryAffiliation: "" });
+    const fd = buildFormData({ ...validBase, primaryAffiliation: "" });
     const result = await submitRegistrationStep(null, fd);
     expect(result?.error).toBe("Primary Affiliation is required.");
   });
 
   it("rejects a primaryAffiliation over the max length", async () => {
     const fd = buildFormData({
-      page: "newNonUoa",
+      ...validBase,
       primaryAffiliation: "a".repeat(151),
     });
     const result = await submitRegistrationStep(null, fd);
@@ -436,8 +492,7 @@ describe("case: newNonUoa", () => {
 
   it("rejects a nonUoaExcerpt over the max length", async () => {
     const fd = buildFormData({
-      page: "newNonUoa",
-      primaryAffiliation: "Independent",
+      ...validBase,
       nonUoaExcerpt: "a".repeat(501),
     });
     const result = await submitRegistrationStep(null, fd);
@@ -446,8 +501,7 @@ describe("case: newNonUoa", () => {
 
   it("rejects a nonUoaPitch over the max length", async () => {
     const fd = buildFormData({
-      page: "newNonUoa",
-      primaryAffiliation: "Independent",
+      ...validBase,
       nonUoaPitch: "a".repeat(501),
     });
     const result = await submitRegistrationStep(null, fd);
@@ -455,64 +509,7 @@ describe("case: newNonUoa", () => {
   });
 
   it("routes to final on a valid submission", async () => {
-    const fd = buildFormData({
-      page: "newNonUoa",
-      primaryAffiliation: "Independent",
-    });
-    await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-      "REDIRECT:/registration",
-    );
-    expect(JSON.parse(cookieStore.get("formState")!).page).toBe("final");
-  });
-});
-
-describe("case: returningUoa", () => {
-  it("rejects a missing upi", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "",
-      studentId: "123456789",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toBe("UPI is required.");
-  });
-
-  it("rejects an invalid upi format", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "notvalid!",
-      studentId: "123456789",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/Invalid UPI format/);
-  });
-
-  it("rejects a missing studentId", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toBe("Student ID is required.");
-  });
-
-  it("rejects a studentId with the wrong number of digits", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "42",
-    });
-    const result = await submitRegistrationStep(null, fd);
-    expect(result?.error).toMatch(/9-10 digits/);
-  });
-
-  it("routes to final on a valid submission", async () => {
-    const fd = buildFormData({
-      page: "returningUoa",
-      upi: "abcd123",
-      studentId: "123456789",
-    });
+    const fd = buildFormData(validBase);
     await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
       "REDIRECT:/registration",
     );
@@ -524,7 +521,7 @@ describe("case: final", () => {
   it("rejects a missing linuxSkillLevel", async () => {
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
     });
     const result = await submitRegistrationStep(
       null,
@@ -536,7 +533,7 @@ describe("case: final", () => {
   it("rejects a linuxSkillLevel outside the known set", async () => {
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
     });
     const fd = buildFormData({ page: "final", linuxSkillLevel: "WIZARD" });
     const result = await submitRegistrationStep(null, fd);
@@ -546,7 +543,7 @@ describe("case: final", () => {
   it("rejects a potentialInvolvement value outside the known set", async () => {
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
     });
     const fd = buildFormData({
       page: "final",
@@ -560,7 +557,7 @@ describe("case: final", () => {
   it("rejects a discordUsername over the max length", async () => {
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
     });
     const fd = buildFormData({
       page: "final",
@@ -576,7 +573,7 @@ describe("case: final", () => {
   it("deletes the cookie and redirects to /success on a valid submission", async () => {
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
       primaryAffiliation: "Independent",
     });
     const fd = buildFormData({
@@ -597,7 +594,7 @@ describe("case: final", () => {
     });
     setCookieDraft({
       page: "final",
-      pageStack: ["start", "newMember", "newNonUoa"],
+      pageStack: ["start", "newNonUoa"],
       primaryAffiliation: "Independent",
     });
     const fd = buildFormData({
@@ -613,7 +610,7 @@ describe("case: final", () => {
     it("includes majors from the draft in the parsed submission", async () => {
       setCookieDraft({
         page: "final",
-        pageStack: ["start", "newMember", "newUoa"],
+        pageStack: ["start", "uoaDetails"],
         faculty: ["science"],
         majors: ["Computer Science", "Statistics"],
       });
@@ -633,7 +630,7 @@ describe("case: final", () => {
     it("defaults majors to an empty array when absent from the draft", async () => {
       setCookieDraft({
         page: "final",
-        pageStack: ["start", "newMember", "newUoa"],
+        pageStack: ["start", "uoaDetails"],
         faculty: ["science"],
       });
       const fd = buildFormData({
@@ -651,36 +648,12 @@ describe("case: final", () => {
   });
 
   describe("stripIrrelevantFields per branch", () => {
-    it("strips UoA-only and non-UoA-only fields when the last page was returningUoa", async () => {
+    it("keeps UoA fields and strips non-UoA fields when the last page was uoaDetails", async () => {
       setCookieDraft({
         page: "final",
-        pageStack: ["start", "returningUoa"],
+        pageStack: ["start", "uoaDetails"],
         upi: "abcd123",
-        studentId: "123456789",
-        firstName: "Should not appear",
-        primaryAffiliation: "Should not appear either",
-      });
-      const fd = buildFormData({
-        page: "final",
-        linuxSkillLevel: "BEGINNER_USER",
-      });
-
-      await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
-        "REDIRECT:/registration/success",
-      );
-
-      const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
-      expect(submittedData.upi).toBe("abcd123");
-      expect(submittedData.studentId).toBe("123456789");
-      expect(submittedData.firstName).toBeNull();
-      expect(submittedData.primaryAffiliation).toBeNull();
-    });
-
-    it("keeps UoA fields and strips non-UoA fields when the last page was newUoa", async () => {
-      setCookieDraft({
-        page: "final",
-        pageStack: ["start", "newMember", "newUoa"],
-        programme: "Bachelor of Science",
+        programmeType: "MASTER",
         primaryAffiliation: "Should not appear",
       });
       const fd = buildFormData({
@@ -693,14 +666,14 @@ describe("case: final", () => {
       );
 
       const submittedData = submitMemberRegistrationMock.mock.calls[0][0];
-      expect(submittedData.programme).toBe("Bachelor of Science");
+      expect(submittedData.upi).toBe("abcd123");
       expect(submittedData.primaryAffiliation).toBeNull();
     });
 
     it("keeps non-UoA fields and strips UoA fields when the last page was newNonUoa", async () => {
       setCookieDraft({
         page: "final",
-        pageStack: ["start", "newMember", "newNonUoa"],
+        pageStack: ["start", "newNonUoa"],
         primaryAffiliation: "Independent",
         upi: "should-not-appear",
       });

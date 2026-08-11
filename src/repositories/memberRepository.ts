@@ -24,6 +24,18 @@ export async function createMembershipRegistration(
   }
 }
 
+export async function findMemberByUpiAndStudentId(
+  upi: string,
+  studentId: string,
+) {
+  const currentYear = new Date().getFullYear();
+
+  return getPrisma().member.findFirst({
+    where: { upi, studentId, registrationYear: { lt: currentYear } },
+    orderBy: { registrationYear: "desc" },
+  });
+}
+
 function toMemberCreateInput(
   registration: MemberRegistration,
 ): Prisma.MemberCreateInput {
@@ -32,6 +44,7 @@ function toMemberCreateInput(
     firstName: registration.firstName,
     lastName: registration.lastName,
     email: registration.email,
+    registrationYear: new Date().getFullYear(),
     linuxSkillLevel: registration.linuxSkillLevel,
     potentialInvolvement: registration.potentialInvolvement,
     discordUsername: registration.discordUsername,
@@ -50,8 +63,8 @@ function toMemberCreateInput(
       : registration.isCurrentUoaStudent === true
         ? {
             faculty: registration.faculty,
-            programme: registration.programme,
-            yearLevel: registration.yearLevel,
+            majors: registration.majors,
+            programmeType: registration.programmeType,
             upi: registration.upi,
             studentId: registration.studentId,
             isCurrentUoaStudent: registration.isCurrentUoaStudent,

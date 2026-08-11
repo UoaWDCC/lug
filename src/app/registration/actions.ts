@@ -12,23 +12,26 @@ import { VALID_PAGES, readRegistrationDraft } from "./utils";
 import {
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
-  VALID_YEAR_LEVELS,
   VALID_FACULTIES,
+  VALID_PROGRAMME_TYPES,
+  VALID_YEARS_REMAINING,
   MAX_LENGTHS,
   MAX_FACULTIES,
   MAX_MAJORS,
 } from "@/domain/member/constants";
 
-import { exceedsMax } from "@/domain/member/exceedsMax";
 import {
   Faculty,
   LinuxSkillLevel,
   PotentialInvolvement,
-  YearLevel,
+  ProgrammeType,
 } from "@/domain/member/types";
+
+import { exceedsMax } from "@/domain/member/exceedsMax";
 
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
 import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
+import { findMemberByUpiAndStudentId } from "@/repositories/memberRepository";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -45,23 +48,7 @@ function stripIrrelevantFields(
 
   const { page, pageStack, ...draftFields } = draft;
 
-  if (lastPage == "returningUoa") {
-    const {
-      firstName,
-      lastName,
-      isCurrentUoaStudent,
-      faculty,
-      programme,
-      yearLevel,
-      majors,
-      majorCount,
-      primaryAffiliation,
-      nonUoaExcerpt,
-      nonUoaPitch,
-      ...stripped
-    } = draftFields;
-    return stripped;
-  } else if (lastPage == "newUoa") {
+  if (lastPage == "uoaDetails") {
     const { primaryAffiliation, nonUoaExcerpt, nonUoaPitch, ...stripped } =
       draftFields;
     return stripped;
@@ -70,10 +57,10 @@ function stripIrrelevantFields(
       upi,
       studentId,
       faculty,
-      programme,
-      yearLevel,
       majors,
       majorCount,
+      programmeType,
+      yearsRemaining,
       ...stripped
     } = draftFields;
     return stripped;
@@ -87,14 +74,16 @@ function toParsedSubmission(
     firstName: draft.firstName ?? null,
     lastName: draft.lastName ?? null,
     email: draft.email ?? null,
-    isConditionalReturningMember: draft.isConditionalReturningMember ?? null,
+    isConditionalReturningMember: "no",
     isCurrentUoaStudent: draft.isCurrentUoaStudent ?? null,
     upi: draft.upi ?? null,
     studentId: draft.studentId ?? null,
     faculty: draft.faculty ?? [],
     majors: draft.majors ?? [],
-    programme: draft.programme ?? null,
-    yearLevel: draft.yearLevel ?? null,
+    // TEMP: dead fields kept only to satisfy ParsedRegistrationFormSubmission's
+    // unchanged type — see parseRegistrationFormData.ts, which is dead code.
+    programme: null,
+    yearLevel: null,
     primaryAffiliation: draft.primaryAffiliation ?? null,
     nonUoaExcerpt: draft.nonUoaExcerpt ?? null,
     nonUoaPitch: draft.nonUoaPitch ?? null,
@@ -146,47 +135,125 @@ export async function submitRegistrationStep(
   // Validate data based on page
   switch (page) {
     case "start": {
-      const email = formData.get("email") as string;
-      const isConditionalReturningMember = formData.get(
-        "isConditionalReturningMember",
-      ) as string;
-      const fields = { email, isConditionalReturningMember };
+      const upiRegex = /^[a-z]{3,4}\d{3}$/i;
+      const studentIdRegex = /^\d{9,10}$/;
 
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!email || !emailRegex.test(email)) {
+      const isCurrentUoaStudent = formData.get("isCurrentUoaStudent") as string;
+      const upi = formData.get("upi") as string;
+      const studentId = formData.get("studentId") as string;
+      const fields = { isCurrentUoaStudent, upi, studentId };
+
+      if (isCurrentUoaStudent !== "yes" && isCurrentUoaStudent !== "no") {
         return {
-          error: "Please enter a valid email address (e.g., name@example.com).",
-          fields: { email, isConditionalReturningMember },
+          error:
+            "Please select whether you attend the University of Auckland (UoA).",
+          fields,
         };
       }
 
-      if (exceedsMax(email, "email")) {
-        return {
-          error: `Your email must be under ${MAX_LENGTHS.email} characters.`,
-          fields: { email, isConditionalReturningMember },
+      if (isCurrentUoaStudent === "yes") {
+        if (!upi) {
+          return { error: "UPI is required.", fields };
+        }
+        if (!upiRegex.test(upi)) {
+          return { error: "Invalid UPI format (e.g., abcd123).", fields };
+        }
+        if (!studentId) {
+          return { error: "Student ID is required.", fields };
+        }
+        if (!studentIdRegex.test(studentId)) {
+          return { error: "Student ID must be 9-10 digits.", fields };
+        }
+
+        const existingMember = await findMemberByUpiAndStudentId(
+          upi,
+          studentId,
+        );
+        if (existingMember) {
+          stepData = {
+            ...fields,
+            firstName: existingMember.firstName,
+            lastName: existingMember.lastName,
+            email: existingMember.email,
+            isConditionalReturningMember: "yes",
+            faculty: existingMember.faculty ?? [],
+            majors: existingMember.majors ?? [],
+            majorCount: Math.max(existingMember.majors?.length ?? 1, 1),
+            programmeType: existingMember.programmeType ?? undefined,
+            yearsRemaining: existingMember.yearsRemaining ?? undefined,
+          };
+        } else {
+          stepData = {
+            ...fields,
+            firstName: undefined,
+            lastName: undefined,
+            email: undefined,
+            isConditionalReturningMember: undefined,
+            faculty: undefined,
+            majors: undefined,
+            majorCount: undefined,
+            programmeType: undefined,
+            yearsRemaining: undefined,
+          };
+        }
+      } else {
+        stepData = {
+          ...fields,
+          firstName: undefined,
+          lastName: undefined,
+          email: undefined,
+          isConditionalReturningMember: undefined,
+          faculty: undefined,
+          majors: undefined,
+          majorCount: undefined,
+          programmeType: undefined,
+          yearsRemaining: undefined,
         };
       }
 
-      if (
-        isConditionalReturningMember !== "yes" &&
-        isConditionalReturningMember !== "no"
-      ) {
-        return {
-          error: "Please select whether you have registered previously.",
-          fields: { email },
-        };
-      }
-
-      stepData = fields;
-      nextPage =
-        isConditionalReturningMember === "yes" ? "returningUoa" : "newMember";
+      nextPage = isCurrentUoaStudent === "yes" ? "uoaDetails" : "newNonUoa";
       break;
     }
-    case "newMember": {
+    case "uoaDetails": {
       const firstName = formData.get("firstName") as string;
       const lastName = formData.get("lastName") as string;
-      const isCurrentUoaStudent = formData.get("isCurrentUoaStudent") as string;
-      const fields = { firstName, lastName, isCurrentUoaStudent };
+      const email = formData.get("email") as string;
+      const faculty = formData.getAll("faculty") as string[];
+      const majors = (formData.getAll("majors") as string[])
+        .map((major) => major.trim())
+        .filter((major) => major !== "");
+      const majorCount = Math.min(
+        Number(formData.get("majorCount")) || prev.majorCount || 1,
+        MAX_MAJORS,
+      );
+
+      const programmeType = formData.get("programmeType") as string;
+      const yearsRemaining =
+        programmeType === "BACHELOR"
+          ? Number(formData.get("yearsRemaining"))
+          : undefined;
+
+      const fields = {
+        firstName,
+        lastName,
+        email,
+        faculty,
+        majors,
+        majorCount,
+        programmeType,
+        yearsRemaining,
+      };
+
+      if (intent == "addMajor") {
+        const newDraft: Partial<RegistrationDraft> = {
+          ...prev,
+          ...fields,
+          majorCount: Math.min(majorCount + 1, MAX_MAJORS),
+        };
+
+        cookieStore.set("formState", JSON.stringify(newDraft), COOKIE_OPTIONS);
+        redirect("/registration");
+      }
 
       if (!firstName) {
         return { error: "First name is required.", fields };
@@ -210,66 +277,19 @@ export async function submitRegistrationStep(
         };
       }
 
-      if (isCurrentUoaStudent !== "yes" && isCurrentUoaStudent !== "no") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
         return {
-          error:
-            "Please select whether you attend the University of Auckland (UoA).",
+          error: "Please enter a valid email address (e.g., name@example.com).",
           fields,
         };
       }
 
-      stepData = fields;
-      nextPage = isCurrentUoaStudent === "yes" ? "newUoa" : "newNonUoa";
-      break;
-    }
-    case "newUoa": {
-      const upiRegex = /^[a-z]{3,4}\d{3}$/i;
-      const studentIdRegex = /^\d{9,10}$/;
-
-      const upi = formData.get("upi") as string;
-      const studentId = formData.get("studentId") as string;
-      const faculty = formData.getAll("faculty") as string[];
-      const majors = (formData.getAll("majors") as string[])
-        .map((major) => major.trim())
-        .filter((major) => major !== "");
-      const majorCount = Math.min(
-        Number(formData.get("majorCount")) || prev.majorCount || 1,
-        MAX_MAJORS,
-      );
-      const programme = formData.get("programme") as string;
-      const yearLevel = formData.get("yearLevel") as string;
-      const fields = {
-        upi,
-        studentId,
-        faculty,
-        majors,
-        majorCount,
-        programme,
-        yearLevel,
-      };
-
-      if (intent == "addMajor") {
-        const newDraft: Partial<RegistrationDraft> = {
-          ...prev,
-          ...fields,
-          majorCount: Math.min(majorCount + 1, MAX_MAJORS),
+      if (exceedsMax(email, "email")) {
+        return {
+          error: `Your email must be under ${MAX_LENGTHS.email} characters.`,
+          fields,
         };
-
-        cookieStore.set("formState", JSON.stringify(newDraft), COOKIE_OPTIONS);
-        redirect("/registration");
-      }
-
-      if (!upi) {
-        return { error: "UPI is required.", fields };
-      }
-      if (!upiRegex.test(upi)) {
-        return { error: "Invalid UPI format (e.g., abcd123).", fields };
-      }
-      if (!studentId) {
-        return { error: "Student ID is required.", fields };
-      }
-      if (!studentIdRegex.test(studentId)) {
-        return { error: "Student ID must be 9-10 digits.", fields };
       }
 
       if (faculty.length == 0) {
@@ -301,26 +321,25 @@ export async function submitRegistrationStep(
         };
       }
 
-      if (!programme) {
-        return {
-          error: "Please enter your current programme of study.",
-          fields,
-        };
+      if (
+        !programmeType ||
+        !VALID_PROGRAMME_TYPES.includes(programmeType as ProgrammeType)
+      ) {
+        return { error: "Please select a programme type.", fields };
       }
 
-      if (exceedsMax(programme, "programme")) {
-        return {
-          error: `Programme must be under ${MAX_LENGTHS.programme} characters.`,
-          fields,
-        };
-      }
-
-      if (!yearLevel) {
-        return { error: "Please select your current year of study.", fields };
-      }
-
-      if (!VALID_YEAR_LEVELS.includes(yearLevel as YearLevel)) {
-        return { error: "Please select a valid year of study.", fields };
+      if (programmeType === "BACHELOR") {
+        if (
+          isNaN(yearsRemaining as number) ||
+          !VALID_YEARS_REMAINING.includes(
+            yearsRemaining as (typeof VALID_YEARS_REMAINING)[number],
+          )
+        ) {
+          return {
+            error: "Please select how many years you have remaining.",
+            fields,
+          };
+        }
       }
 
       stepData = fields;
@@ -328,10 +347,57 @@ export async function submitRegistrationStep(
       break;
     }
     case "newNonUoa": {
+      const firstName = formData.get("firstName") as string;
+      const lastName = formData.get("lastName") as string;
+      const email = formData.get("email") as string;
       const primaryAffiliation = formData.get("primaryAffiliation") as string;
       const nonUoaExcerpt = formData.get("nonUoaExcerpt") as string;
       const nonUoaPitch = formData.get("nonUoaPitch") as string;
-      const fields = { primaryAffiliation, nonUoaExcerpt, nonUoaPitch };
+      const fields = {
+        firstName,
+        lastName,
+        email,
+        primaryAffiliation,
+        nonUoaExcerpt,
+        nonUoaPitch,
+      };
+
+      if (!firstName) {
+        return { error: "First name is required.", fields };
+      }
+
+      if (exceedsMax(firstName, "firstName")) {
+        return {
+          error: `First name must be under ${MAX_LENGTHS.firstName} characters.`,
+          fields,
+        };
+      }
+
+      if (!lastName) {
+        return { error: "Last name is required.", fields };
+      }
+
+      if (exceedsMax(lastName, "lastName")) {
+        return {
+          error: `Last name must be under ${MAX_LENGTHS.lastName} characters.`,
+          fields,
+        };
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        return {
+          error: "Please enter a valid email address (e.g., name@example.com).",
+          fields,
+        };
+      }
+
+      if (exceedsMax(email, "email")) {
+        return {
+          error: `Your email must be under ${MAX_LENGTHS.email} characters.`,
+          fields,
+        };
+      }
 
       if (!primaryAffiliation) {
         return { error: "Primary Affiliation is required.", fields };
@@ -356,31 +422,6 @@ export async function submitRegistrationStep(
           error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
           fields,
         };
-      }
-
-      stepData = fields;
-      nextPage = "final";
-      break;
-    }
-    case "returningUoa": {
-      const upiRegex = /^[a-z]{3,4}\d{3}$/i;
-      const studentIdRegex = /^\d{9,10}$/;
-
-      const upi = formData.get("upi") as string;
-      const studentId = formData.get("studentId") as string;
-      const fields = { upi, studentId };
-
-      if (!upi) {
-        return { error: "UPI is required.", fields };
-      }
-      if (!upiRegex.test(upi)) {
-        return { error: "Invalid UPI format (e.g., abcd123).", fields };
-      }
-      if (!studentId) {
-        return { error: "Student ID is required.", fields };
-      }
-      if (!studentIdRegex.test(studentId)) {
-        return { error: "Student ID must be 9-10 digits.", fields };
       }
 
       stepData = fields;
@@ -428,6 +469,8 @@ export async function submitRegistrationStep(
         potentialInvolvement,
         discordUsername,
       };
+
+      console.log(fullDraft);
 
       // Final submission logic
       const submission = await submitMemberRegistration(

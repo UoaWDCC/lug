@@ -1,9 +1,7 @@
 import { cookies } from "next/headers";
 
 import { StartPage } from "./_pages/StartPage";
-import { ReturningUoaPage } from "./_pages/ReturningUoaPage";
-import { NewMemberPage } from "./_pages/NewMemberPage";
-import { NewUoaPage } from "./_pages/NewUoaPage";
+import { UoaDetailsPage } from "./_pages/UoaDetailsPage";
 import { NewNonUoaPage } from "./_pages/NewNonUoaPage";
 import { FinalPage } from "./_pages/FinalPage";
 import { RegistrationForm } from "./RegistrationForm";
@@ -29,9 +27,7 @@ export default async function FormPage() {
 
       <RegistrationForm currentPage={page}>
         {page === "start" && <StartPage fields={draft} />}
-        {page === "returningUoa" && <ReturningUoaPage fields={draft} />}
-        {page === "newMember" && <NewMemberPage fields={draft} />}
-        {page === "newUoa" && <NewUoaPage fields={draft} />}
+        {page === "uoaDetails" && <UoaDetailsPage fields={draft} />}
         {page === "newNonUoa" && <NewNonUoaPage fields={draft} />}
         {page === "final" && <FinalPage fields={draft} />}
       </RegistrationForm>
