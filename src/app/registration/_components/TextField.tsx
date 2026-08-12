@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { ChangeEvent, Ref } from "react";
 
 /* Text input with a live validation hint that mirrors the server-side rules in actions.ts. */
@@ -49,6 +49,8 @@ export default function TextField({
   onInput,
   inputRef,
 }: TextFieldProps) {
+  // Not `name` — repeated fields like majors share a name and would collide.
+  const id = useId();
   const [value, setValue] = useState(defaultValue);
 
   const trimmed = value.trim();
@@ -63,7 +65,7 @@ export default function TextField({
 
   return (
     <div>
-      <label htmlFor={name} className="mb-1.5 block text-lg font-bold">
+      <label htmlFor={id} className="mb-1.5 block text-lg font-bold">
         {label}
         {required && (
           <span
@@ -83,7 +85,7 @@ export default function TextField({
 
       {multiline ? (
         <textarea
-          id={name}
+          id={id}
           name={name}
           rows={rows}
           placeholder={placeholder}
@@ -96,7 +98,7 @@ export default function TextField({
       ) : (
         <input
           ref={inputRef}
-          id={name}
+          id={id}
           name={name}
           type={type}
           placeholder={placeholder}

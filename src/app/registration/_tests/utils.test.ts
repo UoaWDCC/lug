@@ -67,8 +67,8 @@ describe("readRegistrationDraft", () => {
 
   it("returns the parsed draft unchanged when it is valid", () => {
     const valid = {
-      page: "newUoa",
-      pageStack: ["start", "newMember"],
+      page: "uoaDetails",
+      pageStack: ["start"],
       firstName: "Ada",
       lastName: "Lovelace",
     };
