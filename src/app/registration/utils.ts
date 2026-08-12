@@ -2,9 +2,7 @@ import { RegistrationDraft, RegistrationPage } from "./types";
 
 export const VALID_PAGES: RegistrationPage[] = [
   "start",
-  "returningUoa",
-  "newMember",
-  "newUoa",
+  "uoaDetails",
   "newNonUoa",
   "final",
 ];

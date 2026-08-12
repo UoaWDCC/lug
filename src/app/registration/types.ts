@@ -1,10 +1,4 @@
-export type RegistrationPage =
-  | "start"
-  | "returningUoa"
-  | "newMember"
-  | "newUoa"
-  | "newNonUoa"
-  | "final";
+export type RegistrationPage = "start" | "uoaDetails" | "newNonUoa" | "final";
 
 export type RegistrationDraft = {
   page: RegistrationPage;

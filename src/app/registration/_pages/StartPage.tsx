@@ -1,11 +1,7 @@
 "use client";
 
-import Image from "next/image";
-
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
-import TextField, { isValidEmail } from "../_components/TextField";
-import OptionButton from "../_components/OptionButton";
 
 export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
   const state = useFormError();
@@ -14,86 +10,79 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
 
   return (
     <>
-      <div className="flex flex-col items-center gap-1.5 text-center">
-        <Image
-          src="/logo.svg"
-          alt="LUG@UoA logo"
-          width={60}
-          height={60}
-          className="h-[60px] w-[60px] rounded-full"
-        />
-        <h2 className="m-0 text-[26px] leading-[1.2] font-black">
-          Join LUG@UoA
-        </h2>
-        <p className="m-0 max-w-[460px] text-[15px] leading-[1.4] text-[var(--muted)]">
-          A club where we build, share, and talk about Linux, the free and
-          open-source operating system.
-        </p>
-      </div>
+      <style>
+        {`
+          .uoa-fields {
+            display: none;
+          }
 
-      <TextField
-        name="email"
-        label="Email"
-        required
-        type="email"
-        placeholder="name@example.com"
-        defaultValue={field?.email ?? ""}
-        maxLength={254}
-        hint="We'll send your invite here"
-        validate={isValidEmail}
-        okHint="✓ looks right"
-        errorHint="Enter a valid email"
-      />
+          .uoa-student-container:has(input[value="yes"]:checked) ~ .uoa-fields {
+            display: block;
+          }
+        `}
+      </style>
 
-      <fieldset className="m-0 border-none p-0">
-        <legend className="mb-1.5 text-lg font-bold">
-          Have you registered with us previously and meet all of these
-          conditions?
-          <span
-            aria-hidden
-            className="ml-[3px] font-extrabold text-[var(--danger)]"
-          >
-            *
-          </span>
-        </legend>
+      <div>
+        <div className="uoa-student-container">
+          <fieldset>
+            <legend>Are you a UoA Student?*</legend>
 
-        <ul className="mb-2 list-disc pl-5 text-[15px] leading-[1.4] text-[var(--muted)]">
-          <li>You are a current student at the University of Auckland</li>
-          <li>
-            You previously gave us your UPI or Student ID when registering your
-            interest in 2025
-          </li>
-          <li>
-            You have not changed your programme of study since your last
-            application
-          </li>
-        </ul>
+            {state?.error?.includes("registered") && (
+              <p className="text-red-600 text-sm italic">{state.error}</p>
+            )}
 
-        <div className="flex gap-4">
-          <OptionButton
-            type="radio"
-            name="isConditionalReturningMember"
-            value="yes"
-            label="Yes"
-            className="flex-1"
-            defaultChecked={field?.isConditionalReturningMember === "yes"}
-            required
-          />
-          <OptionButton
-            type="radio"
-            name="isConditionalReturningMember"
-            value="no"
-            label="No"
-            className="flex-1"
-            defaultChecked={field?.isConditionalReturningMember === "no"}
-            required
-          />
+            <label>
+              <input
+                type="radio"
+                name="isCurrentUoaStudent"
+                value="yes"
+                defaultChecked={field?.isCurrentUoaStudent === "yes"}
+                required
+              />
+              Yes
+            </label>
+
+            <label>
+              <input
+                type="radio"
+                name="isCurrentUoaStudent"
+                value="no"
+                defaultChecked={field?.isCurrentUoaStudent === "no"}
+                required
+              />
+              No
+            </label>
+          </fieldset>
         </div>
 
-        <p className="mt-1.5 text-[15px] text-[var(--muted)]">
-          If you are signing up for the first time, select “No”.
-        </p>
-      </fieldset>
+        <div className="uoa-fields">
+          <div>
+            <label htmlFor="upi">What is your username/UPI?*</label>
+            <p>i.e. jbon007</p>
+            <input
+              name="upi"
+              id="upi"
+              type="text"
+              placeholder="Your answer"
+              defaultValue={field?.upi ?? ""}
+              pattern="[a-z]{3,4}[0-9]{3}"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="studentId">And your student ID?*</label>
+            <p>i.e. 825179213</p>
+            <input
+              name="studentId"
+              id="studentId"
+              type="text"
+              placeholder="Your answer"
+              defaultValue={field?.studentId ?? ""}
+              pattern="[0-9]{9,10}"
+            />
+          </div>
+        </div>
+      </div>
     </>
   );
 }

@@ -57,7 +57,7 @@ describe("RegistrationForm", () => {
 
   it("shows the Back button on any page other than start", () => {
     render(
-      <RegistrationForm currentPage="newMember" step={step}>
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -67,7 +67,7 @@ describe("RegistrationForm", () => {
 
   it("labels the submit button 'Continue' on a non-final page", () => {
     render(
-      <RegistrationForm currentPage="newMember" step={step}>
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -92,23 +92,23 @@ describe("RegistrationForm", () => {
   it("renders the step progress indicator", () => {
     render(
       <RegistrationForm
-        currentPage="newUoa"
-        step={{ current: 3, total: 4, label: "Study" }}
+        currentPage="uoaDetails"
+        step={{ current: 2, total: 3, label: "Study" }}
       >
         <p>child content</p>
       </RegistrationForm>,
     );
 
-    expect(screen.getByText("Step 3 of 4 · Study")).toBeInTheDocument();
+    expect(screen.getByText("Step 2 of 3 · Study")).toBeInTheDocument();
     expect(screen.getByRole("progressbar")).toHaveAttribute(
       "aria-valuenow",
-      "3",
+      "2",
     );
   });
 
   it("includes a hidden input carrying the current page value", () => {
     const { container } = render(
-      <RegistrationForm currentPage="newUoa" step={step}>
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -116,6 +116,6 @@ describe("RegistrationForm", () => {
     const hiddenInput = container.querySelector(
       'input[type="hidden"][name="page"]',
     );
-    expect(hiddenInput).toHaveValue("newUoa");
+    expect(hiddenInput).toHaveValue("uoaDetails");
   });
 });

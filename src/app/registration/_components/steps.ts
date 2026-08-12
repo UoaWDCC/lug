@@ -1,22 +1,21 @@
-import { RegistrationDraft, RegistrationPage } from "../types";
+import { RegistrationPage } from "../types";
 
-/* Step total depends on the path — returning members answer one fewer page. */
+/* Both paths are the same length: start, one middle page, then final. */
+
+const TOTAL_STEPS = 3;
 
 const STAGE_LABELS: Record<RegistrationPage, string> = {
   start: "Status",
-  returningUoa: "Identity",
-  newMember: "About you",
-  newUoa: "Study",
+  uoaDetails: "Study",
   newNonUoa: "Affiliation",
   final: "Finish",
 };
 
-const POSITIONS: Record<Exclude<RegistrationPage, "final">, number> = {
+const POSITIONS: Record<RegistrationPage, number> = {
   start: 1,
-  returningUoa: 2,
-  newMember: 2,
-  newUoa: 3,
-  newNonUoa: 3,
+  uoaDetails: 2,
+  newNonUoa: 2,
+  final: TOTAL_STEPS,
 };
 
 export type StepProgress = {
@@ -25,16 +24,10 @@ export type StepProgress = {
   label: string;
 };
 
-export function getStepProgress(
-  page: RegistrationPage,
-  draft: Partial<RegistrationDraft>,
-): StepProgress {
-  // Unknown until the first page is answered, so assume the longer path.
-  const total = draft.isConditionalReturningMember === "yes" ? 3 : 4;
-
+export function getStepProgress(page: RegistrationPage): StepProgress {
   return {
-    current: page === "final" ? total : POSITIONS[page],
-    total,
+    current: POSITIONS[page],
+    total: TOTAL_STEPS,
     label: STAGE_LABELS[page],
   };
 }
