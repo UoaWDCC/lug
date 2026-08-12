@@ -154,6 +154,27 @@ body {
   animation: blink 1s step-start infinite;
 }
 
+/* Page transitions.
+   The home terminal panel and the registration card share the view-transition
+   name "signup-window", so the browser grows one into the other rather than
+   cutting. Everything else on the page crossfades via the default root group. */
+::view-transition-group(signup-window) {
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+::view-transition-old(signup-window),
+::view-transition-new(signup-window) {
+  /* Crossfade the contents faster than the box moves, so the morph reads as one
+     window resizing instead of two panels dissolving. */
+  animation-duration: 220ms;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 300ms;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .rain-column {
     animation: none !important;
@@ -162,5 +183,14 @@ body {
 
   .cursor-blink {
     animation: none;
+  }
+
+  ::view-transition-group(signup-window),
+  ::view-transition-old(signup-window),
+  ::view-transition-new(signup-window),
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
   }
 }
