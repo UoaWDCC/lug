@@ -39,7 +39,3 @@ export function validateMemberRegistration(
     error: { message: "Validation not yet implemented — pending #92 rewrite" },
   };
 }
-
-function isFaculty(value: string): value is Faculty {
-  return value !== null && VALID_FACULTIES.includes(value as Faculty);
-}
