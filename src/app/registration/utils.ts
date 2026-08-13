@@ -42,3 +42,14 @@ export function readRegistrationDraft(
     return freshDefault();
   }
 }
+
+export function normalizeText(value: string | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+export function normalizeLowercase(value: string | undefined): string | null {
+  const normalized = normalizeText(value);
+  return normalized === null ? null : normalized.toLowerCase();
+}

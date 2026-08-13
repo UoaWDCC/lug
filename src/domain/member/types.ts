@@ -8,7 +8,25 @@ export type LinuxSkillLevel = (typeof VALID_SKILL_LEVELS)[number];
 export type PotentialInvolvement = (typeof VALID_INVOLVEMENTS)[number];
 export type ProgrammeType = (typeof VALID_PROGRAMME_TYPES)[number];
 
-// Shared base fields present on every registration path
+export type UnvalidatedMemberSubmission = {
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  isCurrentUoaStudent: string | null;
+  upi: string | null;
+  studentId: string | null;
+  faculty: string[];
+  majors: string[];
+  programmeType: string | null;
+  yearsRemaining: number | undefined;
+  primaryAffiliation: string | null;
+  nonUoaExcerpt: string | null;
+  nonUoaPitch: string | null;
+  linuxSkillLevel: string | null;
+  potentialInvolvement: string[];
+  discordUsername: string | null;
+};
+
 export type BaseMemberRegistration = {
   firstName: string;
   lastName: string;
@@ -18,16 +36,7 @@ export type BaseMemberRegistration = {
   potentialInvolvement: PotentialInvolvement[];
 };
 
-// Case 1: Conditional returning member
-export type ConditionalReturningMember = BaseMemberRegistration & {
-  isConditionalReturningMember: true;
-  upi: string;
-  studentId: string;
-};
-
-// Case 2: Current UoA student
 export type CurrentUoaStudentMember = BaseMemberRegistration & {
-  isConditionalReturningMember: false;
   isCurrentUoaStudent: true;
   upi: string;
   studentId: string;
@@ -37,17 +46,13 @@ export type CurrentUoaStudentMember = BaseMemberRegistration & {
   yearsRemaining?: number;
 };
 
-// Case 3: Non-current UoA student
 export type NonCurrentUoaStudentMember = BaseMemberRegistration & {
-  isConditionalReturningMember: false;
   isCurrentUoaStudent: false;
   primaryAffiliation: string;
   nonUoaExcerpt?: string;
   nonUoaPitch?: string;
 };
 
-// Union type used everywhere a registration is handled
 export type MemberRegistration =
-  | ConditionalReturningMember
   | CurrentUoaStudentMember
   | NonCurrentUoaStudentMember;
