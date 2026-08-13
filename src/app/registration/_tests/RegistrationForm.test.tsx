@@ -50,7 +50,7 @@ describe("RegistrationForm", () => {
 
   it("shows the Prev button on any page other than start", () => {
     render(
-      <RegistrationForm currentPage="newMember">
+      <RegistrationForm currentPage="uoaDetails">
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -60,7 +60,7 @@ describe("RegistrationForm", () => {
 
   it("labels the submit button 'Next' on a non-final page", () => {
     render(
-      <RegistrationForm currentPage="newMember">
+      <RegistrationForm currentPage="uoaDetails">
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -80,7 +80,7 @@ describe("RegistrationForm", () => {
 
   it("includes a hidden input carrying the current page value", () => {
     const { container } = render(
-      <RegistrationForm currentPage="newUoa">
+      <RegistrationForm currentPage="uoaDetails">
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -88,6 +88,6 @@ describe("RegistrationForm", () => {
     const hiddenInput = container.querySelector(
       'input[type="hidden"][name="page"]',
     );
-    expect(hiddenInput).toHaveValue("newUoa");
+    expect(hiddenInput).toHaveValue("uoaDetails");
   });
 });
