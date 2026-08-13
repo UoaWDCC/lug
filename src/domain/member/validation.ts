@@ -2,6 +2,7 @@ import {
   UnvalidatedMemberSubmission,
   BaseMemberRegistration,
   CurrentUoaStudentMember,
+  Faculty,
   LinuxSkillLevel,
   MemberRegistration,
   NonCurrentUoaStudentMember,
@@ -12,6 +13,7 @@ import {
   MAX_LENGTHS,
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  VALID_FACULTIES,
 } from "./constants";
 import { exceedsMax } from "./exceedsMax";
 

@@ -36,8 +36,8 @@ const validCurrentUoaStudent: ParsedRegistrationFormSubmission = {
   studentId: "123456788",
   faculty: ["science"],
   majors: ["Computer Science"],
-  programme: "Bachelor of Science",
-  yearLevel: "FIRST_YEAR",
+  programme: null,
+  yearLevel: null,
   primaryAffiliation: null,
   nonUoaExcerpt: null,
   nonUoaPitch: null,
@@ -99,8 +99,8 @@ describe("validateMemberRegistration - happy paths", () => {
         upi: "ehaa909",
         studentId: "123456788",
         faculty: ["science"],
-        programme: "Bachelor of Science",
-        yearLevel: "FIRST_YEAR",
+        programmeType: "OTHER",
+        majors: ["Computer Science"],
       });
     }
   });
@@ -259,22 +259,6 @@ describe("required field validation - current UoA student path", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("rejects a missing programme", () => {
-    const result = validateMemberRegistration({
-      ...validCurrentUoaStudent,
-      programme: null,
-    });
-    expect(result.ok).toBe(false);
-  });
-
-  it("rejects a missing yearLevel", () => {
-    const result = validateMemberRegistration({
-      ...validCurrentUoaStudent,
-      yearLevel: null,
-    });
-    expect(result.ok).toBe(false);
-  });
-
   it("rejects an empty faculty array", () => {
     const result = validateMemberRegistration({
       ...validCurrentUoaStudent,
@@ -378,23 +362,7 @@ describe("field value validation - upi/studentId format", () => {
   });
 });
 
-describe("field value validation - yearLevel/programme/faculty (current UoA path)", () => {
-  it("rejects a yearLevel outside the known set", () => {
-    const result = validateMemberRegistration({
-      ...validCurrentUoaStudent,
-      yearLevel: "SIXTH_YEAR",
-    });
-    expect(result.ok).toBe(false);
-  });
-
-  it("rejects a programme over 150 characters", () => {
-    const result = validateMemberRegistration({
-      ...validCurrentUoaStudent,
-      programme: "a".repeat(151),
-    });
-    expect(result.ok).toBe(false);
-  });
-
+describe("field value validation - faculty (current UoA path)", () => {
   it("rejects a faculty entry over 100 characters", () => {
     const result = validateMemberRegistration({
       ...validCurrentUoaStudent,

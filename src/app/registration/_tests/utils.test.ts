@@ -67,8 +67,8 @@ describe("readRegistrationDraft", () => {
 
   it("returns the parsed draft unchanged when it is valid", () => {
     const valid = {
-      page: "newUoa",
-      pageStack: ["start", "newMember"],
+      page: "uoaDetails",
+      pageStack: ["start"],
       firstName: "Ada",
       lastName: "Lovelace",
     };
@@ -93,7 +93,7 @@ describe("readRegistrationDraft", () => {
       // Mirrors the kind of direct mutation actions.ts used to perform
       // on `prev` before the mergedPrev fix
       first.faculty = ["mutated"];
-      first.pageStack?.push("newMember");
+      first.pageStack?.push("uoaDetails");
 
       const second = readRegistrationDraft(undefined);
       expect(second).toEqual({ page: "start", pageStack: [] });
