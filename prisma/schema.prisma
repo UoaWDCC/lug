@@ -19,8 +19,6 @@ model Member {
 
   registrationYear Int
 
-  isConditionalReturningMember Boolean
-
   // Only asked directly for non-conditional-returning members.
   // For conditional returning members, this is not collected in the form.
   isCurrentUoaStudent Boolean?
