@@ -2,7 +2,43 @@
 
 import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
+import TextField from "../_components/TextField";
+import OptionButton from "../_components/OptionButton";
 import { MAX_MAJORS } from "@/domain/member/constants";
+
+const FACULTIES = [
+  { value: "engineeringDesign", label: "Faculty of Engineering & Design" },
+  { value: "science", label: "Faculty of Science" },
+  { value: "artsEducation", label: "Faculty of Arts & Education" },
+  { value: "business", label: "Business School" },
+  { value: "law", label: "Auckland Law School" },
+  {
+    value: "medicalHealthScience",
+    label: "Faculty of Medical and Health Sciences",
+  },
+  { value: "liggins", label: "Liggins Institute" },
+  { value: "bioengineering", label: "Auckland Bioengineering Institute" },
+];
+
+const PROGRAMME_TYPES = [
+  { value: "TFC_PRE_UNI", label: "TFC / Pre-Uni" },
+  { value: "BACHELOR", label: "Bachelor" },
+  { value: "MASTER", label: "Master" },
+  { value: "PHD", label: "PhD" },
+  { value: "OTHER", label: "Other" },
+];
+
+const YEARS_REMAINING = [
+  { value: "0", label: "Less than 1" },
+  { value: "1", label: "1" },
+  { value: "2", label: "2" },
+  { value: "3", label: "3" },
+  { value: "4", label: "4" },
+  { value: "5", label: "More than 4" },
+];
+
+const addMajorButtonClass =
+  "self-start rounded-lg border border-[var(--input-border)] bg-transparent px-3.5 py-2 font-mono text-[15px] font-semibold text-[var(--fg)] transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] active:scale-[0.97]";
 
 export function UoaDetailsPage({
   fields,
@@ -17,298 +53,166 @@ export function UoaDetailsPage({
 
   return (
     <>
-      <h2>Your student details with The University of Auckland</h2>
-      <p>
+      <h2 className="m-0 text-[26px] font-black">
+        Your student details with The University of Auckland
+      </h2>
+      <p className="m-0 text-[15px] leading-[1.4] text-[var(--muted)]">
         As a registered club at the University of Auckland, we are required to
-        collect information about our members who are UoA students or
-        staff.{" "}
+        collect information about our members who are UoA students or staff.
       </p>
 
-      <h2>Name & Email</h2>
+      <h2 className="m-0 text-[22px] font-black">Name & Email</h2>
 
-      <div>
-        <label htmlFor="firstName">What is your first name?*</label>
-        <input
-          name="firstName"
-          id="firstName"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.firstName ?? ""}
-          maxLength={100}
-          required
-        />
-      </div>
+      <TextField
+        name="firstName"
+        label="What is your first name?"
+        required
+        placeholder="Your answer"
+        defaultValue={field?.firstName ?? ""}
+        maxLength={100}
+      />
 
-      <div>
-        <label htmlFor="lastName">And your last name?*</label>
-        <p>If you do not have a last name, type N/A.</p>
-        <input
-          name="lastName"
-          id="lastName"
-          type="text"
-          placeholder="Your answer"
-          defaultValue={field?.lastName ?? ""}
-          maxLength={100}
-          required
-        />
-      </div>
+      <TextField
+        name="lastName"
+        label="And your last name?"
+        description="If you do not have a last name, type N/A."
+        required
+        placeholder="Your answer"
+        defaultValue={field?.lastName ?? ""}
+        maxLength={100}
+      />
 
-      <div>
-        <label htmlFor="email">Email*</label>
-        <input
-          name="email"
-          id="email"
-          type="email"
-          placeholder="name@example.com"
-          defaultValue={field?.email || ""} // This is what prevents the clearing
-          className={`border p-2 w-full ${state?.error?.includes("email") ? "border-red-500" : "border-gray-300"}`}
-          maxLength={254}
-        />
-        {state?.error?.includes("email") && (
-          <p className="text-red-600 text-sm italic mt-1">{state.error}</p>
-        )}
-      </div>
+      <TextField
+        name="email"
+        label="Email"
+        type="email"
+        placeholder="name@example.com"
+        defaultValue={field?.email || ""} // This is what prevents the clearing
+        maxLength={254}
+        error={state?.error?.includes("email") ? state.error : undefined}
+      />
 
-      <fieldset>
-        <legend>What faculty or faculties are you enrolled in?*</legend>
-        <p>If we miss your faculty, let us know!</p>
+      <fieldset className="m-0 border-none p-0">
+        <legend className="mb-2 text-lg font-bold">
+          What faculty or faculties are you enrolled in?
+          <span
+            aria-hidden
+            className="ml-[3px] font-extrabold text-[var(--danger)]"
+          >
+            *
+          </span>
+        </legend>
+        <p className="mb-2.5 text-[15px] text-[var(--muted)]">
+          If we miss your faculty, let us know!
+        </p>
 
-        <div>
-          <label>
-            <input
+        <div className="flex flex-col gap-2.5">
+          {FACULTIES.map((faculty) => (
+            <OptionButton
+              key={faculty.value}
               type="checkbox"
               name="faculty"
-              value="engineeringDesign"
-              defaultChecked={field?.faculty?.includes("engineeringDesign")}
+              value={faculty.value}
+              label={faculty.label}
+              surfaceClassName="justify-start px-4 py-3.5 text-left"
+              defaultChecked={field?.faculty?.includes(faculty.value)}
             />
-            Faculty of Engineering & Design
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="science"
-              defaultChecked={field?.faculty?.includes("science")}
-            />
-            Faculty of Science
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="artsEducation"
-              defaultChecked={field?.faculty?.includes("artsEducation")}
-            />
-            Faculty of Arts & Education
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="business"
-              defaultChecked={field?.faculty?.includes("business")}
-            />
-            Business School
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="law"
-              defaultChecked={field?.faculty?.includes("law")}
-            />
-            Auckland Law School
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="medicalHealthScience"
-              defaultChecked={field?.faculty?.includes("medicalHealthScience")}
-            />
-            Faculty of Medical and Health Sciences
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="liggins"
-              defaultChecked={field?.faculty?.includes("liggins")}
-            />
-            Liggins Institute
-          </label>
-
-          <label>
-            <input
-              type="checkbox"
-              name="faculty"
-              value="bioengineering"
-              defaultChecked={field?.faculty?.includes("bioengineering")}
-            />
-            Auckland Bioengineering Institute
-          </label>
+          ))}
         </div>
       </fieldset>
 
-      <fieldset>
-        <legend>What are you majoring/specialising in?</legend>
-        <p>Majors are independent of the faculties you selected above.</p>
+      <fieldset className="m-0 border-none p-0">
+        <legend className="mb-2 text-lg font-bold">
+          What are you majoring/specialising in?
+        </legend>
+        <p className="mb-2.5 text-[15px] leading-[1.5] text-[var(--muted)]">
+          Majors are independent of the faculties you selected above.
+        </p>
 
-        {Array.from({ length: majorCount }).map((_, i) => (
-          <div key={i}>
-            <label htmlFor={`majors-${i}`} className="sr-only">
-              Major/specialisation {i + 1}
-            </label>
-            <input
-              type="text"
+        <div className="flex flex-col gap-2.5">
+          {Array.from({ length: majorCount }).map((_, i) => (
+            <TextField
+              key={i}
               name="majors"
-              id={`majors-${i}`}
+              label={`Major/specialisation ${i + 1}`}
+              hideLabel
               placeholder="Your answer"
               defaultValue={field?.majors?.[i] ?? ""}
               maxLength={40}
             />
-          </div>
-        ))}
+          ))}
 
-        <input type="hidden" name="majorCount" value={majorCount} />
+          <input type="hidden" name="majorCount" value={majorCount} />
 
-        {majorCount < MAX_MAJORS && (
-          <button type="submit" name="intent" value="addMajor">
-            Add another major
-          </button>
-        )}
+          {majorCount < MAX_MAJORS && (
+            <button
+              type="submit"
+              name="intent"
+              value="addMajor"
+              className={addMajorButtonClass}
+            >
+              Add another major
+            </button>
+          )}
+        </div>
       </fieldset>
 
-      <div className="programme-years-wrapper">
-        <fieldset>
-          <legend>What type of programme are you in?*</legend>
-          <div>
-            <label>
-              <input
+      <div className="programme-years-wrapper flex flex-col gap-4">
+        <fieldset className="m-0 border-none p-0">
+          <legend className="mb-2 text-lg font-bold">
+            What type of programme are you in?
+            <span
+              aria-hidden
+              className="ml-[3px] font-extrabold text-[var(--danger)]"
+            >
+              *
+            </span>
+          </legend>
+
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2.5">
+            {PROGRAMME_TYPES.map((programme) => (
+              <OptionButton
+                key={programme.value}
                 type="radio"
                 name="programmeType"
-                value="TFC_PRE_UNI"
-                defaultChecked={field?.programmeType === "TFC_PRE_UNI"}
+                value={programme.value}
+                label={programme.label}
+                surfaceClassName="justify-center px-2.5 py-3.5 text-center text-base"
+                defaultChecked={field?.programmeType === programme.value}
                 required
               />
-              TFC / Pre-Uni
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="programmeType"
-                value="BACHELOR"
-                defaultChecked={field?.programmeType === "BACHELOR"}
-              />
-              Bachelor
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="programmeType"
-                value="MASTER"
-                defaultChecked={field?.programmeType === "MASTER"}
-              />
-              Master
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="programmeType"
-                value="PHD"
-                defaultChecked={field?.programmeType === "PHD"}
-              />
-              PhD
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="programmeType"
-                value="OTHER"
-                defaultChecked={field?.programmeType === "OTHER"}
-              />
-              Other
-            </label>
+            ))}
           </div>
         </fieldset>
 
-        <fieldset className="years-remaining-group">
-          <legend>How many years do you have remaining?*</legend>
-          <div>
-            <label>
-              <input
-                type="radio"
-                name="yearsRemaining"
-                value="0"
-                defaultChecked={field?.yearsRemaining === 0}
-                required
-              />
-              Less than 1
-            </label>
+        <fieldset className="years-remaining-group m-0 border-none p-0">
+          <legend className="mb-2 text-lg font-bold">
+            How many years do you have remaining?
+            <span
+              aria-hidden
+              className="ml-[3px] font-extrabold text-[var(--danger)]"
+            >
+              *
+            </span>
+          </legend>
 
-            <label>
-              <input
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(78px,1fr))] gap-2.5">
+            {YEARS_REMAINING.map((year) => (
+              <OptionButton
+                key={year.value}
                 type="radio"
                 name="yearsRemaining"
-                value="1"
-                defaultChecked={field?.yearsRemaining === 1}
+                value={year.value}
+                label={year.label}
+                surfaceClassName="justify-center px-2.5 py-3.5 text-center text-base"
+                defaultChecked={field?.yearsRemaining === Number(year.value)}
               />
-              1
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="yearsRemaining"
-                value="2"
-                defaultChecked={field?.yearsRemaining === 2}
-              />
-              2
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="yearsRemaining"
-                value="3"
-                defaultChecked={field?.yearsRemaining === 3}
-              />
-              3
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="yearsRemaining"
-                value="4"
-                defaultChecked={field?.yearsRemaining === 4}
-              />
-              4
-            </label>
-
-            <label>
-              <input
-                type="radio"
-                name="yearsRemaining"
-                value="5"
-                defaultChecked={field?.yearsRemaining === 5}
-              />
-              More than 4
-            </label>
+            ))}
           </div>
         </fieldset>
       </div>
 
+      {/* Pure CSS so the conditional reveal works without JS. */}
       <style>{`
         .years-remaining-group { display: none; }
         .programme-years-wrapper:has(input[value="BACHELOR"]:checked) .years-remaining-group {

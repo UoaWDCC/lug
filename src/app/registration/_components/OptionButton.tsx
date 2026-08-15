@@ -41,7 +41,7 @@ export default function OptionButton({
         className="sr-only"
       />
       <span
-        className={`flex items-center rounded-lg border border-[var(--input-border)] bg-transparent font-sans text-[18px] font-semibold text-[var(--fg)] transition-[filter,transform,background,border-color] duration-150 group-hover:brightness-[1.12] group-active:scale-[0.98] group-has-[:checked]:border-[var(--accent)] group-has-[:checked]:bg-[var(--accent)] group-has-[:checked]:text-black group-has-[:focus-visible]:ring-2 group-has-[:focus-visible]:ring-[var(--accent)] group-has-[:focus-visible]:ring-offset-2 group-has-[:focus-visible]:ring-offset-[var(--bg)] ${surfaceClassName}`}
+        className={`flex h-full items-center rounded-lg border border-[var(--input-border)] bg-transparent font-sans text-[18px] font-semibold text-[var(--fg)] transition-[filter,transform,background,border-color] duration-150 group-hover:brightness-[1.12] group-active:scale-[0.98] group-has-[:checked]:border-[var(--accent)] group-has-[:checked]:bg-[var(--accent)] group-has-[:checked]:text-black group-has-[:focus-visible]:ring-2 group-has-[:focus-visible]:ring-[var(--accent)] group-has-[:focus-visible]:ring-offset-2 group-has-[:focus-visible]:ring-offset-[var(--bg)] ${surfaceClassName}`}
       >
         {type === "checkbox" && (
           <span

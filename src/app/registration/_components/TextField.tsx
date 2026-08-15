@@ -23,12 +23,13 @@ type TextFieldProps = {
   validate?: (value: string) => boolean;
   okHint?: string;
   errorHint?: string;
+  /** Server-side validation error for this field; takes priority over the live hint. */
+  error?: string;
+  /** Keeps the label for screen readers but hides it visually, for repeated unlabelled-looking fields (e.g. majors). */
+  hideLabel?: boolean;
   onInput?: (event: ChangeEvent<HTMLInputElement>) => void;
   inputRef?: Ref<HTMLInputElement>;
 };
-
-const controlClass =
-  "w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-2.5 font-mono text-lg text-[var(--fg)] outline-none transition-colors duration-200 placeholder:text-[var(--muted)] focus:border-[var(--accent)]";
 
 export default function TextField({
   name,
@@ -46,6 +47,8 @@ export default function TextField({
   validate,
   okHint,
   errorHint,
+  error,
+  hideLabel,
   onInput,
   inputRef,
 }: TextFieldProps) {
@@ -63,9 +66,19 @@ export default function TextField({
     hintClass = valid ? "text-[var(--accent-text)]" : "text-[var(--danger)]";
   }
 
+  if (error) {
+    hintText = error;
+    hintClass = "text-[var(--danger)]";
+  }
+
+  const controlClass = `w-full rounded-lg border ${error ? "border-[var(--danger)]" : "border-[var(--input-border)]"} bg-[var(--input-bg)] px-4 py-2.5 font-mono text-lg text-[var(--fg)] outline-none transition-colors duration-200 placeholder:text-[var(--muted)] focus:border-[var(--accent)]`;
+
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-lg font-bold">
+      <label
+        htmlFor={id}
+        className={hideLabel ? "sr-only" : "mb-1.5 block text-lg font-bold"}
+      >
         {label}
         {required && (
           <span
