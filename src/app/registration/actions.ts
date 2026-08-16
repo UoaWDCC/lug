@@ -78,8 +78,7 @@ function toParsedSubmission(
     studentId: draft.studentId ?? null,
     faculty: draft.faculty ?? [],
     majors: draft.majors ?? [],
-    // TEMP: dead fields kept only to satisfy ParsedRegistrationFormSubmission's
-    // unchanged type — see parseRegistrationFormData.ts, which is dead code.
+    // TEMP: dead fields, only here to satisfy the unchanged submission type.
     programme: null,
     yearLevel: null,
     primaryAffiliation: draft.primaryAffiliation ?? null,
@@ -406,14 +405,14 @@ export async function submitRegistrationStep(
 
       if (exceedsMax(nonUoaExcerpt, "nonUoaExcerpt")) {
         return {
-          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
+          error: `That's a bit long. Please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
           fields,
         };
       }
 
       if (exceedsMax(nonUoaPitch, "nonUoaPitch")) {
         return {
-          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
+          error: `That's a bit long. Please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
           fields,
         };
       }

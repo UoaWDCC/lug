@@ -52,7 +52,7 @@ export default function TextField({
   onInput,
   inputRef,
 }: TextFieldProps) {
-  // Not `name` — repeated fields like majors share a name and would collide.
+  // Not `name` - repeated fields like majors share a name and would collide.
   const id = useId();
   const [value, setValue] = useState(defaultValue);
 

@@ -1,76 +1,136 @@
 @import "tailwindcss";
 
-/* Design tokens from the handoff prototype. Dark is default; light is opt-in via [data-theme="light"]. */
-:root,
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --accent: #3fcca8;
-  --accent-text: #3fcca8;
-  --bg: #000000;
-  --fg: #ffffff;
-  --muted: rgba(255, 255, 255, 0.66);
-  --danger: #ff8b8b;
-
-  --input-bg: rgba(255, 255, 255, 0.04);
-  --input-border: rgba(63, 204, 168, 0.35);
-  --card-bg: rgba(6, 14, 12, 0.85);
-  --chip-bg: rgba(255, 255, 255, 0.05);
-  --chip-hover-bg: rgba(63, 204, 168, 0.16);
-  --menu-bg: rgba(6, 14, 12, 0.92);
-  --term-bg: rgba(4, 10, 9, 0.82);
-  --term-border: rgba(63, 204, 168, 0.55);
-
-  /* command rows in the terminal panel */
-  --row-bg: rgba(63, 204, 168, 0.1);
-  --row-border: rgba(63, 204, 168, 0.28);
-  --row-cmd: #3fcca8;
-  --row-desc: rgba(255, 255, 255, 0.72);
-  --row-hover-bg: rgba(63, 204, 168, 0.2);
-
-  /* hero backdrop */
-  --hero-image: url("/background.png");
-  --hero-opacity: 1;
-  --hero-scrim: linear-gradient(
-    90deg,
-    #000 0%,
-    rgba(0, 0, 0, 0.9) 34%,
-    rgba(0, 0, 0, 0.35) 58%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
-  --rain-base-opacity: 0.34;
+/* One registered scalar drives the whole theme fade: 0 = dark, 1 = light, mixed "in srgb" so midpoints stay neutral. */
+@property --theme-mix {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
 
-/* Light theme - no background image yet, the handoff asset was never supplied. */
+/* Design tokens from the handoff prototype, written as dark -> light pairs.
+   Dark is default; light is opt-in via [data-theme="light"]. */
+:root {
+  color-scheme: dark;
+
+  --theme-transition: 620ms;
+  --theme-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --theme-mix: 0;
+  transition: --theme-mix var(--theme-transition) var(--theme-ease);
+
+  /* color-mix wants a percentage; --theme-mix is a plain number. */
+  --mix: calc(var(--theme-mix) * 100%);
+
+  --accent: #3fcca8; /* identical in both themes */
+  --accent-text: color-mix(in srgb, #3fcca8, #0f7a60 var(--mix));
+  --bg: color-mix(in srgb, #000000, #ffffff var(--mix));
+  /* Neutral near-black, not the handoff's teal-tinted #08201a, so the fade stays on the grey axis. */
+  --fg: color-mix(in srgb, #ffffff, #0a0a0a var(--mix));
+  --muted: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.66),
+    rgba(10, 10, 10, 0.68) var(--mix)
+  );
+  --danger: color-mix(in srgb, #ff8b8b, #c0392b var(--mix));
+
+  --input-bg: color-mix(in srgb, rgba(255, 255, 255, 0.04), #ffffff var(--mix));
+  --input-border: color-mix(
+    in srgb,
+    rgba(63, 204, 168, 0.35),
+    rgba(15, 122, 96, 0.3) var(--mix)
+  );
+  --card-bg: color-mix(
+    in srgb,
+    rgba(6, 14, 12, 0.85),
+    rgba(255, 255, 255, 0.92) var(--mix)
+  );
+  --chip-bg: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.7) var(--mix)
+  );
+  --chip-hover-bg: color-mix(
+    in srgb,
+    rgba(63, 204, 168, 0.16),
+    rgba(15, 122, 96, 0.1) var(--mix)
+  );
+  --menu-bg: color-mix(
+    in srgb,
+    rgba(6, 14, 12, 0.92),
+    rgba(255, 255, 255, 0.95) var(--mix)
+  );
+  --term-bg: color-mix(
+    in srgb,
+    rgba(4, 10, 9, 0.82),
+    rgba(255, 255, 255, 0.9) var(--mix)
+  );
+  --term-border: color-mix(
+    in srgb,
+    rgba(63, 204, 168, 0.55),
+    rgba(15, 122, 96, 0.35) var(--mix)
+  );
+
+  /* Terminal panel command rows: opaque fills so they don't wash out into --term-bg. */
+  --row-bg: color-mix(in srgb, #0a1c18, #cfeee2 var(--mix));
+  --row-border: color-mix(in srgb, #184d3f, #8fd6bd var(--mix));
+  --row-cmd: color-mix(in srgb, #3fcca8, #0f7a60 var(--mix));
+  --row-desc: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.72),
+    rgba(10, 10, 10, 0.68) var(--mix)
+  );
+  --row-hover-bg: color-mix(in srgb, #0f2f27, #b7e7d3 var(--mix));
+
+  /* Feeds the rainFall keyframes; 0.34 dark -> 0.28 light. */
+  --rain-base-opacity: calc(0.34 - 0.06 * var(--theme-mix));
+}
+
 :root[data-theme="light"] {
   color-scheme: light;
+  --theme-mix: 1;
+}
 
-  --accent: #3fcca8;
-  --accent-text: #0f7a60;
-  --bg: #ffffff;
-  --fg: #08201a;
-  --muted: rgba(8, 32, 26, 0.68);
-  --danger: #c0392b;
+/* Hero backdrop: both theme images stack and cross-fade via opacity instead of swapping source. */
+.hero-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: right center;
+  transition: opacity var(--theme-transition) var(--theme-ease);
+}
 
-  --input-bg: #ffffff;
-  --input-border: rgba(15, 122, 96, 0.3);
-  --card-bg: rgba(255, 255, 255, 0.92);
-  --chip-bg: rgba(255, 255, 255, 0.7);
-  --chip-hover-bg: rgba(15, 122, 96, 0.1);
-  --menu-bg: rgba(255, 255, 255, 0.95);
-  --term-bg: rgba(255, 255, 255, 0.9);
-  --term-border: rgba(15, 122, 96, 0.35);
+.hero-layer--dark {
+  background-image:
+    linear-gradient(
+      90deg,
+      #000 0%,
+      rgba(0, 0, 0, 0.9) 34%,
+      rgba(0, 0, 0, 0.35) 58%,
+      rgba(0, 0, 0, 0.1) 100%
+    ),
+    url("/LUG_dark.png");
+  opacity: 1;
+}
 
-  --row-bg: rgba(15, 122, 96, 0.06);
-  --row-border: rgba(15, 122, 96, 0.25);
-  --row-cmd: #0f7a60;
-  --row-desc: rgba(8, 32, 26, 0.72);
-  --row-hover-bg: rgba(15, 122, 96, 0.12);
+.hero-layer--light {
+  background-image:
+    linear-gradient(
+      90deg,
+      #fff 0%,
+      rgba(255, 255, 255, 0.9) 34%,
+      rgba(255, 255, 255, 0.35) 58%,
+      rgba(255, 255, 255, 0.1) 100%
+    ),
+    url("/LUG_light.png");
+  opacity: 0;
+}
 
-  --hero-image: none;
-  --hero-opacity: 0;
-  --hero-scrim: none;
-  --rain-base-opacity: 0.28;
+:root[data-theme="light"] .hero-layer--dark {
+  opacity: 0;
+}
+
+:root[data-theme="light"] .hero-layer--light {
+  opacity: 1;
 }
 
 html,
@@ -87,10 +147,9 @@ body {
   font-family: var(--font-sans), "Lato", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition:
-    background 0.25s,
-    color 0.25s;
 }
+
+/* Components keep their own hover timings; theme changes reach them via the interpolating tokens above. */
 
 ::-webkit-scrollbar {
   width: 8px;
@@ -100,6 +159,11 @@ body {
 ::-webkit-scrollbar-thumb {
   background: rgba(63, 204, 168, 0.4);
   border-radius: 8px;
+}
+
+/* Skip-link pattern: focus lands on <main> after a terminal navigation, so no focus ring. */
+main[tabindex="-1"]:focus {
+  outline: none;
 }
 
 /* CSS picks the visible theme label - no client state, no hydration mismatch. */
@@ -154,6 +218,81 @@ body {
   animation: blink 1s step-start infinite;
 }
 
+/* Terminal block caret sits behind the character, so the background blinks, not the glyph. */
+@keyframes caretBlink {
+  0%,
+  49% {
+    background-color: var(--accent);
+    color: #000;
+  }
+  50%,
+  100% {
+    background-color: transparent;
+    color: var(--fg);
+  }
+}
+
+.term-caret {
+  border-radius: 1px;
+  animation: caretBlink 1.05s step-end infinite;
+}
+
+/* Dims suggested text on the off-beat so the ghost never reads as typed input. */
+@keyframes caretBlinkGhost {
+  0%,
+  49% {
+    background-color: var(--accent);
+    color: #000;
+  }
+  50%,
+  100% {
+    background-color: transparent;
+    color: var(--muted);
+  }
+}
+
+.term-caret[data-ghost="true"] {
+  animation-name: caretBlinkGhost;
+}
+
+/* Unfocused prompts show a hollow caret instead of a blinking solid one. */
+.term-caret[data-idle="true"] {
+  animation: none;
+  color: var(--fg);
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--input-border);
+}
+
+@keyframes termLineIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.term-line {
+  animation: termLineIn 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes termSuggestionIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.term-suggestion {
+  animation: termSuggestionIn 180ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* Page transitions.
    The home terminal panel and the registration card share the view-transition
    name "signup-window", so the browser grows one into the other rather than
@@ -176,12 +315,28 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :root,
+  .hero-layer {
+    transition: none !important;
+  }
+
   .rain-column {
     animation: none !important;
     opacity: var(--rain-op, 0.35) !important;
   }
 
   .cursor-blink {
+    animation: none;
+  }
+
+  .term-caret {
+    animation: none;
+    color: #000;
+    background-color: var(--accent);
+  }
+
+  .term-line,
+  .term-suggestion {
     animation: none;
   }
 

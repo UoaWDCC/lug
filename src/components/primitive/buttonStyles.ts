@@ -8,6 +8,6 @@ export const accentButtonClass =
 export const ghostButtonClass =
   "inline-block cursor-pointer rounded-lg border border-[var(--input-border)] bg-transparent px-7 py-3.5 text-center font-mono text-xl font-semibold text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.97]";
 
-/** Scrollable page shell used by every screen except the home hero. */
+/** Scrollable page shell used by every screen except the home hero; bottom padding clears the docked terminal. */
 export const scrollableMainClass =
-  "relative z-10 min-h-0 flex-1 overflow-y-auto px-9 pt-2.5 pb-6";
+  "relative z-10 min-h-0 flex-1 overflow-y-auto px-9 pt-2.5 pb-24";

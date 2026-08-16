@@ -9,7 +9,7 @@ export default function NavBar() {
       <Link
         href="/"
         aria-label="LUG@UoA home"
-        className="flex items-center gap-3.5 transition-opacity duration-150 hover:opacity-70 active:opacity-55"
+        className="flex items-center gap-2.5 transition-opacity duration-150 hover:opacity-70 active:opacity-55"
       >
         <Image
           src="/logo.svg"

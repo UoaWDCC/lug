@@ -3,6 +3,8 @@ import { Fira_Code, Lato } from "next/font/google";
 import "./globals.css";
 
 import NavBar from "@/components/layout/NavBar";
+import TerminalDock from "@/components/terminal/TerminalDock";
+import TerminalProvider from "@/components/terminal/TerminalProvider";
 import ThemeScript from "@/components/theme/ThemeScript";
 
 const firaCode = Fira_Code({
@@ -32,6 +34,8 @@ export default function RootLayout({
     <html
       lang="en"
       data-theme="dark"
+      // ThemeScript can rewrite data-theme before hydration, so server/client may legitimately differ.
+      suppressHydrationWarning
       className={`${firaCode.variable} ${lato.variable}`}
     >
       <head>
@@ -40,17 +44,15 @@ export default function RootLayout({
       <body>
         {/* Fixed-viewport shell - the page never scrolls, each screen's <main> does. */}
         <div className="relative flex h-screen flex-col overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
-          <div
-            aria-hidden
-            className="absolute inset-0 z-0 bg-[image:var(--hero-image)] bg-cover bg-[position:right_center] opacity-[var(--hero-opacity)]"
-          />
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-[1] bg-[image:var(--hero-scrim)]"
-          />
+          <div aria-hidden className="hero-layer hero-layer--dark z-0" />
+          <div aria-hidden className="hero-layer hero-layer--light z-0" />
 
-          <NavBar />
-          {children}
+          {/* Root-level so the terminal session survives navigation. */}
+          <TerminalProvider>
+            <NavBar />
+            {children}
+            <TerminalDock />
+          </TerminalProvider>
         </div>
       </body>
     </html>

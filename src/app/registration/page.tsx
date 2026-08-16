@@ -16,7 +16,7 @@ export default async function FormPage() {
   const { page = "start" } = draft;
 
   return (
-    <main className="relative z-10 flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-5 pt-2 pb-4">
+    <main className="relative z-10 flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-5 pt-2 pb-24">
       <ViewTransition name="signup-window">
         <div className="w-full max-w-[700px] rounded-[18px] border border-[var(--accent)] bg-[var(--card-bg)] px-8 py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
           <RegistrationForm currentPage={page} step={getStepProgress(page)}>
