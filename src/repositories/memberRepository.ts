@@ -30,6 +30,12 @@ export async function createMembershipRegistration(
   }
 }
 
+export async function findMemberById(id: number) {
+  return getPrisma().member.findUnique({
+    where: { id },
+  });
+}
+
 export async function findMemberByUpiAndStudentId(
   upi: string,
   studentId: string,
