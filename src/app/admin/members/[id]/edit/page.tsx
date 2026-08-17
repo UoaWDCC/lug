@@ -51,6 +51,11 @@ export default async function EditMemberPage({ params }: EditMemberPageProps) {
     notFound();
   }
 
+  // Returning members were not asked whether they are current UoA students,
+  // so both sections remain open when this value is unknown (null).
+  const uoaSectionOpen = member.isCurrentUoaStudent !== false;
+  const nonUoaSectionOpen = member.isCurrentUoaStudent !== true;
+
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight">
@@ -122,98 +127,111 @@ export default async function EditMemberPage({ params }: EditMemberPageProps) {
           />
         </div>
 
-        <fieldset className="rounded-md border border-gray-200 p-4">
-          <legend className="px-1 text-sm font-medium">Faculty</legend>
-          <p className="mb-3 text-sm text-gray-600">Choose up to two.</p>
-          <div className="space-y-2">
-            {FACULTY_OPTIONS.map((faculty) => (
-              <label className="flex items-center gap-2" key={faculty.value}>
-                <input
-                  type="checkbox"
-                  name="faculty"
-                  value={faculty.value}
-                  defaultChecked={member.faculty.includes(faculty.value)}
-                />
-                {faculty.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        <div className="space-y-6">
-          <div>
-            <label
-              className="block text-sm font-medium"
-              htmlFor="programmeType"
-            >
-              Programme type
-            </label>
-            <select
-              className={inputClassName}
-              id="programmeType"
-              name="programmeType"
-              defaultValue={member.programmeType ?? ""}
-            >
-              <option value="">Not specified</option>
-              {VALID_PROGRAMME_TYPES.map((programmeType) => (
-                <option key={programmeType} value={programmeType}>
-                  {formatEnum(programmeType)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label
-              className="block text-sm font-medium"
-              htmlFor="yearsRemaining"
-            >
-              Years remaining
-            </label>
-            <select
-              className={inputClassName}
-              id="yearsRemaining"
-              name="yearsRemaining"
-              defaultValue={member.yearsRemaining ?? ""}
-            >
-              <option value="">Not specified</option>
-              {VALID_YEARS_REMAINING.map((years) => (
-                <option key={years} value={years}>
-                  {years === 0
-                    ? "Less than 1"
-                    : years === 5
-                      ? "More than 4"
-                      : years}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <fieldset className="md:col-span-2">
-          <legend className="text-sm font-medium">Majors</legend>
-          <p className="mb-3 text-sm text-gray-600">
-            Add up to {MAX_MAJORS} majors or specialisations.
-          </p>
-          <div className="grid gap-3 md:grid-cols-2">
-            {Array.from({ length: MAX_MAJORS }).map((_, index) => (
-              <div key={index}>
-                <label className="sr-only" htmlFor={`major-${index}`}>
-                  Major {index + 1}
-                </label>
-                <input
-                  className={inputClassName}
-                  id={`major-${index}`}
-                  name="majors"
-                  type="text"
-                  defaultValue={member.majors[index] ?? ""}
-                  maxLength={MAX_LENGTHS.major}
-                  placeholder={`Major ${index + 1}`}
-                />
+        <details
+          className="rounded-md border border-gray-200 md:col-span-2"
+          open={uoaSectionOpen}
+        >
+          <summary className="cursor-pointer px-4 py-3 font-semibold">
+            UoA information
+          </summary>
+          <div className="grid gap-6 border-t border-gray-200 p-4 md:grid-cols-2">
+            <fieldset className="rounded-md border border-gray-200 p-4">
+              <legend className="px-1 text-sm font-medium">Faculty</legend>
+              <p className="mb-3 text-sm text-gray-600">Choose up to two.</p>
+              <div className="space-y-2">
+                {FACULTY_OPTIONS.map((faculty) => (
+                  <label
+                    className="flex items-center gap-2"
+                    key={faculty.value}
+                  >
+                    <input
+                      type="checkbox"
+                      name="faculty"
+                      value={faculty.value}
+                      defaultChecked={member.faculty.includes(faculty.value)}
+                    />
+                    {faculty.label}
+                  </label>
+                ))}
               </div>
-            ))}
+            </fieldset>
+
+            <div className="space-y-6">
+              <div>
+                <label
+                  className="block text-sm font-medium"
+                  htmlFor="programmeType"
+                >
+                  Programme type
+                </label>
+                <select
+                  className={inputClassName}
+                  id="programmeType"
+                  name="programmeType"
+                  defaultValue={member.programmeType ?? ""}
+                >
+                  <option value="">Not specified</option>
+                  {VALID_PROGRAMME_TYPES.map((programmeType) => (
+                    <option key={programmeType} value={programmeType}>
+                      {formatEnum(programmeType)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label
+                  className="block text-sm font-medium"
+                  htmlFor="yearsRemaining"
+                >
+                  Years remaining
+                </label>
+                <select
+                  className={inputClassName}
+                  id="yearsRemaining"
+                  name="yearsRemaining"
+                  defaultValue={member.yearsRemaining ?? ""}
+                >
+                  <option value="">Not specified</option>
+                  {VALID_YEARS_REMAINING.map((years) => (
+                    <option key={years} value={years}>
+                      {years === 0
+                        ? "Less than 1"
+                        : years === 5
+                          ? "More than 4"
+                          : years}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <fieldset className="md:col-span-2">
+              <legend className="text-sm font-medium">Majors</legend>
+              <p className="mb-3 text-sm text-gray-600">
+                Add up to {MAX_MAJORS} majors or specialisations.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                {Array.from({ length: MAX_MAJORS }).map((_, index) => (
+                  <div key={index}>
+                    <label className="sr-only" htmlFor={`major-${index}`}>
+                      Major {index + 1}
+                    </label>
+                    <input
+                      className={inputClassName}
+                      id={`major-${index}`}
+                      name="majors"
+                      type="text"
+                      defaultValue={member.majors[index] ?? ""}
+                      maxLength={MAX_LENGTHS.major}
+                      placeholder={`Major ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
           </div>
-        </fieldset>
+        </details>
 
         <div>
           <label
@@ -258,50 +276,66 @@ export default async function EditMemberPage({ params }: EditMemberPageProps) {
           </div>
         </fieldset>
 
-        <div className="md:col-span-2">
-          <label
-            className="block text-sm font-medium"
-            htmlFor="primaryAffiliation"
-          >
-            Primary affiliation
-          </label>
-          <input
-            className={inputClassName}
-            id="primaryAffiliation"
-            name="primaryAffiliation"
-            type="text"
-            defaultValue={member.primaryAffiliation ?? ""}
-            maxLength={MAX_LENGTHS.primaryAffiliation}
-          />
-        </div>
+        <details
+          className="rounded-md border border-gray-200 md:col-span-2"
+          open={nonUoaSectionOpen}
+        >
+          <summary className="cursor-pointer px-4 py-3 font-semibold">
+            Non-UoA information
+          </summary>
+          <div className="grid gap-6 border-t border-gray-200 p-4 md:grid-cols-2">
+            <div className="md:col-span-2">
+              <label
+                className="block text-sm font-medium"
+                htmlFor="primaryAffiliation"
+              >
+                Primary affiliation
+              </label>
+              <input
+                className={inputClassName}
+                id="primaryAffiliation"
+                name="primaryAffiliation"
+                type="text"
+                defaultValue={member.primaryAffiliation ?? ""}
+                maxLength={MAX_LENGTHS.primaryAffiliation}
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium" htmlFor="nonUoaExcerpt">
-            Non-UoA excerpt
-          </label>
-          <textarea
-            className={inputClassName}
-            id="nonUoaExcerpt"
-            name="nonUoaExcerpt"
-            defaultValue={member.nonUoaExcerpt ?? ""}
-            maxLength={MAX_LENGTHS.nonUoaExcerpt}
-            rows={5}
-          />
-        </div>
+            <div>
+              <label
+                className="block text-sm font-medium"
+                htmlFor="nonUoaExcerpt"
+              >
+                Non-UoA excerpt
+              </label>
+              <textarea
+                className={inputClassName}
+                id="nonUoaExcerpt"
+                name="nonUoaExcerpt"
+                defaultValue={member.nonUoaExcerpt ?? ""}
+                maxLength={MAX_LENGTHS.nonUoaExcerpt}
+                rows={5}
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium" htmlFor="nonUoaPitch">
-            Non-UoA pitch
-          </label>
-          <textarea
-            className={inputClassName}
-            id="nonUoaPitch"
-            name="nonUoaPitch"
-            defaultValue={member.nonUoaPitch ?? ""}
-            maxLength={MAX_LENGTHS.nonUoaPitch}
-            rows={5}
-          />
-        </div>
+            <div>
+              <label
+                className="block text-sm font-medium"
+                htmlFor="nonUoaPitch"
+              >
+                Non-UoA pitch
+              </label>
+              <textarea
+                className={inputClassName}
+                id="nonUoaPitch"
+                name="nonUoaPitch"
+                defaultValue={member.nonUoaPitch ?? ""}
+                maxLength={MAX_LENGTHS.nonUoaPitch}
+                rows={5}
+              />
+            </div>
+          </div>
+        </details>
 
         <section
           className="rounded-md bg-gray-50 p-4 md:col-span-2"
