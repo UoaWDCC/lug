@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import updateMemberAction from "@/features/admin-members/updateMemberAction";
 import { requireAdmin } from "@/lib/auth/session";
 import { findMemberById } from "@/repositories/memberRepository";
 import {
@@ -30,6 +31,12 @@ type EditMemberPageProps = {
     id: string;
   }>;
 };
+
+async function submitMemberUpdate(formData: FormData) {
+  "use server";
+
+  await updateMemberAction(formData);
+}
 
 export default async function EditMemberPage({ params }: EditMemberPageProps) {
   await requireAdmin();
@@ -66,7 +73,10 @@ export default async function EditMemberPage({ params }: EditMemberPageProps) {
         Edit Member Details: {member.firstName} {member.lastName}
       </h1>
 
-      <form className="mt-6 grid gap-6 md:grid-cols-2">
+      <form
+        action={submitMemberUpdate}
+        className="mt-6 grid gap-6 md:grid-cols-2"
+      >
         <input type="hidden" name="id" value={member.id} />
 
         <div>
