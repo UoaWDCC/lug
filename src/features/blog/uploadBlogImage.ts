@@ -1,3 +1,5 @@
+"use server";
+
 import { requireAdmin } from "@/lib/auth/session";
 import { imageStorage } from "@/lib/storage/localStorage";
 export default async function uploadBlogImage(

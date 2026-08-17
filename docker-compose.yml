@@ -17,6 +17,8 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      DATABASE_URL: "postgresql://lug_user:lug_password@db:5432/lug_dev"
     ports:
       - "3000:3000"
     volumes:
