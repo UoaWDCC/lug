@@ -146,13 +146,13 @@ describe("required field validation - base fields", () => {
     expect(result.ok).toBe(false);
   });
 
-  it("accepts an empty potentialInvolvement array", () => {
+  it("rejects an empty potentialInvolvement array", () => {
     const result = validateMemberRegistration({
       ...validCurrentUoaStudent,
       potentialInvolvement: [],
     });
 
-    expect(result.ok).toBe(true);
+    expect(result.ok).toBe(false);
   });
 });
 
