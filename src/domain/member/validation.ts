@@ -1,16 +1,6 @@
 import { z } from "zod";
 
-import {
-  UnvalidatedMemberSubmission,
-  // BaseMemberRegistration,
-  // CurrentUoaStudentMember,
-  // Faculty,
-  // LinuxSkillLevel,
-  MemberRegistration,
-  // NonCurrentUoaStudentMember,
-  // PotentialInvolvement,
-  // ProgrammeType,
-} from "./types";
+import { UnvalidatedMemberSubmission, MemberRegistration } from "./types";
 import {
   MAX_LENGTHS,
   VALID_INVOLVEMENTS,
@@ -20,22 +10,10 @@ import {
   VALID_PROGRAMME_TYPES,
   MAX_MAJORS,
 } from "./constants";
-import { exceedsMax } from "./exceedsMax";
-import {
-  LinuxSkillLevel,
-  PotentialInvolvement,
-} from "@/generated/prisma/enums";
 
 type RegistrationFormValidationError = {
   message: string;
 };
-
-// TODO #92: Rewrite this entire file using Zod schemas.
-// The external contract must stay the same:
-//   Input:  UnvalidatedMemberSubmission (loose, all fields string | null)
-//   Output: { ok: true, data: MemberRegistration } | { ok: false, error: { message: string } }
-// The discriminant is isCurrentUoaStudent ("yes" / "no"), not isConditionalReturningMember (removed).
-// See ticket #92 for the full Zod sketch and requirements.
 
 const BaseMemberSchema = z.object({
   firstName: z
@@ -79,7 +57,7 @@ const BaseMemberSchema = z.object({
         error: "Invalid involvement option selected.",
       }),
     )
-    .default([]),
+    .min(1, "Please select at least 1 involvement."),
 });
 
 const CurrentUoaMemberSchema = BaseMemberSchema.extend({
@@ -173,7 +151,6 @@ export function validateMemberRegistration(
 ):
   | { ok: true; data: MemberRegistration }
   | { ok: false; error: RegistrationFormValidationError } {
-  // TEMP: stubbed to always fail until #92 rewrites with Zod
   const input = {
     ...submission,
     majors: submission.majors ?? [],
