@@ -39,33 +39,21 @@ const currentUoaStudent: MemberRegistration = {
   firstName: "Amy",
   lastName: "Chen",
   email: "amy@example.com",
-  isConditionalReturningMember: false,
   isCurrentUoaStudent: true,
   upi: "achen123",
   studentId: "123456789",
   faculty: ["science"],
   programmeType: "BACHELOR",
   majors: ["Computer Science"],
+  yearsRemaining: 2,
   linuxSkillLevel: "BEGINNER_USER",
   potentialInvolvement: ["ATTENDING"],
-};
-
-const conditionalReturningMember: MemberRegistration = {
-  firstName: "Ben",
-  lastName: "Wu",
-  email: "ben@example.com",
-  isConditionalReturningMember: true,
-  upi: "bwu456",
-  studentId: "987654321",
-  linuxSkillLevel: "POWER_USER",
-  potentialInvolvement: [],
 };
 
 const nonUoaMember: MemberRegistration = {
   firstName: "Cara",
   lastName: "Lopez",
   email: "cara@example.com",
-  isConditionalReturningMember: false,
   isCurrentUoaStudent: false,
   primaryAffiliation: "AUT",
   linuxSkillLevel: "NOTHING",
@@ -91,29 +79,13 @@ describe("createMembershipRegistration", () => {
         registrationYear: currentYear,
         faculty: ["science"],
         majors: ["Computer Science"],
+        yearsRemaining: 2,
         programmeType: "BACHELOR",
         upi: "achen123",
         studentId: "123456789",
         isCurrentUoaStudent: true,
       }),
     });
-  });
-
-  it("maps a conditional returning member registration without UoA-only fields", async () => {
-    mockCreate.mockResolvedValueOnce({});
-
-    const result = await createMembershipRegistration(
-      conditionalReturningMember,
-    );
-
-    expect(result).toEqual({ ok: true });
-    const callArg = mockCreate.mock.calls[0][0].data;
-    expect(callArg.upi).toBe("bwu456");
-    expect(callArg.studentId).toBe("987654321");
-    expect(callArg.registrationYear).toBe(currentYear);
-    expect(callArg.faculty).toBeUndefined();
-    expect(callArg.programmeType).toBeUndefined();
-    expect(callArg.majors).toBeUndefined();
   });
 
   it("maps a non-UoA member registration with an empty faculty array", async () => {

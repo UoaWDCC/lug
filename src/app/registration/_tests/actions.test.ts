@@ -562,6 +562,7 @@ describe("case: final", () => {
     const fd = buildFormData({
       page: "final",
       linuxSkillLevel: "BEGINNER_USER",
+      potentialInvolvement: "ATTENDING",
       discordUsername: "a".repeat(33),
     });
     const result = await submitRegistrationStep(null, fd);
@@ -579,6 +580,7 @@ describe("case: final", () => {
     const fd = buildFormData({
       page: "final",
       linuxSkillLevel: "BEGINNER_USER",
+      potentialInvolvement: "ATTENDING",
     });
 
     await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
@@ -599,6 +601,7 @@ describe("case: final", () => {
     });
     const fd = buildFormData({
       page: "final",
+      potentialInvolvement: "ATTENDING",
       linuxSkillLevel: "BEGINNER_USER",
     });
 
@@ -617,6 +620,7 @@ describe("case: final", () => {
       const fd = buildFormData({
         page: "final",
         linuxSkillLevel: "BEGINNER_USER",
+        potentialInvolvement: "ATTENDING",
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
@@ -636,6 +640,7 @@ describe("case: final", () => {
       const fd = buildFormData({
         page: "final",
         linuxSkillLevel: "BEGINNER_USER",
+        potentialInvolvement: "ATTENDING",
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
@@ -659,6 +664,7 @@ describe("case: final", () => {
       const fd = buildFormData({
         page: "final",
         linuxSkillLevel: "BEGINNER_USER",
+        potentialInvolvement: "ATTENDING",
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
@@ -680,6 +686,7 @@ describe("case: final", () => {
       const fd = buildFormData({
         page: "final",
         linuxSkillLevel: "BEGINNER_USER",
+        potentialInvolvement: "ATTENDING",
       });
 
       await expect(submitRegistrationStep(null, fd)).rejects.toThrow(
