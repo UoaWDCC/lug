@@ -414,14 +414,14 @@ export async function submitRegistrationStep(
 
       if (exceedsMax(nonUoaExcerpt, "nonUoaExcerpt")) {
         return {
-          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
+          error: `That's a bit long. Please keep it under ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
           fields,
         };
       }
 
       if (exceedsMax(nonUoaPitch, "nonUoaPitch")) {
         return {
-          error: `That's a bit long — please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
+          error: `That's a bit long. Please keep it under ${MAX_LENGTHS.nonUoaPitch} characters.`,
           fields,
         };
       }

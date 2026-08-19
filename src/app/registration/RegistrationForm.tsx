@@ -1,16 +1,26 @@
 "use client";
 import { createContext, useContext, useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import Link from "next/link";
+
+import { accentButtonClass } from "@/components/primitive/buttonStyles";
 import { submitRegistrationStep } from "./actions";
 import { RegistrationFormState, RegistrationPage } from "./types";
+import ProgressSteps from "./_components/ProgressSteps";
+import type { StepProgress } from "./_components/steps";
 
 const FormStateContext = createContext<RegistrationFormState>(null);
 
+const backButtonClass =
+  "mb-2.5 flex cursor-pointer items-center gap-1.5 self-start rounded-lg border border-[var(--input-border)] bg-transparent px-4 py-1.5 font-mono text-base text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.96]";
+
 export function RegistrationForm({
   currentPage,
+  step,
   children,
 }: {
   currentPage: RegistrationPage;
+  step: StepProgress;
   children: React.ReactNode;
 }) {
   const [state, submitAction] = useActionState(submitRegistrationStep, null);
@@ -20,27 +30,38 @@ export function RegistrationForm({
 
   return (
     <FormStateContext.Provider value={state}>
-      <form action={submitAction} noValidate className="flex flex-col gap-6">
+      <form action={submitAction} noValidate className="flex flex-col">
         <input type="hidden" name="page" value={currentPage} />
 
-        {/* Generic Error Message */}
-        {state?.error && (
-          <div role="alert" style={{ color: "red" }}>
-            <strong>Error:</strong> {state.error}
-          </div>
-        )}
-
-        {children}
-        {!isFirstPage && (
+        {/* On the first page there is nowhere back to but home. */}
+        {isFirstPage ? (
+          <Link href="/" className={backButtonClass}>
+            &#8592; Back
+          </Link>
+        ) : (
           <button
             type="submit"
             name="intent"
             value="back"
-            className="self-start px-6 py-2 bg-green-600 text-white rounded"
+            className={backButtonClass}
           >
-            Prev
+            &#8592; Back
           </button>
         )}
+
+        <ProgressSteps {...step} />
+
+        {/* Generic Error Message */}
+        {state?.error && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-[var(--danger)] px-4 py-3 text-base leading-[1.5] text-[var(--danger)]"
+          >
+            <strong>Error:</strong> {state.error}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-2.5">{children}</div>
 
         <SubmitButton isFinalPage={isFinalPage} />
       </form>
@@ -57,9 +78,13 @@ function SubmitButton({ isFinalPage }: { isFinalPage: boolean }) {
       name="intent"
       value="submit"
       disabled={pending}
-      className="self-start px-6 py-2 bg-green-600 text-white rounded"
+      className={`${accentButtonClass} mt-3.5 w-full`}
     >
-      {pending ? "Processing..." : isFinalPage ? "Submit" : "Next"}
+      {pending
+        ? "Processing…"
+        : isFinalPage
+          ? "Complete registration"
+          : "Continue"}
     </button>
   );
 }
