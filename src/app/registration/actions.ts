@@ -7,11 +7,17 @@ import {
 } from "./types";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { VALID_PAGES, readRegistrationDraft } from "./utils";
+import {
+  VALID_PAGES,
+  readRegistrationDraft,
+  normalizeLowercase,
+  normalizeText,
+} from "./utils";
 
 import {
   VALID_INVOLVEMENTS,
   VALID_SKILL_LEVELS,
+  VALID_FACULTIES,
   VALID_PROGRAMME_TYPES,
   VALID_YEARS_REMAINING,
   MAX_LENGTHS,
@@ -20,15 +26,16 @@ import {
 } from "@/domain/member/constants";
 
 import {
+  Faculty,
   LinuxSkillLevel,
   PotentialInvolvement,
   ProgrammeType,
+  UnvalidatedMemberSubmission,
 } from "@/domain/member/types";
 
 import { exceedsMax } from "@/domain/member/exceedsMax";
 
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
-import { ParsedRegistrationFormSubmission } from "@/features/membership-registration/parseRegistrationFormData";
 import { findMemberByUpiAndStudentId } from "@/repositories/memberRepository";
 
 const COOKIE_OPTIONS = {
@@ -67,26 +74,24 @@ function stripIrrelevantFields(
 
 function toParsedSubmission(
   draft: Partial<RegistrationDraft>,
-): ParsedRegistrationFormSubmission {
+): UnvalidatedMemberSubmission {
   return {
-    firstName: draft.firstName ?? null,
-    lastName: draft.lastName ?? null,
-    email: draft.email ?? null,
-    isConditionalReturningMember: "no",
+    firstName: normalizeText(draft.firstName),
+    lastName: normalizeText(draft.lastName),
+    email: normalizeLowercase(draft.email),
     isCurrentUoaStudent: draft.isCurrentUoaStudent ?? null,
-    upi: draft.upi ?? null,
-    studentId: draft.studentId ?? null,
+    upi: normalizeLowercase(draft.upi),
+    studentId: normalizeText(draft.studentId),
     faculty: draft.faculty ?? [],
     majors: draft.majors ?? [],
-    // TEMP: dead fields, only here to satisfy the unchanged submission type.
-    programme: null,
-    yearLevel: null,
-    primaryAffiliation: draft.primaryAffiliation ?? null,
-    nonUoaExcerpt: draft.nonUoaExcerpt ?? null,
-    nonUoaPitch: draft.nonUoaPitch ?? null,
+    programmeType: draft.programmeType ?? null,
+    yearsRemaining: draft.yearsRemaining,
+    primaryAffiliation: normalizeText(draft.primaryAffiliation),
+    nonUoaExcerpt: normalizeText(draft.nonUoaExcerpt),
+    nonUoaPitch: normalizeText(draft.nonUoaPitch),
     linuxSkillLevel: draft.linuxSkillLevel ?? null,
     potentialInvolvement: draft.potentialInvolvement ?? [],
-    discordUsername: draft.discordUsername ?? null,
+    discordUsername: normalizeText(draft.discordUsername),
   };
 }
 
@@ -298,6 +303,10 @@ export async function submitRegistrationStep(
           error: `Please select at most ${MAX_FACULTIES} faculties.`,
           fields,
         };
+      }
+
+      if (!faculty.every((f) => VALID_FACULTIES.includes(f as Faculty))) {
+        return { error: "Please select a valid faculty.", fields };
       }
 
       if (majors.length > MAX_MAJORS) {
