@@ -448,8 +448,11 @@ export async function submitRegistrationStep(
         };
       }
 
+      if (potentialInvolvement.length == 0) {
+        return { error: "Please select at least 1 involvement.", fields };
+      }
+
       if (
-        potentialInvolvement.length > 0 &&
         !potentialInvolvement.every((i) =>
           VALID_INVOLVEMENTS.includes(i as PotentialInvolvement),
         )
