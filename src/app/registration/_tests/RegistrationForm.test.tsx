@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 import { RegistrationForm } from "../RegistrationForm";
+import type { StepProgress } from "../_components/steps";
 
 vi.mock("next/headers", () => ({
   cookies: vi.fn(async () => ({
@@ -15,10 +16,12 @@ vi.mock("next/navigation", () => ({
   redirect: vi.fn(),
 }));
 
+const step: StepProgress = { current: 1, total: 4, label: "Status" };
+
 describe("RegistrationForm", () => {
   it("does not render an error banner when there is no error state", () => {
     render(
-      <RegistrationForm currentPage="start">
+      <RegistrationForm currentPage="start" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -28,7 +31,7 @@ describe("RegistrationForm", () => {
 
   it("renders the child content passed to it", () => {
     render(
-      <RegistrationForm currentPage="start">
+      <RegistrationForm currentPage="start" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
@@ -36,51 +39,76 @@ describe("RegistrationForm", () => {
     expect(screen.getByText("child content")).toBeInTheDocument();
   });
 
-  it("hides the Prev button on the first page (start)", () => {
+  it("renders a link home instead of a back button on the first page (start)", () => {
     render(
-      <RegistrationForm currentPage="start">
+      <RegistrationForm currentPage="start" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
 
     expect(
-      screen.queryByRole("button", { name: "Prev" }),
+      screen.queryByRole("button", { name: /Back/ }),
     ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Back/ })).toHaveAttribute(
+      "href",
+      "/",
+    );
   });
 
-  it("shows the Prev button on any page other than start", () => {
+  it("shows the Back button on any page other than start", () => {
     render(
-      <RegistrationForm currentPage="uoaDetails">
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
 
-    expect(screen.getByRole("button", { name: "Prev" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Back/ })).toBeInTheDocument();
   });
 
-  it("labels the submit button 'Next' on a non-final page", () => {
+  it("labels the submit button 'Continue' on a non-final page", () => {
     render(
-      <RegistrationForm currentPage="uoaDetails">
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
 
-    expect(screen.getByRole("button", { name: "Next" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Continue" }),
+    ).toBeInTheDocument();
   });
 
-  it("labels the submit button 'Submit' on the final page", () => {
+  it("labels the submit button 'Complete registration' on the final page", () => {
     render(
-      <RegistrationForm currentPage="final">
+      <RegistrationForm currentPage="final" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
 
-    expect(screen.getByRole("button", { name: "Submit" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Complete registration" }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the step progress indicator", () => {
+    render(
+      <RegistrationForm
+        currentPage="uoaDetails"
+        step={{ current: 2, total: 3, label: "Study" }}
+      >
+        <p>child content</p>
+      </RegistrationForm>,
+    );
+
+    expect(screen.getByText("Step 2 of 3 · Study")).toBeInTheDocument();
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "2",
+    );
   });
 
   it("includes a hidden input carrying the current page value", () => {
     const { container } = render(
-      <RegistrationForm currentPage="uoaDetails">
+      <RegistrationForm currentPage="uoaDetails" step={step}>
         <p>child content</p>
       </RegistrationForm>,
     );
