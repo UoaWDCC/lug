@@ -47,10 +47,11 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "feed": "^5.2.1",
-    "next": "16.2.6",
+    "@tanstack/react-table": "^8.21.3",
     "bcryptjs": "^3.0.3",
+    "feed": "^5.2.1",
     "jose": "^6.2.3",
+    "next": "16.2.6",
     "pg": "^8.20.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
