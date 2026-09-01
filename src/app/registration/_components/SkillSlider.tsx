@@ -22,7 +22,7 @@ const FULL_LABELS: Record<(typeof DISPLAY_LEVELS)[number], string> = {
   CONTRIBUTOR: "I contribute to Linux projects",
 };
 
-const DEFAULT_INDEX = DISPLAY_LEVELS.indexOf("REGULAR_USER");
+const DEFAULT_INDEX = DISPLAY_LEVELS.indexOf("BEGINNER_USER");
 
 export default function SkillSlider({
   defaultValue,
@@ -59,6 +59,7 @@ export default function SkillSlider({
       <input
         id="linuxSkillLevelRange"
         type="range"
+        name="linuxSkillLevel"
         min={0}
         max={DISPLAY_LEVELS.length - 1}
         step={1}
@@ -67,9 +68,6 @@ export default function SkillSlider({
         aria-valuetext={FULL_LABELS[level]}
         className="w-full cursor-pointer accent-[var(--accent)]"
       />
-
-      {/* Submitted value — the range only knows its index. */}
-      <input type="hidden" name="linuxSkillLevel" value={level} />
 
       <div aria-hidden className="mt-2 flex">
         {DISPLAY_LEVELS.map((value, i) => (

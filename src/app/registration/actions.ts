@@ -38,6 +38,12 @@ import { exceedsMax } from "@/domain/member/exceedsMax";
 import { submitMemberRegistration } from "@/features/membership-registration/submitMemberRegistration";
 import { findMemberByUpiAndStudentId } from "@/repositories/memberRepository";
 
+const LINUX_SKILL_LEVELS = [
+  "BEGINNER_USER",
+  "REGULAR_USER",
+  "CONTRIBUTOR",
+] as const;
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -431,7 +437,9 @@ export async function submitRegistrationStep(
       break;
     }
     case "final": {
-      const linuxSkillLevel = formData.get("linuxSkillLevel") as string;
+      const linuxSkillLevelIndex = Number(formData.get("linuxSkillLevel"));
+      const linuxSkillLevel = LINUX_SKILL_LEVELS[linuxSkillLevelIndex] ?? null;
+
       const potentialInvolvement = formData.getAll(
         "potentialInvolvement",
       ) as string[];
@@ -474,8 +482,6 @@ export async function submitRegistrationStep(
         potentialInvolvement,
         discordUsername,
       };
-
-      console.log(fullDraft);
 
       // Final submission logic
       const submission = await submitMemberRegistration(
