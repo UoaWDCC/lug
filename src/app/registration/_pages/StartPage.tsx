@@ -58,6 +58,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           defaultValue={field?.upi ?? ""}
           pattern="[a-z]{3,4}[0-9]{3}"
           hint="i.e. jbon007"
+          required
         />
 
         <TextField
@@ -66,6 +67,7 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
           defaultValue={field?.studentId ?? ""}
           pattern="[0-9]{9,10}"
           hint="i.e. 825179213"
+          required
         />
       </div>
 
