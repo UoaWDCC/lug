@@ -518,24 +518,15 @@ describe("case: newNonUoa", () => {
 });
 
 describe("case: final", () => {
-  it("rejects a missing linuxSkillLevel", async () => {
-    setCookieDraft({
-      page: "final",
-      pageStack: ["start", "newNonUoa"],
-    });
-    const result = await submitRegistrationStep(
-      null,
-      buildFormData({ page: "final" }),
-    );
-    expect(result?.error).toMatch(/valid Linux knowledge level/);
-  });
+  // The SkillSlider range input submits a numeric index, not the enum string.
+  // 0 = BEGINNER_USER, 1 = REGULAR_USER, 2 = CONTRIBUTOR
 
-  it("rejects a linuxSkillLevel outside the known set", async () => {
+  it("rejects a linuxSkillLevel index outside the valid range", async () => {
     setCookieDraft({
       page: "final",
       pageStack: ["start", "newNonUoa"],
     });
-    const fd = buildFormData({ page: "final", linuxSkillLevel: "WIZARD" });
+    const fd = buildFormData({ page: "final", linuxSkillLevel: "99" });
     const result = await submitRegistrationStep(null, fd);
     expect(result?.error).toMatch(/valid Linux knowledge level/);
   });
@@ -547,7 +538,7 @@ describe("case: final", () => {
     });
     const fd = buildFormData({
       page: "final",
-      linuxSkillLevel: "BEGINNER_USER",
+      linuxSkillLevel: "0",
       potentialInvolvement: ["ATTENDING", "PRESIDENT"],
     });
     const result = await submitRegistrationStep(null, fd);
@@ -561,7 +552,7 @@ describe("case: final", () => {
     });
     const fd = buildFormData({
       page: "final",
-      linuxSkillLevel: "BEGINNER_USER",
+      linuxSkillLevel: "0",
       potentialInvolvement: "ATTENDING",
       discordUsername: "a".repeat(33),
     });
@@ -579,7 +570,7 @@ describe("case: final", () => {
     });
     const fd = buildFormData({
       page: "final",
-      linuxSkillLevel: "BEGINNER_USER",
+      linuxSkillLevel: "0",
       potentialInvolvement: "ATTENDING",
     });
 
@@ -602,7 +593,7 @@ describe("case: final", () => {
     const fd = buildFormData({
       page: "final",
       potentialInvolvement: "ATTENDING",
-      linuxSkillLevel: "BEGINNER_USER",
+      linuxSkillLevel: "0",
     });
 
     const result = await submitRegistrationStep(null, fd);
@@ -619,7 +610,7 @@ describe("case: final", () => {
       });
       const fd = buildFormData({
         page: "final",
-        linuxSkillLevel: "BEGINNER_USER",
+        linuxSkillLevel: "0",
         potentialInvolvement: "ATTENDING",
       });
 
@@ -639,7 +630,7 @@ describe("case: final", () => {
       });
       const fd = buildFormData({
         page: "final",
-        linuxSkillLevel: "BEGINNER_USER",
+        linuxSkillLevel: "0",
         potentialInvolvement: "ATTENDING",
       });
 
@@ -663,7 +654,7 @@ describe("case: final", () => {
       });
       const fd = buildFormData({
         page: "final",
-        linuxSkillLevel: "BEGINNER_USER",
+        linuxSkillLevel: "0",
         potentialInvolvement: "ATTENDING",
       });
 
@@ -685,7 +676,7 @@ describe("case: final", () => {
       });
       const fd = buildFormData({
         page: "final",
-        linuxSkillLevel: "BEGINNER_USER",
+        linuxSkillLevel: "0",
         potentialInvolvement: "ATTENDING",
       });
 
