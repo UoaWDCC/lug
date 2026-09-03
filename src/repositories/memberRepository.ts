@@ -97,34 +97,27 @@ function toMemberCreateInput(
     linuxSkillLevel: registration.linuxSkillLevel,
     potentialInvolvement: registration.potentialInvolvement,
     discordUsername: registration.discordUsername,
-
-    // Shared conditional field
-    isConditionalReturningMember: registration.isConditionalReturningMember,
   };
 
   // Non-shared conditional fields
   const conditionalData =
-    registration.isConditionalReturningMember === true
+    registration.isCurrentUoaStudent === true
       ? {
+          faculty: registration.faculty,
+          majors: registration.majors,
+          programmeType: registration.programmeType,
           upi: registration.upi,
           studentId: registration.studentId,
+          isCurrentUoaStudent: registration.isCurrentUoaStudent,
+          yearsRemaining: registration.yearsRemaining,
         }
-      : registration.isCurrentUoaStudent === true
-        ? {
-            faculty: registration.faculty,
-            majors: registration.majors,
-            programmeType: registration.programmeType,
-            upi: registration.upi,
-            studentId: registration.studentId,
-            isCurrentUoaStudent: registration.isCurrentUoaStudent,
-          }
-        : {
-            faculty: [],
-            primaryAffiliation: registration.primaryAffiliation,
-            nonUoaExcerpt: registration.nonUoaExcerpt,
-            nonUoaPitch: registration.nonUoaPitch,
-            isCurrentUoaStudent: registration.isCurrentUoaStudent,
-          };
+      : {
+          faculty: [],
+          primaryAffiliation: registration.primaryAffiliation,
+          nonUoaExcerpt: registration.nonUoaExcerpt,
+          nonUoaPitch: registration.nonUoaPitch,
+          isCurrentUoaStudent: registration.isCurrentUoaStudent,
+        };
 
   return { ...memberData, ...conditionalData };
 }

@@ -22,6 +22,17 @@ export const VALID_PROGRAMME_TYPES = [
   "OTHER",
 ] as const;
 
+export const VALID_FACULTIES = [
+  "engineeringDesign",
+  "science",
+  "artsEducation",
+  "business",
+  "law",
+  "medicalHealthScience",
+  "liggins",
+  "bioengineering",
+] as const;
+
 export const MAX_LENGTHS = {
   email: 254,
   firstName: 100,
