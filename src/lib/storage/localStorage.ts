@@ -9,7 +9,6 @@ const EXTENSIONS: Record<string, string> = {
   "image/webp": "webp",
   "image/gif": "gif",
   "image/avif": "avif",
-  "image/svg": "svg",
 };
 
 export class LocalImageStorage implements ImageStorage {
