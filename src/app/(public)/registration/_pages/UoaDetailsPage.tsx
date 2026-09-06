@@ -4,21 +4,7 @@ import { useFormError } from "../RegistrationForm";
 import { RegistrationDraft } from "../types";
 import TextField from "../_components/TextField";
 import OptionButton from "../_components/OptionButton";
-import { MAX_MAJORS } from "@/domain/member/constants";
-
-const FACULTIES = [
-  { value: "engineeringDesign", label: "Faculty of Engineering & Design" },
-  { value: "science", label: "Faculty of Science" },
-  { value: "artsEducation", label: "Faculty of Arts & Education" },
-  { value: "business", label: "Business School" },
-  { value: "law", label: "Auckland Law School" },
-  {
-    value: "medicalHealthScience",
-    label: "Faculty of Medical and Health Sciences",
-  },
-  { value: "liggins", label: "Liggins Institute" },
-  { value: "bioengineering", label: "Auckland Bioengineering Institute" },
-];
+import { MAX_MAJORS, FACULTY_OPTIONS } from "@/domain/member/constants";
 
 const PROGRAMME_TYPES = [
   { value: "TFC_PRE_UNI", label: "TFC / Pre-Uni" },
@@ -107,7 +93,7 @@ export function UoaDetailsPage({
         </p>
 
         <div className="flex flex-col gap-2.5">
-          {FACULTIES.map((faculty) => (
+          {FACULTY_OPTIONS.map((faculty) => (
             <OptionButton
               key={faculty.value}
               type="checkbox"
