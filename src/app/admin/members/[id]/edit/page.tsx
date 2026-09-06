@@ -9,19 +9,9 @@ import {
   VALID_PROGRAMME_TYPES,
   VALID_SKILL_LEVELS,
   VALID_YEARS_REMAINING,
+  FACULTY_OPTIONS,
 } from "@/domain/member/constants";
 import { formatEnum } from "@/app/admin/members/utils";
-
-const FACULTY_OPTIONS = [
-  { value: "engineeringDesign", label: "Engineering & Design" },
-  { value: "science", label: "Science" },
-  { value: "artsEducation", label: "Arts & Education" },
-  { value: "business", label: "Business School" },
-  { value: "law", label: "Law" },
-  { value: "medicalHealthScience", label: "Medical & Health Sciences" },
-  { value: "liggins", label: "Liggins Institute" },
-  { value: "bioengineering", label: "Bioengineering Institute" },
-] as const;
 
 const inputClassName =
   "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
