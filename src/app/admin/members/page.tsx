@@ -6,6 +6,7 @@ import {
   formatEnumList,
   truncateText,
 } from "./utils";
+import Link from "next/link";
 
 export default async function AdminMembersPage() {
   await requireAdmin();
@@ -19,6 +20,7 @@ export default async function AdminMembersPage() {
         <table className="w-full min-w-max border-collapse text-sm">
           <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-600">
             <tr>
+              <th className="px-4 py-2 font-medium">Actions</th>
               <th className="px-4 py-2 font-medium">Name</th>
               <th className="px-4 py-2 font-medium">Email</th>
               <th className="px-4 py-2 font-medium">Registration year</th>
@@ -43,6 +45,14 @@ export default async function AdminMembersPage() {
                 key={m.id}
                 className="border-t border-gray-200 hover:bg-gray-50"
               >
+                <td className="px-4 py-2">
+                  <Link
+                    href={`/admin/members/${m.id}/edit`}
+                    className="text-blue-700 underline hover:text-blue-900"
+                  >
+                    Edit
+                  </Link>
+                </td>
                 <td className="px-4 py-2">
                   {m.firstName} {m.lastName}
                 </td>

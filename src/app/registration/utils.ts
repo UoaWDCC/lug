@@ -2,9 +2,7 @@ import { RegistrationDraft, RegistrationPage } from "./types";
 
 export const VALID_PAGES: RegistrationPage[] = [
   "start",
-  "returningUoa",
-  "newMember",
-  "newUoa",
+  "uoaDetails",
   "newNonUoa",
   "final",
 ];
@@ -43,4 +41,15 @@ export function readRegistrationDraft(
   } catch {
     return freshDefault();
   }
+}
+
+export function normalizeText(value: string | undefined): string | null {
+  if (!value) return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+}
+
+export function normalizeLowercase(value: string | undefined): string | null {
+  const normalized = normalizeText(value);
+  return normalized === null ? null : normalized.toLowerCase();
 }
