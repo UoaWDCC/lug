@@ -22,6 +22,17 @@ export const VALID_PROGRAMME_TYPES = [
   "OTHER",
 ] as const;
 
+export const VALID_FACULTIES = [
+  "engineeringDesign",
+  "science",
+  "artsEducation",
+  "business",
+  "law",
+  "medicalHealthScience",
+  "liggins",
+  "bioengineering",
+] as const;
+
 export const MAX_LENGTHS = {
   email: 254,
   firstName: 100,
@@ -32,6 +43,20 @@ export const MAX_LENGTHS = {
   nonUoaPitch: 500,
   discordUsername: 32,
 } as const;
+
+export const FACULTY_OPTIONS = [
+  { value: "engineeringDesign", label: "Faculty of Engineering & Design" },
+  { value: "science", label: "Faculty of Science" },
+  { value: "artsEducation", label: "Faculty of Arts & Education" },
+  { value: "business", label: "Business School" },
+  { value: "law", label: "Auckland Law School" },
+  {
+    value: "medicalHealthScience",
+    label: "Faculty of Medical and Health Sciences",
+  },
+  { value: "liggins", label: "Liggins Institute" },
+  { value: "bioengineering", label: "Auckland Bioengineering Institute" },
+];
 
 export const MAX_FACULTIES = 2;
 export const MAX_MAJORS = 4;

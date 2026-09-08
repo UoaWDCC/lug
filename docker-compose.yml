@@ -13,5 +13,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
 
+  app:
+    build: .
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: "postgresql://lug_user:lug_password@db:5432/lug_dev"
+      UPLOAD_DIR: "/data/uploads"
+    ports:
+      - "3000:3000"
+    volumes:
+      - blog_uploads:/data/uploads
+    depends_on:
+      - db
+
 volumes:
   postgres_data:
+  blog_uploads:

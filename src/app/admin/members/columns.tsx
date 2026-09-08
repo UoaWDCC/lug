@@ -1,5 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Member } from "@/generated/prisma/client";
+import Link from "next/link";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 import {
   formatBoolean,
@@ -97,35 +98,36 @@ export const columns: ColumnDef<Member>[] = [
     cell: ({ getValue }) => getValue<string | null>() ?? "—",
   },
   {
-    accessorKey: "isConditionalReturningMember",
-    header: "Member status",
-    filterFn: "equals",
-    cell: ({ getValue }) =>
-      formatBoolean(getValue<boolean | null | undefined>()),
-  },
-  {
     id: "actions",
     header: "Actions",
     cell: ({ row }) => {
       const member = row.original;
       return (
-        <button
-          type="button"
-          onClick={async () => {
-            const confirmed = window.confirm(
-              `Are you sure you want to delete ${member.firstName} ${member.lastName}?`,
-            );
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/admin/members/${member.id}/edit`}
+            className="text-blue-700 underline hover:text-blue-900"
+          >
+            Edit
+          </Link>
+          <button
+            type="button"
+            onClick={async () => {
+              const confirmed = window.confirm(
+                `Are you sure you want to delete ${member.firstName} ${member.lastName}?`,
+              );
 
-            if (!confirmed) {
-              return;
-            }
+              if (!confirmed) {
+                return;
+              }
 
-            await deleteMemberAction(member.id);
-          }}
-          className="rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
-        >
-          Delete
-        </button>
+              await deleteMemberAction(member.id);
+            }}
+            className="rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
       );
     },
   },

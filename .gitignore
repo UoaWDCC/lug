@@ -51,6 +51,7 @@ next-env.d.ts
 .idea
 .vscode
 .zed/
+.claude/
 /src/generated/prisma
 
 # Playwright

@@ -21,11 +21,6 @@ export default function MembersTable({ data }: MembersTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    initialState: {
-      columnVisibility: {
-        isConditionalReturningMember: false,
-      },
-    },
   });
 
   return (
@@ -98,44 +93,6 @@ export default function MembersTable({ data }: MembersTableProps) {
             <option value="">All</option>
             <option value="true">Yes</option>
             <option value="false">No</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="returningStatus"
-            className="mr-2 text-sm font-medium text-gray-700"
-          >
-            Member status
-          </label>
-
-          <select
-            id="returningStatus"
-            value={
-              (table
-                .getColumn("isConditionalReturningMember")
-                ?.getFilterValue() as boolean | undefined) === true
-                ? "returning"
-                : (table
-                      .getColumn("isConditionalReturningMember")
-                      ?.getFilterValue() as boolean | undefined) === false
-                  ? "new"
-                  : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
-
-              table
-                .getColumn("isConditionalReturningMember")
-                ?.setFilterValue(
-                  value === "" ? undefined : value === "returning",
-                );
-            }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="">All</option>
-            <option value="returning">Returning</option>
-            <option value="new">New</option>
           </select>
         </div>
       </div>

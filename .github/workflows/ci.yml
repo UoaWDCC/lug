@@ -4,9 +4,13 @@ on:
   pull_request:
     branches:
       - main
+      - feat/registration-rework
+      - feat/admin-auth
   push:
     branches:
       - main
+      - feat/registration-rework
+      - feat/admin-auth
 
 jobs:
   check:
