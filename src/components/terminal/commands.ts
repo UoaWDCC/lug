@@ -46,16 +46,10 @@ export const DESTINATIONS: Destination[] = [
     aliases: ["about", "aboutus", "about_us", "info", "who"],
   },
   {
-    key: "our-events",
-    path: "/events",
-    blurb: "What's on",
-    aliases: ["events", "event", "our_events", "whats-on", "calendar"],
-  },
-  {
-    key: "blog",
+    key: "lug-blog",
     path: "/blog",
     blurb: "Posts and updates",
-    aliases: ["posts", "news", "writing"],
+    aliases: ["blog", "lug_blog", "lugblog", "posts", "news", "writing"],
   },
   {
     key: "home",
@@ -366,7 +360,7 @@ export function resolveCommand(input: string): CommandResult {
     case "whoami":
       return {
         lines: [
-          { text: "guest@lugatuoa", tone: "accent" },
+          { text: "lug@uoa", tone: "accent" },
           {
             text: "Not a member yet. Run `cd sign-up` to fix that.",
             tone: "muted",
@@ -378,7 +372,7 @@ export function resolveCommand(input: string): CommandResult {
       return { exit: true, lines: [] };
   }
 
-  // Bare page names: `sign-up`, `./about-us`, `events`.
+  // Bare page names: `sign-up`, `./about-us`, `lug-blog`.
   const dest = findDestination(trimmed);
   if (dest) return goTo(dest);
 

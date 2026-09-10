@@ -39,7 +39,7 @@ export default function TerminalDock() {
             }`}
           >
             <span className="font-semibold text-[var(--accent-text)]">
-              lugatuoa:~{pathname}$
+              lug@uoa:~{pathname}$
             </span>
             <span className="cursor-blink h-4 w-2 shrink-0 bg-[var(--fg)]" />
             <span className="hidden text-[13px] text-[var(--muted)] sm:inline">

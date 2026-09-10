@@ -11,7 +11,7 @@ import { useTerminal } from "@/components/terminal/TerminalProvider";
 const NAV_ROWS = [
   { n: "01", cmd: "./sign-up", desc: "Join LUG@UoA", href: "/registration" },
   { n: "02", cmd: "./about-us", desc: "What we do", href: "/about" },
-  { n: "03", cmd: "./our-events", desc: "What's on", href: "/events" },
+  { n: "03", cmd: "./lug-blog", desc: "Posts and updates", href: "/blog" },
 ];
 
 export default function TerminalPanel() {
@@ -22,7 +22,7 @@ export default function TerminalPanel() {
       {/* Grows into the space the top-aligned hero leaves, capped at max-h so it stays a bordered window, not a slab. */}
       <div className="flex max-h-[430px] min-h-0 w-full max-w-[680px] flex-1 flex-col rounded-xl border border-[var(--term-border)] bg-[var(--term-bg)] font-mono shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-[8px]">
         <div className="flex items-center justify-between gap-4 rounded-t-xl border-b border-[var(--input-border)] px-5 py-3.5">
-          <span className="text-[17px] text-[var(--muted)]">lugatuoa:~</span>
+          <span className="text-[17px] text-[var(--muted)]">lug@uoa:~</span>
 
           {/* In the chrome rather than under the panel: the hero has no room to spare. */}
           <button
@@ -35,11 +35,12 @@ export default function TerminalPanel() {
 
           <span
             aria-hidden
-            className="flex items-center gap-[18px] text-[var(--muted)]"
+            className="flex items-center gap-[14px] text-[var(--muted)]"
           >
-            <span className="h-[1.5px] w-3.5 bg-current" />
-            <span className="h-3.5 w-3.5 rounded-[2px] border-[1.5px] border-current" />
-            <span className="relative h-3.5 w-3.5">
+            {/* All ~10px: the X's strokes are rotated, so a 14px square outweighs it. */}
+            <span className="h-[1.5px] w-2.5 bg-current" />
+            <span className="h-2.5 w-2.5 rounded-[2px] border-[1.5px] border-current" />
+            <span className="relative h-2.5 w-2.5">
               <span className="absolute top-1/2 left-0 h-[1.5px] w-full rotate-45 bg-current" />
               <span className="absolute top-1/2 left-0 h-[1.5px] w-full -rotate-45 bg-current" />
             </span>

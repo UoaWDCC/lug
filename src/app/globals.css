@@ -81,6 +81,12 @@
   );
   --row-hover-bg: color-mix(in srgb, #0f2f27, #b7e7d3 var(--mix));
 
+  --scrollbar-thumb: color-mix(
+    in srgb,
+    rgba(63, 204, 168, 0.4),
+    rgba(15, 122, 96, 0.45) var(--mix)
+  );
+
   /* Feeds the rainFall keyframes; 0.34 dark -> 0.28 light. */
   --rain-base-opacity: calc(0.34 - 0.06 * var(--theme-mix));
 }
@@ -152,13 +158,24 @@ body {
 /* Components keep their own hover timings; theme changes reach them via the interpolating tokens above. */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
+/* Transparent border insets the thumb so it never sits flush against the text. */
 ::-webkit-scrollbar-thumb {
-  background: rgba(63, 204, 168, 0.4);
+  background: var(--scrollbar-thumb);
+  background-clip: content-box;
+  border: 3px solid transparent;
   border-radius: 8px;
+}
+
+/* Firefox only; in Chrome these disable the ::-webkit- rules above. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
 }
 
 /* Skip-link pattern: focus lands on <main> after a terminal navigation, so no focus ring. */

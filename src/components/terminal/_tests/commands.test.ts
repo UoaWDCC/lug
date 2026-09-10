@@ -8,13 +8,13 @@ describe("resolveCommand navigation", () => {
     ["cd registration", "/registration"],
     ["open join", "/registration"],
     ["goto about", "/about"],
-    ["cd our-events", "/events"],
+    ["cd lug-blog", "/blog"],
     ["./sign-up", "/registration"],
     ["./about-us", "/about"],
-    ["events", "/events"],
+    ["lug-blog", "/blog"],
     ["blog", "/blog"],
     ["CD Sign-Up", "/registration"],
-    ["  cd    events  ", "/events"],
+    ["  cd    blog  ", "/blog"],
   ])("%s navigates to %s", (input, path) => {
     expect(resolveCommand(input).navigate).toBe(path);
   });
@@ -108,7 +108,7 @@ describe("getSuggestions", () => {
   });
 
   it("keeps the typed nav verb when completing a page", () => {
-    expect(getSuggestions("open ev")[0].value).toBe("open our-events");
+    expect(getSuggestions("open lug-b")[0].value).toBe("open lug-blog");
   });
 
   it("marks argument-taking commands with a trailing space", () => {

@@ -71,11 +71,16 @@ export function StartPage({ fields }: { fields: Partial<RegistrationDraft> }) {
         />
       </div>
 
-      {/* Pure CSS so the conditional reveal works without JS. */}
+      {/* Pure CSS so the reveal and Continue gate work without JS; actions.ts still validates. */}
       <style>{`
         .uoa-fields { display: none; }
         .uoa-student-container:has(input[value="yes"]:checked) ~ .uoa-fields {
           display: flex;
+        }
+        form:not(:has(input[name="isCurrentUoaStudent"]:checked)) .registration-submit {
+          opacity: 0.5;
+          cursor: not-allowed;
+          pointer-events: none;
         }
       `}</style>
     </>

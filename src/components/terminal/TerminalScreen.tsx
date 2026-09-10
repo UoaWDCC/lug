@@ -43,7 +43,7 @@ export default function TerminalScreen({
           <span className="min-w-0 flex-1 break-words whitespace-pre-wrap">
             {line.tone === "command" && (
               <span className="font-semibold text-[var(--accent-text)]">
-                lugatuoa:~{line.cwd}${" "}
+                lug@uoa:~{line.cwd}${" "}
               </span>
             )}
             {line.text}
