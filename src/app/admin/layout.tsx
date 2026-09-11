@@ -21,28 +21,26 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="admin-layout-wrapper">
+    /* Outermost wrapper div with min-h-screen and full viewport background */
+    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
       {session && (
-        <nav
-          style={{
-            display: "flex",
-            gap: "1rem",
-            alignItems: "center",
-            padding: "1rem",
-            borderBottom: "1px solid #ccc",
-          }}
-        >
-          <span>Welcome, {admin?.name || "Admin"}</span>
-          <Link href="/admin/members">Members</Link>
+        <nav className="flex items-center gap-4 p-4 border-b border-gray-300">
+          {/* Fix 1: Display firstName and lastName */}
+          <span>
+            Welcome, {admin ? `${admin.firstName} ${admin.lastName}` : "Admin"}
+          </span>
+          <Link href="/admin/members" className="hover:underline">
+            Members
+          </Link>
           <form action={handleLogout}>
-            <button type="submit" style={{ cursor: "pointer" }}>
+            <button type="submit" className="cursor-pointer hover:underline">
               Logout
             </button>
           </form>
         </nav>
       )}
 
-      <main style={{ padding: "1rem" }}>{children}</main>
+      <main className="flex-1 p-4">{children}</main>
     </div>
   );
 }
