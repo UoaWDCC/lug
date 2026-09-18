@@ -1,4 +1,4 @@
-import { ParsedRegistrationFormSubmission } from "./parseRegistrationFormData";
+import { UnvalidatedMemberSubmission } from "@/domain/member/types";
 import { validateMemberRegistration } from "@/domain/member/validation";
 import { createMembershipRegistration } from "@/repositories/memberRepository";
 
@@ -7,9 +7,9 @@ export type SubmitMemberRegistrationResult =
   | { ok: false; error: { message: string } };
 
 export async function submitMemberRegistration(
-  parsed: ParsedRegistrationFormSubmission,
+  submission: UnvalidatedMemberSubmission,
 ): Promise<SubmitMemberRegistrationResult> {
-  const validation = validateMemberRegistration(parsed);
+  const validation = validateMemberRegistration(submission);
   if (!validation.ok) {
     return { ok: false, error: { message: validation.error.message } };
   }

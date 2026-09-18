@@ -1,0 +1,32 @@
+import { cookies } from "next/headers";
+
+import { StartPage } from "./_pages/StartPage";
+import { UoaDetailsPage } from "./_pages/UoaDetailsPage";
+import { NewNonUoaPage } from "./_pages/NewNonUoaPage";
+import { FinalPage } from "./_pages/FinalPage";
+import { RegistrationForm } from "./RegistrationForm";
+import { readRegistrationDraft } from "./utils";
+import { getStepProgress } from "./_components/steps";
+import { ViewTransition } from "@/components/primitive/ViewTransition";
+
+export default async function FormPage() {
+  const cookieStore = await cookies();
+  const raw = cookieStore.get("formState")?.value;
+  const draft = readRegistrationDraft(raw);
+  const { page = "start" } = draft;
+
+  return (
+    <main className="relative z-10 flex min-h-0 flex-1 items-start justify-center overflow-y-auto px-5 pt-2 pb-24">
+      <ViewTransition name="signup-window">
+        <div className="w-full max-w-[700px] rounded-[18px] border border-[var(--accent)] bg-[var(--card-bg)] px-8 py-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+          <RegistrationForm currentPage={page} step={getStepProgress(page)}>
+            {page === "start" && <StartPage fields={draft} />}
+            {page === "uoaDetails" && <UoaDetailsPage fields={draft} />}
+            {page === "newNonUoa" && <NewNonUoaPage fields={draft} />}
+            {page === "final" && <FinalPage fields={draft} />}
+          </RegistrationForm>
+        </div>
+      </ViewTransition>
+    </main>
+  );
+}
