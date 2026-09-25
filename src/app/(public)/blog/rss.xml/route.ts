@@ -1,12 +1,11 @@
 import { Feed } from "feed";
-import getBlogPosts from "@/features/blog/getBlogPosts";
-import { BlogItem } from "@/domain/blog/types";
+import { findPublishedBlogPosts } from "@/repositories/blogPostRepository";
 
 const siteURL: string =
   process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
 export async function GET() {
-  const blogItems: BlogItem[] = await getBlogPosts();
+  const blogPosts = await findPublishedBlogPosts();
   const feed = new Feed({
     title: "The Linux User Group Website",
     description:
@@ -17,14 +16,14 @@ export async function GET() {
     copyright: `All rights reserved ${new Date().getFullYear()}`,
   });
 
-  blogItems.forEach((item) => {
-    const url = `${siteURL}/blog/${item.slug}`;
+  blogPosts.forEach((post) => {
+    const url = `${siteURL}/blog/${post.slug}`;
     feed.addItem({
-      title: item.title,
+      title: post.title,
       id: url,
       link: url,
-      description: item.description,
-      date: new Date(item.publishedAt),
+      description: post.excerpt ?? "",
+      date: post.publishedAt ?? post.createdAt,
     });
   });
 
