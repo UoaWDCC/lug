@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import {
   MAX_FACULTIES,
   MAX_LENGTHS,
@@ -21,11 +20,18 @@ import {
   type MemberUpdateData,
 } from "@/repositories/memberRepository";
 
-export type UpdateMemberActionResult = {
-  ok: false;
-  error: "invalid_id" | "invalid_data" | "not_found" | "duplicate" | "database";
-  message: string;
-};
+export type UpdateMemberActionResult =
+  | { ok: true; data: MemberUpdateData }
+  | {
+      ok: false;
+      error:
+        | "invalid_id"
+        | "invalid_data"
+        | "not_found"
+        | "duplicate"
+        | "database";
+      message: string;
+    };
 
 type ParsedUpdate =
   | { ok: true; id: number; data: MemberUpdateData }
@@ -50,7 +56,7 @@ export default async function updateMemberAction(
     return repositoryError(result.error.type);
   }
 
-  redirect("/admin/members");
+  return { ok: true, data: parsed.data };
 }
 
 function parseMemberUpdate(formData: FormData): ParsedUpdate {
