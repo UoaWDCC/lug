@@ -11,7 +11,7 @@ import { useTerminal } from "@/components/terminal/TerminalProvider";
 const NAV_ROWS = [
   { n: "01", cmd: "./sign-up", desc: "Join LUG@UoA", href: "/registration" },
   { n: "02", cmd: "./about-us", desc: "What we do", href: "/about" },
-  { n: "03", cmd: "./our-events", desc: "What's on", href: "/events" },
+  { n: "03", cmd: "./lug-blog", desc: "Posts and updates", href: "/blog" },
 ];
 
 export default function TerminalPanel() {
@@ -21,37 +21,38 @@ export default function TerminalPanel() {
     <ViewTransition name="signup-window">
       {/* Grows into the space the top-aligned hero leaves, capped at max-h so it stays a bordered window, not a slab. */}
       <div className="flex max-h-[430px] min-h-0 w-full max-w-[680px] flex-1 flex-col rounded-xl border border-[var(--term-border)] bg-[var(--term-bg)] font-mono shadow-[0_20px_50px_rgba(0,0,0,0.3)] backdrop-blur-[8px]">
-        <div className="flex items-center justify-between gap-4 rounded-t-xl border-b border-[var(--input-border)] px-5 py-3.5">
-          <span className="text-[17px] text-[var(--muted)]">lugatuoa:~</span>
+        <div className="flex items-center justify-between gap-4 rounded-t-xl border-b border-[var(--input-border)] px-5 py-3.5 short:py-2 shortest:py-1.5">
+          <span className="text-[17px] text-[var(--muted)]">lug@uoa:~</span>
 
           {/* In the chrome rather than under the panel: the hero has no room to spare. */}
           <button
             type="button"
             onClick={focusPrompt}
-            className="hidden cursor-pointer rounded-full border border-[var(--row-border)] px-3.5 py-1 text-[14px] text-[var(--muted)] transition-[background,border-color,color] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] sm:inline-block"
+            className="hidden cursor-pointer rounded-full border border-[var(--row-border)] px-3.5 py-1 text-[14px] text-[var(--muted)] transition-[background,border-color,color] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] sm:inline-block nojs:hidden!"
           >
             start with <kbd className="text-[var(--row-cmd)]">/help</kbd>
           </button>
 
           <span
             aria-hidden
-            className="flex items-center gap-[18px] text-[var(--muted)]"
+            className="flex items-center gap-[14px] text-[var(--muted)]"
           >
-            <span className="h-[1.5px] w-3.5 bg-current" />
-            <span className="h-3.5 w-3.5 rounded-[2px] border-[1.5px] border-current" />
-            <span className="relative h-3.5 w-3.5">
+            {/* All ~10px: the X's strokes are rotated, so a 14px square outweighs it. */}
+            <span className="h-[1.5px] w-2.5 bg-current" />
+            <span className="h-2.5 w-2.5 rounded-[2px] border-[1.5px] border-current" />
+            <span className="relative h-2.5 w-2.5">
               <span className="absolute top-1/2 left-0 h-[1.5px] w-full rotate-45 bg-current" />
               <span className="absolute top-1/2 left-0 h-[1.5px] w-full -rotate-45 bg-current" />
             </span>
           </span>
         </div>
 
-        <div className="min-h-[190px] flex-1 overflow-hidden px-5 py-4">
+        <div className="min-h-0 flex-1 overflow-hidden px-5 py-4 short:py-2.5 shortest:py-2">
           {lines.length > 0 ? (
-            <TerminalScreen className="h-full" />
+            <TerminalScreen scrollable={false} className="h-full" />
           ) : (
-            <div className="flex h-full flex-col justify-center gap-3.5">
-              <div className="shrink-0 text-[18px] font-bold text-[var(--fg)]">
+            <div className="flex h-full flex-col justify-center gap-3.5 short:gap-2.5 shorter:gap-1.5">
+              <div className="shrink-0 text-[18px] font-bold text-[var(--fg)] shorter:text-[16px] shortest:text-[15px]">
                 Welcome to LUG@UoA, pick a command:
               </div>
 
@@ -60,7 +61,7 @@ export default function TerminalPanel() {
                 <Link
                   key={row.cmd}
                   href={row.href}
-                  className="group flex max-h-[72px] w-full flex-1 items-center justify-between gap-2 rounded-lg border border-[var(--row-border)] bg-[var(--row-bg)] px-3.5 py-2.5 text-left no-underline transition-[transform,box-shadow] duration-200 hover:translate-x-[5px] hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:shadow-[0_6px_18px_rgba(63,204,168,0.22)] active:translate-x-[5px] active:scale-[0.98] sm:px-4 sm:py-3"
+                  className="group flex max-h-[72px] w-full flex-1 items-center justify-between gap-2 rounded-lg border border-[var(--row-border)] bg-[var(--row-bg)] px-3.5 py-2.5 text-left no-underline transition-[transform,box-shadow] duration-200 hover:translate-x-[5px] hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:shadow-[0_6px_18px_rgba(63,204,168,0.22)] active:translate-x-[5px] active:scale-[0.98] sm:px-4 sm:py-3 short:py-2 shorter:py-1"
                 >
                   <span className="text-[15px] font-semibold whitespace-nowrap text-[var(--row-cmd)] sm:text-[17px]">
                     {row.n} {row.cmd}
@@ -80,8 +81,19 @@ export default function TerminalPanel() {
           )}
         </div>
 
-        <div className="rounded-b-xl border-t border-[var(--input-border)] px-5 py-3.5">
-          <TerminalPrompt />
+        <div className="rounded-b-xl border-t border-[var(--input-border)] px-5 py-3.5 short:py-2.5 shortest:py-2">
+          <div className="nojs:hidden">
+            <TerminalPrompt />
+          </div>
+
+          <p className="m-0 hidden text-[17px] nojs:block">
+            <span className="font-semibold text-[var(--accent-text)]">
+              lug@uoa:~$
+            </span>{" "}
+            <span className="text-[var(--muted)]">
+              enable JavaScript to use the terminal
+            </span>
+          </p>
         </div>
       </div>
     </ViewTransition>

@@ -10,4 +10,4 @@ export const ghostButtonClass =
 
 /** Scrollable page shell used by every screen except the home hero; bottom padding clears the docked terminal. */
 export const scrollableMainClass =
-  "relative z-10 min-h-0 flex-1 overflow-y-auto px-9 pt-2.5 pb-24";
+  "relative z-10 min-h-0 flex-1 overflow-y-auto px-5 pt-2.5 pb-24 [scrollbar-gutter:stable] sm:px-9";

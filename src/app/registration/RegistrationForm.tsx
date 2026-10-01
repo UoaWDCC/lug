@@ -12,7 +12,7 @@ import type { StepProgress } from "./_components/steps";
 const FormStateContext = createContext<RegistrationFormState>(null);
 
 const backButtonClass =
-  "mb-2.5 flex cursor-pointer items-center gap-1.5 self-start rounded-lg border border-[var(--input-border)] bg-transparent px-4 py-1.5 font-mono text-base text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.96]";
+  "mb-2.5 flex cursor-pointer items-center gap-1.5 self-start rounded-lg border border-[var(--input-border)] bg-transparent px-4 py-2 font-mono text-base text-[var(--fg)] no-underline transition-[background,border-color,transform] duration-150 hover:border-[var(--accent)] hover:bg-[var(--row-hover-bg)] hover:text-[var(--fg)] active:scale-[0.96]";
 
 export function RegistrationForm({
   currentPage,
@@ -78,7 +78,8 @@ function SubmitButton({ isFinalPage }: { isFinalPage: boolean }) {
       name="intent"
       value="submit"
       disabled={pending}
-      className={`${accentButtonClass} mt-3.5 w-full`}
+      // Hook for the per-page CSS gates; see StartPage's inline style.
+      className={`registration-submit ${accentButtonClass} mt-3.5 w-full`}
     >
       {pending
         ? "Processing…"
