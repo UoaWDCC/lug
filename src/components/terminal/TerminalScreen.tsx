@@ -13,10 +13,19 @@ const TONE_CLASS: Record<LineTone, string> = {
   danger: "text-[var(--danger)]",
 };
 
+const SCROLLING_CLASS = "gap-1.5 overflow-y-auto leading-[1.55]";
+
+/* Tighter so `help` still fits on short laptop screens. */
+const FIXED_CLASS =
+  "justify-end gap-0.5 overflow-hidden leading-[1.4] short:text-[14px] shorter:text-[13px] shorter:leading-[1.35]";
+
 export default function TerminalScreen({
   className = "",
+  scrollable = true,
 }: {
   className?: string;
+  /** Off: newest lines pin to the bottom and older ones slide out the top, like a real tty. */
+  scrollable?: boolean;
 }) {
   const { lines } = useTerminal();
   const ref = useRef<HTMLDivElement>(null);
@@ -33,7 +42,7 @@ export default function TerminalScreen({
       role="log"
       aria-live="polite"
       aria-label="Terminal output"
-      className={`term-screen flex flex-col gap-1.5 overflow-y-auto font-mono text-[16px] leading-[1.55] ${className}`}
+      className={`term-screen flex flex-col font-mono text-[16px] ${scrollable ? SCROLLING_CLASS : FIXED_CLASS} ${className}`}
     >
       {lines.map((line) => (
         <div
@@ -50,7 +59,11 @@ export default function TerminalScreen({
           </span>
 
           {line.hint && (
-            <span className="shrink-0 text-[var(--muted)]">{line.hint}</span>
+            <span
+              className={`shrink-0 text-[var(--muted)] ${scrollable ? "" : "max-sm:hidden"}`}
+            >
+              {line.hint}
+            </span>
           )}
         </div>
       ))}
