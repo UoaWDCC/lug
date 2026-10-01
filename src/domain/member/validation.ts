@@ -147,6 +147,39 @@ const MemberRegistrationSchema = z.discriminatedUnion("isCurrentUoaStudent", [
   NonCurrentUoaStudentMemberSchema,
 ]);
 
+export function validateMemberRegistration(
+  submission: UnvalidatedMemberSubmission,
+):
+  | { ok: true; data: MemberRegistration }
+  | { ok: false; error: RegistrationFormValidationError } {
+  const input = {
+    ...submission,
+    majors: submission.majors ?? [],
+    yearsRemaining: submission.yearsRemaining ?? undefined,
+    nonUoaExcerpt: submission.nonUoaExcerpt ?? undefined,
+    nonUoaPitch: submission.nonUoaPitch ?? undefined,
+    potentialInvolvement: submission.potentialInvolvement ?? [],
+    discordUsername: submission.discordUsername ?? undefined,
+  };
+
+  const result = MemberRegistrationSchema.safeParse(input);
+
+  if (!result.success) {
+    const firstError = result.error.issues[0];
+    return {
+      ok: false,
+      error: { message: firstError.message },
+    };
+  }
+
+  return {
+    ok: true,
+    data: result.data as MemberRegistration,
+  };
+}
+
+/* UpdateMemberSchema and Helpers */
+
 // Admin edit form: every field is submitted flat regardless of member type,
 // with blank optional inputs arriving as empty strings.
 const blankToNull = (value: unknown) => {
@@ -271,34 +304,3 @@ export const UpdateMemberSchema = z.object({
     `Non-UoA pitch must be at most ${MAX_LENGTHS.nonUoaPitch} characters.`,
   ),
 });
-
-export function validateMemberRegistration(
-  submission: UnvalidatedMemberSubmission,
-):
-  | { ok: true; data: MemberRegistration }
-  | { ok: false; error: RegistrationFormValidationError } {
-  const input = {
-    ...submission,
-    majors: submission.majors ?? [],
-    yearsRemaining: submission.yearsRemaining ?? undefined,
-    nonUoaExcerpt: submission.nonUoaExcerpt ?? undefined,
-    nonUoaPitch: submission.nonUoaPitch ?? undefined,
-    potentialInvolvement: submission.potentialInvolvement ?? [],
-    discordUsername: submission.discordUsername ?? undefined,
-  };
-
-  const result = MemberRegistrationSchema.safeParse(input);
-
-  if (!result.success) {
-    const firstError = result.error.issues[0];
-    return {
-      ok: false,
-      error: { message: firstError.message },
-    };
-  }
-
-  return {
-    ok: true,
-    data: result.data as MemberRegistration,
-  };
-}
