@@ -1,13 +1,21 @@
-import { scrollableMainClass } from "@/components/primitive/buttonStyles";
+import { requireAdmin } from "@/lib/auth/session";
+import { findAllMembers } from "@/repositories/memberRepository";
 
-export default function AdminMembers() {
+import MembersTable from "./MembersTable";
+
+export default async function AdminMembersPage() {
+  await requireAdmin();
+
+  const members = await findAllMembers();
+
   return (
-    <main className={scrollableMainClass}>
-      <h1 className="text-4xl font-semibold">Admin Members</h1>
+    <section className="py-8">
+      <h1 className="text-3xl font-bold tracking-tight">Members</h1>
+      <p className="mt-1 text-sm text-gray-600">{members.length} registered</p>
 
-      <p className="mt-7 text-xl text-[var(--muted)]">
-        Placeholder Admin Members
-      </p>
-    </main>
+      <div className="mt-6 rounded-lg border border-gray-200">
+        <MembersTable data={members} />
+      </div>
+    </section>
   );
 }

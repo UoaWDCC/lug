@@ -10,6 +10,61 @@ datasource db {
   provider = "postgresql"
 }
 
+model Admin {
+  id Int @id @default(autoincrement())
+
+  email        String @unique
+  passwordHash String
+
+  firstName String
+  lastName  String
+
+  role Role
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BlogPost {
+  id String @id @default(cuid())
+
+  title   String
+  slug    String  @unique
+  excerpt String?
+  content String
+
+  status      PostStatus @default(DRAFT)
+  publishedAt DateTime?
+
+  tags     BlogTag[]
+  imageUrl String?
+
+  authorName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHED
+}
+
+enum BlogTag {
+  ANNOUNCEMENTS
+  EVENTS
+  TUTORIALS
+}
+
+enum Role {
+  PRESIDENT
+  VICE_PRESIDENT
+  SECRETARY
+  TREASURER
+  MEDIA
+}
+
 model Member {
   id Int @id @default(autoincrement())
 
@@ -19,9 +74,7 @@ model Member {
 
   registrationYear Int
 
-  // Only asked directly for non-conditional-returning members.
-  // For conditional returning members, this is not collected in the form.
-  isCurrentUoaStudent Boolean?
+  isCurrentUoaStudent Boolean
 
   // UoA student fields: returning eligible UoA students and new current UoA students.
   upi       String?

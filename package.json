@@ -19,7 +19,7 @@
     "format:check": "prettier . --check",
     "check": "pnpm db:generate && pnpm lint && pnpm typecheck && pnpm format:check && pnpm test:run && pnpm build",
     "prepare": "husky || true",
-    "db:up": "docker compose up -d",
+    "db:up": "docker compose up -d db",
     "db:down": "docker compose down",
     "db:status": "docker compose ps",
     "db:reset": "docker compose down -v && docker compose up -d",
@@ -33,6 +33,9 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "lint-staged": {
     "**/*.{ts,tsx}": [
       "eslint --fix",
@@ -45,11 +48,17 @@
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "@tanstack/react-table": "^8.21.3",
+    "bcryptjs": "^3.0.3",
     "feed": "^5.2.1",
+    "jose": "^6.2.3",
     "next": "16.2.6",
     "pg": "^8.20.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -59,6 +68,7 @@
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
