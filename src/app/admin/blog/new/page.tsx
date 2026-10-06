@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createBlogPostAction } from "@/features/blog/createBlogPost";
+import { createBlogPostAction } from "@/features/blog/createBlogPostAction";
 import { requireAdmin } from "@/lib/auth/session";
 import { BlogPostForm } from "../BlogPostForm";
 

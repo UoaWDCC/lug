@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteBlogPostAction } from "@/features/blog/deleteBlogPostsAction";
+import { deleteBlogPostAction } from "@/features/blog/deleteBlogPostAction";
 
 type Props = {
   id: string;
