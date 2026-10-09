@@ -6,7 +6,8 @@ import { isRole } from "@/domain/admin/validation";
 
 export const SESSION_COOKIE_NAME = "lug_admin_session";
 
-const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
+// JWTs can't be revoked server-side, so this caps how long a stolen token stays usable.
+const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 8;
 
 export type AdminSession = {
   adminId: number;
@@ -26,7 +27,7 @@ function getSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-// Reads SESSION_MAX_AGE_SECONDS from env, falls back to 7 days
+// Reads SESSION_MAX_AGE_SECONDS from env, falls back to 8 hours
 function getMaxAgeSeconds() {
   const fromEnv = process.env.SESSION_MAX_AGE_SECONDS;
   if (!fromEnv) return DEFAULT_MAX_AGE_SECONDS;

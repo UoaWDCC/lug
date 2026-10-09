@@ -44,11 +44,24 @@ const LINUX_SKILL_LEVELS = [
   "CONTRIBUTOR",
 ] as const;
 
+const DEFAULT_REGISTRATION_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24; // 24 hours
+
+// Reads REGISTRATION_COOKIE_MAX_AGE_SECONDS from env, falls back to 24 hours
+function getRegistrationCookieMaxAgeSeconds() {
+  const fromEnv = process.env.REGISTRATION_COOKIE_MAX_AGE_SECONDS;
+  if (!fromEnv) return DEFAULT_REGISTRATION_COOKIE_MAX_AGE_SECONDS;
+  const parsed = Number(fromEnv);
+  return Number.isFinite(parsed) && parsed > 0
+    ? parsed
+    : DEFAULT_REGISTRATION_COOKIE_MAX_AGE_SECONDS;
+}
+
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/registration",
+  maxAge: getRegistrationCookieMaxAgeSeconds(),
 };
 
 function stripIrrelevantFields(
