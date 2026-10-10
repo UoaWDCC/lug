@@ -7,7 +7,7 @@ import { isRole } from "@/domain/admin/validation";
 export const SESSION_COOKIE_NAME = "lug_admin_session";
 
 // JWTs can't be revoked server-side, so this caps how long a stolen token stays usable.
-const DEFAULT_MAX_AGE_SECONDS = 60 * 60 * 8;
+const MAX_AGE_SECONDS = 60 * 60 * 8; // 8 hours
 
 export type AdminSession = {
   adminId: number;
@@ -27,20 +27,10 @@ function getSecretKey() {
   return new TextEncoder().encode(secret);
 }
 
-// Reads SESSION_MAX_AGE_SECONDS from env, falls back to 8 hours
-function getMaxAgeSeconds() {
-  const fromEnv = process.env.SESSION_MAX_AGE_SECONDS;
-  if (!fromEnv) return DEFAULT_MAX_AGE_SECONDS;
-  const parsed = Number(fromEnv);
-  return Number.isFinite(parsed) && parsed > 0
-    ? parsed
-    : DEFAULT_MAX_AGE_SECONDS;
-}
-
 export async function createSessionToken(
   session: AdminSession,
 ): Promise<string> {
-  const maxAge = getMaxAgeSeconds();
+  const maxAge = MAX_AGE_SECONDS;
   return (
     new SignJWT({ role: session.role })
       /* Session security settings */
@@ -90,7 +80,7 @@ export async function setSessionCookie(token: string): Promise<void> {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax", // Cookie sent on same-site requests and top-level navigations, but not on cross-site POST requests (basic CSRF protection)
     path: "/",
-    maxAge: getMaxAgeSeconds(),
+    maxAge: MAX_AGE_SECONDS,
   });
 }
 
