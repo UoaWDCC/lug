@@ -6,7 +6,7 @@ import { getSuggestions, type Suggestion } from "./commands";
 import { useTerminal } from "./TerminalProvider";
 
 type TerminalPromptProps = {
-  /** Shown after `lugatuoa:~`, e.g. "/about". */
+  /** Shown after `lug@uoa:~`, e.g. "/about". */
   cwd?: string;
   /** Escape with an empty prompt, e.g. to close the dock. */
   onEscape?: () => void;
@@ -134,8 +134,9 @@ export default function TerminalPrompt({
         return;
 
       case "Tab": {
-        // Shift+Tab still walks out of the terminal, so keyboard users aren't trapped.
+        // The list opens on focus, so only swallow Tab once something is typed.
         if (event.shiftKey) return;
+        if (value.length === 0) return;
         const target = visible[activeIndex >= 0 ? activeIndex : 0];
         if (!target) return;
         event.preventDefault();
@@ -174,7 +175,7 @@ export default function TerminalPrompt({
           role="listbox"
           aria-label="Command suggestions"
           // Margin clears the prompt row's own top padding, keeping the popup aligned to the divider.
-          className="absolute inset-x-0 bottom-full z-20 mb-6 max-h-[300px] overflow-y-auto rounded-lg border border-[var(--input-border)] bg-[var(--menu-bg)] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-[10px]"
+          className="absolute inset-x-0 bottom-full z-20 mb-6 max-h-[300px] overflow-y-auto rounded-lg border border-[var(--input-border)] bg-[var(--menu-bg)] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-[10px] [scrollbar-gutter:stable]"
         >
           {visible.map((suggestion, index) => (
             <li key={suggestion.value} role="presentation">
@@ -209,10 +210,10 @@ export default function TerminalPrompt({
         </ul>
       )}
 
-      {/* A label, so clicking the `lugatuoa:~$` prefix focuses the input natively. */}
+      {/* A label, so clicking the `lug@uoa:~$` prefix focuses the input natively. */}
       <label className="flex cursor-text items-baseline gap-2.5 font-mono text-[17px]">
         <span className="shrink-0 font-semibold whitespace-nowrap text-[var(--accent-text)]">
-          lugatuoa:~{cwd}$
+          lug@uoa:~{cwd}$
         </span>
 
         <div className="relative min-w-0 flex-1 overflow-hidden">
