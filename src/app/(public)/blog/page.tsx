@@ -7,6 +7,8 @@ import {
 } from "@/components/primitive/buttonStyles";
 import { findPublishedBlogPosts } from "@/repositories/blogPostRepository";
 
+import type { BlogPost } from "@/generated/prisma/client";
+
 /* Split so one- and two-digit days keep the mono column aligned. */
 function formatDate(publishedAt: string) {
   const date = new Date(publishedAt);
@@ -24,7 +26,7 @@ function formatDate(publishedAt: string) {
 }
 
 export default async function Blog() {
-  let posts;
+  let posts: BlogPost[] = [];
   let dbError = false;
 
   try {
