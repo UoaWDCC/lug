@@ -89,6 +89,7 @@ export function UoaDetailsPage({
         placeholder="name@example.com"
         defaultValue={field?.email || ""} // This is what prevents the clearing
         maxLength={254}
+        required
         error={state?.error?.includes("email") ? state.error : undefined}
       />
 
