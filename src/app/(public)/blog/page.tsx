@@ -7,6 +7,8 @@ import {
 } from "@/components/primitive/buttonStyles";
 import { findPublishedBlogPosts } from "@/repositories/blogPostRepository";
 
+import type { BlogPost } from "@/generated/prisma/client";
+
 /* Split so one- and two-digit days keep the mono column aligned. */
 function formatDate(publishedAt: string) {
   const date = new Date(publishedAt);
@@ -24,7 +26,15 @@ function formatDate(publishedAt: string) {
 }
 
 export default async function Blog() {
-  const posts = await findPublishedBlogPosts();
+  let posts: BlogPost[] = [];
+  let dbError = false;
+
+  try {
+    posts = await findPublishedBlogPosts();
+  } catch {
+    posts = [];
+    dbError = true;
+  }
 
   return (
     <main className={scrollableMainClass}>
@@ -43,10 +53,12 @@ export default async function Blog() {
               $ ls ./posts
             </div>
             <p className="m-0 mb-1.5 text-[24px] font-bold sm:text-[27px]">
-              No blog posts yet.
+              {dbError ? "Could not load posts." : "No blog posts yet."}
             </p>
             <p className="m-0 text-lg leading-[1.5] text-[var(--muted)]">
-              Stay tuned, the first post is on its way.
+              {dbError
+                ? "The database server has not been deployed yet."
+                : "Stay tuned, the first post is on its way."}
             </p>
           </div>
         ) : (
