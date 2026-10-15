@@ -49,7 +49,7 @@ export const DESTINATIONS: Destination[] = [
     key: "blog",
     path: "/blog",
     blurb: "Posts and updates",
-    aliases: ["blog", "lug_blog", "lugblog", "posts", "news", "writing"],
+    aliases: ["lug-blog", "lug_blog", "lugblog", "posts", "news", "writing"],
   },
   {
     key: "home",
