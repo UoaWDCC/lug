@@ -9,6 +9,7 @@ import {
   MAX_FACULTIES,
   VALID_PROGRAMME_TYPES,
   MAX_MAJORS,
+  VALID_YEARS_REMAINING,
 } from "./constants";
 
 type RegistrationFormValidationError = {
@@ -176,3 +177,130 @@ export function validateMemberRegistration(
     data: result.data as MemberRegistration,
   };
 }
+
+/* UpdateMemberSchema and Helpers */
+
+// Admin edit form: every field is submitted flat regardless of member type,
+// with blank optional inputs arriving as empty strings.
+const blankToNull = (value: unknown) => {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  return trimmed === "" ? null : trimmed;
+};
+
+const toTextList = (value: unknown) =>
+  Array.isArray(value)
+    ? value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter((item) => item !== "")
+    : [];
+
+const optionalText = (maxLength: number, message: string) =>
+  z.preprocess(blankToNull, z.string().max(maxLength, message).nullable());
+
+export const UpdateMemberSchema = z.object({
+  firstName: z
+    .string({
+      error: `First name is required and must be at most ${MAX_LENGTHS.firstName} characters.`,
+    })
+    .trim()
+    .min(
+      1,
+      `First name is required and must be at most ${MAX_LENGTHS.firstName} characters.`,
+    )
+    .max(
+      MAX_LENGTHS.firstName,
+      `First name is required and must be at most ${MAX_LENGTHS.firstName} characters.`,
+    ),
+  lastName: z
+    .string({
+      error: `Last name is required and must be at most ${MAX_LENGTHS.lastName} characters.`,
+    })
+    .trim()
+    .min(
+      1,
+      `Last name is required and must be at most ${MAX_LENGTHS.lastName} characters.`,
+    )
+    .max(
+      MAX_LENGTHS.lastName,
+      `Last name is required and must be at most ${MAX_LENGTHS.lastName} characters.`,
+    ),
+  email: z
+    .string({ error: "Enter a valid email address." })
+    .trim()
+    .toLowerCase()
+    .pipe(
+      z
+        .email("Enter a valid email address.")
+        .max(MAX_LENGTHS.email, "Enter a valid email address."),
+    ),
+  discordUsername: optionalText(
+    MAX_LENGTHS.discordUsername,
+    `Discord username must be at most ${MAX_LENGTHS.discordUsername} characters.`,
+  ),
+  faculty: z.preprocess(
+    toTextList,
+    z
+      .array(z.enum(VALID_FACULTIES, { error: "Select a valid faculty." }))
+      .max(MAX_FACULTIES, `Select at most ${MAX_FACULTIES} faculties.`),
+  ),
+  programmeType: z.preprocess(
+    blankToNull,
+    z
+      .enum(VALID_PROGRAMME_TYPES, { error: "Select a valid programme type." })
+      .nullable(),
+  ),
+  majors: z.preprocess(
+    toTextList,
+    z
+      .array(
+        z
+          .string()
+          .max(
+            MAX_LENGTHS.major,
+            `Enter at most ${MAX_MAJORS} majors, each no longer than ${MAX_LENGTHS.major} characters.`,
+          ),
+      )
+      .max(
+        MAX_MAJORS,
+        `Enter at most ${MAX_MAJORS} majors, each no longer than ${MAX_LENGTHS.major} characters.`,
+      ),
+  ),
+  yearsRemaining: z.preprocess(
+    (value) => {
+      const text = blankToNull(value);
+      return text === null ? null : Number(text);
+    },
+    z
+      .literal(VALID_YEARS_REMAINING, {
+        error: "Select a valid number of years remaining.",
+      })
+      .nullable(),
+  ),
+  linuxSkillLevel: z.enum(VALID_SKILL_LEVELS, {
+    error: "Select a valid Linux skill level.",
+  }),
+  potentialInvolvement: z.preprocess(
+    toTextList,
+    z
+      .array(
+        z.enum(VALID_INVOLVEMENTS, {
+          error: "Select at least one valid potential involvement option.",
+        }),
+      )
+      .min(1, "Select at least one valid potential involvement option."),
+  ),
+  primaryAffiliation: optionalText(
+    MAX_LENGTHS.primaryAffiliation,
+    `Primary affiliation must be at most ${MAX_LENGTHS.primaryAffiliation} characters.`,
+  ),
+  nonUoaExcerpt: optionalText(
+    MAX_LENGTHS.nonUoaExcerpt,
+    `Non-UoA excerpt must be at most ${MAX_LENGTHS.nonUoaExcerpt} characters.`,
+  ),
+  nonUoaPitch: optionalText(
+    MAX_LENGTHS.nonUoaPitch,
+    `Non-UoA pitch must be at most ${MAX_LENGTHS.nonUoaPitch} characters.`,
+  ),
+});

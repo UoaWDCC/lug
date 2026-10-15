@@ -3,9 +3,6 @@ import { cookies } from "next/headers";
 import { Fira_Code, Lato } from "next/font/google";
 import "./globals.css";
 
-import NavBar from "@/components/layout/NavBar";
-import TerminalDock from "@/components/terminal/TerminalDock";
-import TerminalProvider from "@/components/terminal/TerminalProvider";
 import ThemeScript, { THEME_STORAGE_KEY } from "@/components/theme/ThemeScript";
 import ScriptingFlag from "@/components/primitive/ScriptingFlag";
 
@@ -32,6 +29,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Read theme from cookie to set the initial theme on server-side
   const cookieStore = await cookies();
   const theme =
     cookieStore.get(THEME_STORAGE_KEY)?.value === "light" ? "light" : "dark";
@@ -48,20 +46,7 @@ export default async function RootLayout({
         <ScriptingFlag />
         <ThemeScript />
       </head>
-      <body>
-        {/* Fixed-viewport shell - the page never scrolls, each screen's <main> does. */}
-        <div className="relative flex h-screen flex-col overflow-hidden bg-[var(--bg)] text-[var(--fg)]">
-          <div aria-hidden className="hero-layer hero-layer--dark z-0" />
-          <div aria-hidden className="hero-layer hero-layer--light z-0" />
-
-          {/* Root-level so the terminal session survives navigation. */}
-          <TerminalProvider>
-            <NavBar />
-            {children}
-            <TerminalDock />
-          </TerminalProvider>
-        </div>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
