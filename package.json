@@ -10,7 +10,7 @@
     "preinstall": "npx only-allow pnpm",
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --no-turbopack",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
