@@ -8,14 +8,10 @@ export default async function AdminMembersPage() {
 
   const members = await findAllMembers();
 
+  // The heading lives in MembersTable so its count can follow the filters.
   return (
-    <section className="py-8">
-      <h1 className="text-3xl font-bold tracking-tight">Members</h1>
-      <p className="mt-1 text-sm text-gray-600">{members.length} registered</p>
-
-      <div className="mt-6 rounded-lg border border-gray-200">
-        <MembersTable data={members} />
-      </div>
+    <section>
+      <MembersTable data={members} />
     </section>
   );
 }

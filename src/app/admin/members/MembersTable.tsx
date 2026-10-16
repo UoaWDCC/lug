@@ -8,11 +8,39 @@ import {
 } from "@tanstack/react-table";
 
 import type { Member } from "@/generated/prisma/client";
+import {
+  adminPinnedClass,
+  adminRowClass,
+  adminTableWrapClass,
+  adminTdClass,
+  adminThClass,
+} from "@/app/admin/_components/adminStyles";
+
+import { AdminSelect } from "@/app/admin/_components/AdminSelect";
 
 import { columns } from "./columns";
 
 interface MembersTableProps {
   data: Member[];
+}
+
+const filterLabelClass = "mr-3 text-[var(--muted)]";
+
+/* Name and Actions stay visible while the other columns scroll sideways. */
+const pinnedColumns: Record<string, string> = {
+  name: adminPinnedClass.left,
+  actions: adminPinnedClass.right,
+};
+
+/* "4 non-UoA students in 2026", "1 member", ... - describes whatever the filters currently show. */
+function describeCount(
+  count: number,
+  uoa: boolean | undefined,
+  year: number | undefined,
+) {
+  const noun =
+    uoa === true ? "UoA student" : uoa === false ? "non-UoA student" : "member";
+  return `${count} ${noun}${count === 1 ? "" : "s"}${year ? ` in ${year}` : ""}`;
 }
 
 export default function MembersTable({ data }: MembersTableProps) {
@@ -23,18 +51,88 @@ export default function MembersTable({ data }: MembersTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const years = [
+    ...new Set(data.map((member) => member.registrationYear)),
+  ].sort((a, b) => b - a);
+
+  const yearFilter = table.getColumn("registrationYear")?.getFilterValue() as
+    | number
+    | undefined;
+  const uoaFilter = table.getColumn("isCurrentUoaStudent")?.getFilterValue() as
+    | boolean
+    | undefined;
+  const rows = table.getRowModel().rows;
+
   return (
     <>
-      <div className="mb-4 flex flex-wrap gap-4">
+      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+        <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
+          Members
+        </h1>
+        <p className="font-mono text-lg text-[var(--muted)]" aria-live="polite">
+          {describeCount(rows.length, uoaFilter, yearFilter)}
+        </p>
+      </div>
+      <p className="mt-2 text-lg text-[var(--muted)]">
+        Browse and manage registered members.
+      </p>
+
+      <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
         <div>
-          <label
-            htmlFor="yearsRemaining"
-            className="mr-2 text-sm font-medium text-gray-700"
+          <label htmlFor="registrationYear" className={filterLabelClass}>
+            Year
+          </label>
+
+          <AdminSelect
+            id="registrationYear"
+            value={yearFilter ?? ""}
+            onChange={(event) => {
+              const value = event.target.value;
+
+              table
+                .getColumn("registrationYear")
+                ?.setFilterValue(value === "" ? undefined : Number(value));
+            }}
           >
+            <option value="">All</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </AdminSelect>
+        </div>
+
+        <div>
+          <label htmlFor="uoaStatus" className={filterLabelClass}>
+            UoA student
+          </label>
+
+          <AdminSelect
+            id="uoaStatus"
+            value={
+              uoaFilter === true ? "true" : uoaFilter === false ? "false" : ""
+            }
+            onChange={(event) => {
+              const value = event.target.value;
+
+              table
+                .getColumn("isCurrentUoaStudent")
+                ?.setFilterValue(value === "" ? undefined : value === "true");
+            }}
+          >
+            <option value="">All</option>
+            <option value="true">Yes</option>
+            <option value="false">No</option>
+          </AdminSelect>
+        </div>
+
+        <div>
+          <label htmlFor="yearsRemaining" className={filterLabelClass}>
             Years remaining
           </label>
 
-          <select
+          <AdminSelect
             id="yearsRemaining"
             value={
               (table.getColumn("yearsRemaining")?.getFilterValue() as
@@ -48,7 +146,6 @@ export default function MembersTable({ data }: MembersTableProps) {
                 .getColumn("yearsRemaining")
                 ?.setFilterValue(value === "" ? undefined : Number(value));
             }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
           >
             <option value="">All</option>
             <option value="0">0</option>
@@ -57,53 +154,22 @@ export default function MembersTable({ data }: MembersTableProps) {
             <option value="3">3</option>
             <option value="4">4</option>
             <option value="5">5+</option>
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="uoaStatus"
-            className="mr-2 text-sm font-medium text-gray-700"
-          >
-            UoA student
-          </label>
-
-          <select
-            id="uoaStatus"
-            value={
-              (table.getColumn("isCurrentUoaStudent")?.getFilterValue() as
-                | boolean
-                | undefined) === true
-                ? "true"
-                : (table.getColumn("isCurrentUoaStudent")?.getFilterValue() as
-                      | boolean
-                      | undefined) === false
-                  ? "false"
-                  : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
-
-              table
-                .getColumn("isCurrentUoaStudent")
-                ?.setFilterValue(value === "" ? undefined : value === "true");
-            }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="">All</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
+          </AdminSelect>
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-max border-collapse text-sm">
-          <thead className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-600">
+      <div className={`mt-6 ${adminTableWrapClass}`}>
+        {/* min-w-max keeps each member on one line; the wrapper scrolls sideways. */}
+        <table className="w-full min-w-max border-collapse">
+          <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th key={header.id} className="px-4 py-2 font-medium">
+                  <th
+                    key={header.id}
+                    scope="col"
+                    className={`${adminThClass} ${pinnedColumns[header.column.id] ?? ""}`}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -117,13 +183,23 @@ export default function MembersTable({ data }: MembersTableProps) {
           </thead>
 
           <tbody>
-            {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="border-t border-gray-200 hover:bg-gray-50"
-              >
+            {rows.length === 0 && (
+              <tr className="border-t border-[var(--divider)]">
+                <td
+                  colSpan={columns.length}
+                  className="px-5 py-10 text-center text-[var(--muted)]"
+                >
+                  No members match these filters.
+                </td>
+              </tr>
+            )}
+            {rows.map((row) => (
+              <tr key={row.id} className={adminRowClass}>
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-2">
+                  <td
+                    key={cell.id}
+                    className={`${adminTdClass} ${pinnedColumns[cell.column.id] ?? ""}`}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

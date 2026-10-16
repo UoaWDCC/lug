@@ -3,50 +3,83 @@ import type { Member } from "@/generated/prisma/client";
 import Link from "next/link";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 import {
+  adminBadgeClass,
+  adminDeleteActionClass,
+  adminEditActionClass,
+} from "@/app/admin/_components/adminStyles";
+import {
   formatBoolean,
   formatEnum,
   formatEnumList,
+  formatFaculties,
   truncateText,
 } from "./utils";
+
+/* Secondary values (emails, handles, IDs) are mono and muted, so names and badges lead the row. */
+const monoMutedClass = "font-mono text-sm text-[var(--muted)]";
 
 export const columns: ColumnDef<Member>[] = [
   {
     id: "name",
     header: "Name",
     accessorFn: (member) => `${member.firstName} ${member.lastName}`,
+    cell: ({ getValue }) => (
+      <span className="font-bold whitespace-nowrap">{getValue<string>()}</span>
+    ),
   },
   {
     accessorKey: "email",
     header: "Email",
+    cell: ({ getValue }) => (
+      <span className={monoMutedClass}>{getValue<string>()}</span>
+    ),
   },
   {
     accessorKey: "registrationYear",
-    header: "Registration year",
+    header: "Year",
+    filterFn: "equals",
+    cell: ({ getValue }) => (
+      <span className="font-mono">{getValue<number>()}</span>
+    ),
   },
   {
     accessorKey: "isCurrentUoaStudent",
-    header: "UoA student",
+    header: "UoA",
     filterFn: "equals",
-    cell: ({ getValue }) =>
-      formatBoolean(getValue<boolean | null | undefined>()),
+    cell: ({ getValue }) => {
+      const value = getValue<boolean | null | undefined>();
+      if (value === null || value === undefined) {
+        return <span className="text-[var(--muted)]">—</span>;
+      }
+      return (
+        <span
+          className={
+            value ? adminBadgeClass.positive : adminBadgeClass.negative
+          }
+        >
+          {formatBoolean(value)}
+        </span>
+      );
+    },
   },
   {
     accessorKey: "upi",
     header: "UPI",
-    cell: ({ getValue }) => getValue<string | null>() ?? "—",
+    cell: ({ getValue }) => (
+      <span className={monoMutedClass}>{getValue<string | null>() ?? "—"}</span>
+    ),
   },
   {
     accessorKey: "studentId",
     header: "Student ID",
-    cell: ({ getValue }) => getValue<string | null>() ?? "—",
+    cell: ({ getValue }) => (
+      <span className={monoMutedClass}>{getValue<string | null>() ?? "—"}</span>
+    ),
   },
   {
     accessorKey: "faculty",
     header: "Faculty",
-    cell: ({ getValue }) => {
-      const faculties = getValue<string[]>();
-      return faculties.length > 0 ? faculties.join(", ") : "—";
-    },
+    cell: ({ getValue }) => formatFaculties(getValue<string[]>()),
   },
   {
     accessorKey: "programmeType",
@@ -65,7 +98,9 @@ export const columns: ColumnDef<Member>[] = [
     accessorKey: "yearsRemaining",
     header: "Years remaining",
     filterFn: "equals",
-    cell: ({ getValue }) => getValue<number | null>() ?? "—",
+    cell: ({ getValue }) => (
+      <span className="font-mono">{getValue<number | null>() ?? "—"}</span>
+    ),
   },
   {
     accessorKey: "primaryAffiliation",
@@ -75,27 +110,40 @@ export const columns: ColumnDef<Member>[] = [
   {
     accessorKey: "nonUoaExcerpt",
     header: "Non-UoA excerpt",
-    cell: ({ getValue }) => truncateText(getValue<string | null>()),
+    // Hovering shows the full text the cell cuts short.
+    cell: ({ getValue }) => {
+      const value = getValue<string | null>();
+      return <span title={value ?? undefined}>{truncateText(value)}</span>;
+    },
   },
   {
     accessorKey: "nonUoaPitch",
     header: "Non-UoA pitch",
-    cell: ({ getValue }) => truncateText(getValue<string | null>()),
+    cell: ({ getValue }) => {
+      const value = getValue<string | null>();
+      return <span title={value ?? undefined}>{truncateText(value)}</span>;
+    },
   },
   {
     accessorKey: "linuxSkillLevel",
     header: "Linux skill",
-    cell: ({ getValue }) => formatEnum(getValue<string>()),
+    cell: ({ getValue }) => (
+      <span className="whitespace-nowrap">
+        {formatEnum(getValue<string>())}
+      </span>
+    ),
   },
   {
     accessorKey: "potentialInvolvement",
-    header: "Potential involvement",
+    header: "Involvement",
     cell: ({ getValue }) => formatEnumList(getValue<string[]>()),
   },
   {
     accessorKey: "discordUsername",
-    header: "Discord username",
-    cell: ({ getValue }) => getValue<string | null>() ?? "—",
+    header: "Discord",
+    cell: ({ getValue }) => (
+      <span className={monoMutedClass}>{getValue<string | null>() ?? "—"}</span>
+    ),
   },
   {
     id: "actions",
@@ -103,10 +151,10 @@ export const columns: ColumnDef<Member>[] = [
     cell: ({ row }) => {
       const member = row.original;
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Link
             href={`/admin/members/${member.id}/edit`}
-            className="text-blue-700 underline hover:text-blue-900"
+            className={adminEditActionClass}
           >
             Edit
           </Link>
@@ -123,7 +171,7 @@ export const columns: ColumnDef<Member>[] = [
 
               await deleteMemberAction(member.id);
             }}
-            className="rounded-md bg-red-600 px-3 py-1 text-sm font-medium text-white hover:bg-red-700"
+            className={adminDeleteActionClass}
           >
             Delete
           </button>
