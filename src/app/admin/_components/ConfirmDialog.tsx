@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import {
   adminDangerButtonClass,
   adminErrorClass,
@@ -30,6 +30,8 @@ export function ConfirmDialog({
   onClose,
 }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // Unique per instance, since a page can render several dialogs (e.g. one per row).
+  const titleId = useId();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -58,7 +60,7 @@ export function ConfirmDialog({
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="confirm-dialog-title"
+      aria-labelledby={titleId}
       // Escape fires "cancel"; route it through onClose so React state stays in sync.
       onCancel={(event) => {
         event.preventDefault();
@@ -91,10 +93,7 @@ export function ConfirmDialog({
             </svg>
           </span>
           <div className="min-w-0">
-            <h2
-              id="confirm-dialog-title"
-              className="text-2xl font-black tracking-tight"
-            >
+            <h2 id={titleId} className="text-2xl font-black tracking-tight">
               {title}
             </h2>
             <div className="mt-2 text-[var(--muted)]">{children}</div>

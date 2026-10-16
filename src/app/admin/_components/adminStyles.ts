@@ -62,7 +62,13 @@ const badgeBase =
 export const adminBadgeClass = {
   positive: `${badgeBase} border-[var(--accent)]/40 bg-[var(--accent)]/10 text-[var(--accent-text)]`,
   negative: `${badgeBase} border-[var(--danger)]/40 bg-[var(--danger)]/10 text-[var(--danger)]`,
+  warning: `${badgeBase} border-[var(--warning)]/40 bg-[var(--warning)]/10 text-[var(--warning)]`,
+  neutral: `${badgeBase} border-[var(--input-border)] bg-[var(--chip-bg)] text-[var(--fg)]`,
 };
+
+/* Quiet mono label for tags; deliberately lower-key than status badges. */
+export const adminTagClass =
+  "inline-block rounded-md border border-[var(--divider)] bg-[var(--chip-bg)] px-2.5 py-0.5 font-mono text-sm whitespace-nowrap text-[var(--muted)]";
 
 /* Compact row actions. hover:text-* restates the colour so the global a:hover rule can't change it. */
 const rowActionBase =

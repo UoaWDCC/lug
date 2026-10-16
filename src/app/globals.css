@@ -40,6 +40,8 @@
     rgba(10, 10, 10, 0.68) var(--mix)
   );
   --danger: color-mix(in srgb, #ff8b8b, #c0392b var(--mix));
+  /* Amber for in-progress states (e.g. draft posts); deepened in light mode to stay readable on white. */
+  --warning: color-mix(in srgb, #f2c14e, #8a5a00 var(--mix));
   /* Hairlines between regions (admin header, table rows) - quieter than --input-border. */
   --divider: color-mix(
     in srgb,

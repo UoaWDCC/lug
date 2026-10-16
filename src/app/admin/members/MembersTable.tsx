@@ -17,6 +17,7 @@ import {
   adminThClass,
 } from "@/app/admin/_components/adminStyles";
 
+import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
 import { AdminSelect } from "@/app/admin/_components/AdminSelect";
 import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
@@ -78,17 +79,11 @@ export default function MembersTable({ data }: MembersTableProps) {
 
   return (
     <>
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
-        <h1 className="text-4xl font-black tracking-tight sm:text-5xl">
-          Members
-        </h1>
-        <p className="font-mono text-lg text-[var(--muted)]" aria-live="polite">
-          {describeCount(rows.length, uoaFilter, yearFilter)}
-        </p>
-      </div>
-      <p className="mt-2 text-lg text-[var(--muted)]">
-        Browse and manage registered members.
-      </p>
+      <AdminPageHeader
+        title="Members"
+        count={describeCount(rows.length, uoaFilter, yearFilter)}
+        description="Browse and manage registered members."
+      />
 
       <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
         <div>

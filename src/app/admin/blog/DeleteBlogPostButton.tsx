@@ -1,6 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { deleteBlogPostAction } from "@/features/blog/deleteBlogPostAction";
+import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
+import { adminDeleteActionClass } from "@/app/admin/_components/adminStyles";
 
 type Props = {
   id: string;
@@ -8,18 +11,33 @@ type Props = {
 };
 
 export function DeleteBlogPostButton({ id, title }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <form
-      action={deleteBlogPostAction.bind(null, id)}
-      onSubmit={(event) => {
-        if (!window.confirm(`Delete “${title}”? This cannot be undone.`)) {
-          event.preventDefault();
-        }
-      }}
-    >
-      <button type="submit" className="text-red-700 hover:underline">
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className={adminDeleteActionClass}
+      >
         Delete
       </button>
-    </form>
+
+      <ConfirmDialog
+        open={open}
+        title="Delete this post?"
+        confirmLabel="Delete post"
+        pendingLabel="Deleting…"
+        onClose={() => setOpen(false)}
+        // Redirects back to /admin/blog either way; failures arrive as ?error= and show on the page.
+        onConfirm={() => deleteBlogPostAction(id)}
+      >
+        <p className="font-bold text-[var(--fg)]">“{title}”</p>
+        <p className="mt-2">
+          This permanently removes the post and its link stops working. This
+          can&apos;t be undone.
+        </p>
+      </ConfirmDialog>
+    </>
   );
 }
