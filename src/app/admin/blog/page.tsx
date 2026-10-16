@@ -1,10 +1,8 @@
 import Link from "next/link";
-import type { PostStatus } from "@/generated/prisma/client";
 import { requireAdmin } from "@/lib/auth/session";
 import { findAllBlogPosts } from "@/repositories/blogPostRepository";
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
 import {
-  adminBadgeClass,
   adminEditActionClass,
   adminErrorClass,
   adminPrimaryButtonClass,
@@ -15,6 +13,7 @@ import {
   adminThClass,
 } from "@/app/admin/_components/adminStyles";
 import { DeleteBlogPostButton } from "./DeleteBlogPostButton";
+import { postStatusBadges } from "./postStatus";
 
 type PageProps = {
   searchParams: Promise<{ error?: string }>;
@@ -23,12 +22,6 @@ type PageProps = {
 const errorMessages: Record<string, string> = {
   not_found: "That post no longer exists.",
   database: "The post could not be deleted. Please try again.",
-};
-
-const statusBadges: Record<PostStatus, { label: string; className: string }> = {
-  PUBLISHED: { label: "Published", className: adminBadgeClass.positive },
-  SCHEDULED: { label: "Scheduled", className: adminBadgeClass.neutral },
-  DRAFT: { label: "Draft", className: adminBadgeClass.warning },
 };
 
 const columns = ["Title", "Status", "Tags", "Author", "Published", "Actions"];
@@ -90,7 +83,7 @@ export default async function AdminBlogPage({ searchParams }: PageProps) {
               </tr>
             )}
             {posts.map((post) => {
-              const status = statusBadges[post.status];
+              const status = postStatusBadges[post.status];
               return (
                 <tr key={post.id} className={adminRowClass}>
                   {/* Min widths stop titles squashing to a word per line on phones; the table scrolls instead. */}

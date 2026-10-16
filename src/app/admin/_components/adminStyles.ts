@@ -8,6 +8,10 @@ export const adminInputClass =
 
 export const adminHintClass = "text-sm text-[var(--muted)]";
 
+/* Quiet "← Section" link above a page heading. */
+export const adminBackLinkClass =
+  "inline-flex items-center gap-2 font-mono text-sm text-[var(--muted)] no-underline hover:text-[var(--accent-text)]";
+
 /* Compact mono select used for table filters. */
 export const adminSelectClass =
   "cursor-pointer appearance-none rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pr-11 pl-5 font-mono text-base text-[var(--accent-text)] transition-colors duration-150 hover:border-[var(--accent)] focus:border-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";

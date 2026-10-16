@@ -15,6 +15,7 @@ import {
 import { formatEnum } from "@/app/admin/members/utils";
 import { AdminSelect } from "@/app/admin/_components/AdminSelect";
 import {
+  adminBackLinkClass,
   adminCardClass,
   adminCheckInputClass,
   adminChipClass,
@@ -111,10 +112,7 @@ export default async function EditMemberPage({
     <section className="mx-auto max-w-5xl">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <Link
-            href="/admin/members"
-            className="inline-flex items-center gap-2 font-mono text-sm text-[var(--muted)] no-underline hover:text-[var(--accent-text)]"
-          >
+          <Link href="/admin/members" className={adminBackLinkClass}>
             <span aria-hidden>←</span> Members
           </Link>
           <h1 className="mt-3 text-4xl font-black tracking-tight">
