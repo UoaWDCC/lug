@@ -40,6 +40,12 @@
     rgba(10, 10, 10, 0.68) var(--mix)
   );
   --danger: color-mix(in srgb, #ff8b8b, #c0392b var(--mix));
+  /* Hairlines between regions (admin header, table rows) - quieter than --input-border. */
+  --divider: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.08),
+    rgba(10, 10, 10, 0.1) var(--mix)
+  );
 
   --input-bg: color-mix(in srgb, rgba(255, 255, 255, 0.04), #ffffff var(--mix));
   --input-border: color-mix(
