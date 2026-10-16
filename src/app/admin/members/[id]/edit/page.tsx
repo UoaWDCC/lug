@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import updateMemberAction from "@/features/admin-members/updateMemberAction";
 import { requireAdmin } from "@/lib/auth/session";
@@ -12,9 +13,21 @@ import {
   FACULTY_OPTIONS,
 } from "@/domain/member/constants";
 import { formatEnum } from "@/app/admin/members/utils";
+import { AdminSelect } from "@/app/admin/_components/AdminSelect";
+import {
+  adminCardClass,
+  adminCheckInputClass,
+  adminChipClass,
+  adminErrorClass,
+  adminHintClass,
+  adminInputClass,
+  adminLabelClass,
+  adminPrimaryButtonClass,
+  adminSecondaryButtonClass,
+  adminSectionTitleClass,
+} from "@/app/admin/_components/adminStyles";
 
-const inputClassName =
-  "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
+const FORM_ID = "edit-member-form";
 
 const errorMessages: Record<string, string> = {
   invalid_data: "Some of the submitted member details were invalid.",
@@ -44,6 +57,20 @@ async function submitMemberUpdate(formData: FormData) {
   }
 
   redirect("/admin/members?error=invalid_id");
+}
+
+/* Save/Cancel appear in the header and at the foot of the form; both target the form by id. */
+function FormActions() {
+  return (
+    <div className="flex flex-wrap gap-3">
+      <Link href="/admin/members" className={adminSecondaryButtonClass}>
+        Cancel
+      </Link>
+      <button type="submit" form={FORM_ID} className={adminPrimaryButtonClass}>
+        Save changes
+      </button>
+    </div>
+  );
 }
 
 export default async function EditMemberPage({
@@ -81,149 +108,173 @@ export default async function EditMemberPage({
   const errorMessage = error ? errorMessages[error] : undefined;
 
   return (
-    <section className="px-4 py-8 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold tracking-tight">
-        Edit Member Details: {member.firstName} {member.lastName}
-      </h1>
+    <section className="mx-auto max-w-5xl">
+      <div className="flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <Link
+            href="/admin/members"
+            className="inline-flex items-center gap-2 font-mono text-sm text-[var(--muted)] no-underline hover:text-[var(--accent-text)]"
+          >
+            <span aria-hidden>←</span> Members
+          </Link>
+          <h1 className="mt-3 text-4xl font-black tracking-tight">
+            Edit member
+          </h1>
+          <p className="mt-2 text-lg text-[var(--muted)]">
+            {member.firstName} {member.lastName}
+            <span className="mx-2" aria-hidden>
+              ·
+            </span>
+            <span className="font-mono text-base">
+              {member.registrationYear} registration
+            </span>
+          </p>
+        </div>
+        <FormActions />
+      </div>
 
       {errorMessage && (
-        <div
-          className="mt-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-700"
-          role="alert"
-        >
+        <div className={`mt-8 ${adminErrorClass}`} role="alert">
           <strong>Unable to save changes:</strong> {errorMessage}
         </div>
       )}
 
+      {/* flex gap, not space-y: it also spaces the cards inside the display:contents field selector. */}
       <form
+        id={FORM_ID}
         action={submitMemberUpdate}
-        className="mt-6 grid gap-6 md:grid-cols-2"
+        className="mt-8 flex flex-col gap-6"
       >
         <input type="hidden" name="id" value={member.id} />
 
-        <div>
-          <label className="block text-sm font-medium" htmlFor="firstName">
-            First name
-          </label>
-          <input
-            className={inputClassName}
-            id="firstName"
-            name="firstName"
-            type="text"
-            defaultValue={member.firstName}
-            maxLength={MAX_LENGTHS.firstName}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium" htmlFor="lastName">
-            Last name
-          </label>
-          <input
-            className={inputClassName}
-            id="lastName"
-            name="lastName"
-            type="text"
-            defaultValue={member.lastName}
-            maxLength={MAX_LENGTHS.lastName}
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium" htmlFor="email">
-            Email
-          </label>
-          <input
-            className={inputClassName}
-            id="email"
-            name="email"
-            type="email"
-            defaultValue={member.email}
-            maxLength={MAX_LENGTHS.email}
-            required
-          />
-        </div>
-
-        <div>
-          <label
-            className="block text-sm font-medium"
-            htmlFor="discordUsername"
-          >
-            Discord username
-          </label>
-          <input
-            className={inputClassName}
-            id="discordUsername"
-            name="discordUsername"
-            type="text"
-            defaultValue={member.discordUsername ?? ""}
-            maxLength={MAX_LENGTHS.discordUsername}
-          />
-        </div>
-
-        <div className="member-field-selector contents">
-          <fieldset className="rounded-md border border-gray-200 p-4 md:col-span-2">
-            <legend className="px-1 text-sm font-medium">
-              Fields to display
-            </legend>
-            <div className="flex flex-wrap gap-x-6 gap-y-2">
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="fieldView"
-                  value="uoa"
-                  defaultChecked={initialFieldView === "uoa"}
-                />
-                UoA
+        <section
+          className={adminCardClass}
+          aria-labelledby="personal-details-heading"
+        >
+          <h2 id="personal-details-heading" className={adminSectionTitleClass}>
+            Personal details
+          </h2>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div>
+              <label className={adminLabelClass} htmlFor="firstName">
+                First name
               </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="fieldView"
-                  value="nonUoa"
-                  defaultChecked={initialFieldView === "nonUoa"}
-                />
-                Non-UoA
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  name="fieldView"
-                  value="both"
-                  defaultChecked={initialFieldView === "both"}
-                />
-                Both
-              </label>
+              <input
+                className={adminInputClass}
+                id="firstName"
+                name="firstName"
+                type="text"
+                defaultValue={member.firstName}
+                maxLength={MAX_LENGTHS.firstName}
+                required
+              />
             </div>
-          </fieldset>
 
+            <div>
+              <label className={adminLabelClass} htmlFor="lastName">
+                Last name
+              </label>
+              <input
+                className={adminInputClass}
+                id="lastName"
+                name="lastName"
+                type="text"
+                defaultValue={member.lastName}
+                maxLength={MAX_LENGTHS.lastName}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={adminLabelClass} htmlFor="email">
+                Email
+              </label>
+              <input
+                className={`${adminInputClass} font-mono`}
+                id="email"
+                name="email"
+                type="email"
+                defaultValue={member.email}
+                maxLength={MAX_LENGTHS.email}
+                required
+              />
+            </div>
+
+            <div>
+              <label className={adminLabelClass} htmlFor="discordUsername">
+                Discord username
+              </label>
+              <input
+                className={`${adminInputClass} font-mono`}
+                id="discordUsername"
+                name="discordUsername"
+                type="text"
+                defaultValue={member.discordUsername ?? ""}
+                maxLength={MAX_LENGTHS.discordUsername}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* The radios below show/hide the UoA and non-UoA sections with CSS (see the <style> tag). */}
+        <div className="member-field-selector contents">
           <section
-            className="uoa-fields rounded-md border border-gray-200 md:col-span-2"
-            aria-labelledby="uoa-information-heading"
+            className={adminCardClass}
+            aria-labelledby="student-details-heading"
           >
-            <h2
-              className="px-4 py-3 font-semibold"
-              id="uoa-information-heading"
-            >
-              UoA information
+            <h2 id="student-details-heading" className={adminSectionTitleClass}>
+              Student details
             </h2>
-            <div className="grid gap-6 border-t border-gray-200 p-4 md:grid-cols-2">
-              <fieldset className="rounded-md border border-gray-200 p-4">
-                <legend className="px-1 text-sm font-medium">Faculty</legend>
-                <p className="mb-3 text-sm text-gray-600">Choose up to two.</p>
-                <div className="space-y-2">
+            <fieldset className="mt-6">
+              <legend className={adminLabelClass}>Fields to show</legend>
+              <div className="flex flex-wrap gap-3">
+                {(
+                  [
+                    ["uoa", "UoA"],
+                    ["nonUoa", "Non-UoA"],
+                    ["both", "Both"],
+                  ] as const
+                ).map(([value, label]) => (
+                  <label key={value} className={adminChipClass}>
+                    <input
+                      type="radio"
+                      name="fieldView"
+                      value={value}
+                      defaultChecked={initialFieldView === value}
+                      className={adminCheckInputClass}
+                    />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <div
+              className="uoa-fields mt-8 border-t border-[var(--divider)] pt-8"
+              role="group"
+              aria-labelledby="uoa-information-heading"
+            >
+              <h3
+                id="uoa-information-heading"
+                className="text-xl font-black tracking-tight"
+              >
+                UoA information
+              </h3>
+
+              <fieldset className="mt-6">
+                <legend className={adminLabelClass}>Faculty</legend>
+                <p className={`-mt-1 mb-3 ${adminHintClass}`}>
+                  Choose up to two.
+                </p>
+                <div className="flex flex-wrap gap-3">
                   {FACULTY_OPTIONS.map((faculty) => (
-                    <label
-                      className="flex items-center gap-2"
-                      key={faculty.value}
-                    >
+                    <label className={adminChipClass} key={faculty.value}>
                       <input
                         type="checkbox"
                         name="faculty"
                         value={faculty.value}
                         defaultChecked={member.faculty.includes(faculty.value)}
+                        className={adminCheckInputClass}
                       />
                       {faculty.label}
                     </label>
@@ -231,16 +282,13 @@ export default async function EditMemberPage({
                 </div>
               </fieldset>
 
-              <div className="space-y-6">
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
                 <div>
-                  <label
-                    className="block text-sm font-medium"
-                    htmlFor="programmeType"
-                  >
+                  <label className={adminLabelClass} htmlFor="programmeType">
                     Programme type
                   </label>
-                  <select
-                    className={inputClassName}
+                  <AdminSelect
+                    variant="field"
                     id="programmeType"
                     name="programmeType"
                     defaultValue={member.programmeType ?? ""}
@@ -251,18 +299,15 @@ export default async function EditMemberPage({
                         {formatEnum(programmeType)}
                       </option>
                     ))}
-                  </select>
+                  </AdminSelect>
                 </div>
 
                 <div>
-                  <label
-                    className="block text-sm font-medium"
-                    htmlFor="yearsRemaining"
-                  >
+                  <label className={adminLabelClass} htmlFor="yearsRemaining">
                     Years remaining
                   </label>
-                  <select
-                    className={inputClassName}
+                  <AdminSelect
+                    variant="field"
                     id="yearsRemaining"
                     name="yearsRemaining"
                     defaultValue={member.yearsRemaining ?? ""}
@@ -277,13 +322,13 @@ export default async function EditMemberPage({
                             : years}
                       </option>
                     ))}
-                  </select>
+                  </AdminSelect>
                 </div>
               </div>
 
-              <fieldset className="md:col-span-2">
-                <legend className="text-sm font-medium">Majors</legend>
-                <p className="mb-3 text-sm text-gray-600">
+              <fieldset className="mt-6">
+                <legend className={adminLabelClass}>Majors</legend>
+                <p className={`-mt-1 mb-3 ${adminHintClass}`}>
                   Add up to {MAX_MAJORS} majors or specialisations.
                 </p>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -293,7 +338,7 @@ export default async function EditMemberPage({
                         Major {index + 1}
                       </label>
                       <input
-                        className={inputClassName}
+                        className={adminInputClass}
                         id={`major-${index}`}
                         name="majors"
                         type="text"
@@ -306,68 +351,64 @@ export default async function EditMemberPage({
                 </div>
               </fieldset>
             </div>
-          </section>
 
-          <section
-            className="non-uoa-fields rounded-md border border-gray-200 md:col-span-2"
-            aria-labelledby="non-uoa-information-heading"
-          >
-            <h2
-              className="px-4 py-3 font-semibold"
-              id="non-uoa-information-heading"
+            <div
+              className="non-uoa-fields mt-8 border-t border-[var(--divider)] pt-8"
+              role="group"
+              aria-labelledby="non-uoa-information-heading"
             >
-              Non-UoA information
-            </h2>
-            <div className="grid gap-6 border-t border-gray-200 p-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label
-                  className="block text-sm font-medium"
-                  htmlFor="primaryAffiliation"
-                >
-                  Primary affiliation
-                </label>
-                <input
-                  className={inputClassName}
-                  id="primaryAffiliation"
-                  name="primaryAffiliation"
-                  type="text"
-                  defaultValue={member.primaryAffiliation ?? ""}
-                  maxLength={MAX_LENGTHS.primaryAffiliation}
-                />
-              </div>
+              <h3
+                id="non-uoa-information-heading"
+                className="text-xl font-black tracking-tight"
+              >
+                Non-UoA information
+              </h3>
 
-              <div>
-                <label
-                  className="block text-sm font-medium"
-                  htmlFor="nonUoaExcerpt"
-                >
-                  Non-UoA excerpt
-                </label>
-                <textarea
-                  className={inputClassName}
-                  id="nonUoaExcerpt"
-                  name="nonUoaExcerpt"
-                  defaultValue={member.nonUoaExcerpt ?? ""}
-                  maxLength={MAX_LENGTHS.nonUoaExcerpt}
-                  rows={5}
-                />
-              </div>
+              <div className="mt-6 grid gap-6 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label
+                    className={adminLabelClass}
+                    htmlFor="primaryAffiliation"
+                  >
+                    Primary affiliation
+                  </label>
+                  <input
+                    className={adminInputClass}
+                    id="primaryAffiliation"
+                    name="primaryAffiliation"
+                    type="text"
+                    defaultValue={member.primaryAffiliation ?? ""}
+                    maxLength={MAX_LENGTHS.primaryAffiliation}
+                  />
+                </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium"
-                  htmlFor="nonUoaPitch"
-                >
-                  Non-UoA pitch
-                </label>
-                <textarea
-                  className={inputClassName}
-                  id="nonUoaPitch"
-                  name="nonUoaPitch"
-                  defaultValue={member.nonUoaPitch ?? ""}
-                  maxLength={MAX_LENGTHS.nonUoaPitch}
-                  rows={5}
-                />
+                <div>
+                  <label className={adminLabelClass} htmlFor="nonUoaExcerpt">
+                    Non-UoA excerpt
+                  </label>
+                  <textarea
+                    className={`${adminInputClass} resize-y leading-relaxed`}
+                    id="nonUoaExcerpt"
+                    name="nonUoaExcerpt"
+                    defaultValue={member.nonUoaExcerpt ?? ""}
+                    maxLength={MAX_LENGTHS.nonUoaExcerpt}
+                    rows={5}
+                  />
+                </div>
+
+                <div>
+                  <label className={adminLabelClass} htmlFor="nonUoaPitch">
+                    Non-UoA pitch
+                  </label>
+                  <textarea
+                    className={`${adminInputClass} resize-y leading-relaxed`}
+                    id="nonUoaPitch"
+                    name="nonUoaPitch"
+                    defaultValue={member.nonUoaPitch ?? ""}
+                    maxLength={MAX_LENGTHS.nonUoaPitch}
+                    rows={5}
+                  />
+                </div>
               </div>
             </div>
           </section>
@@ -383,72 +424,81 @@ export default async function EditMemberPage({
           `}</style>
         </div>
 
-        <div>
-          <label
-            className="block text-sm font-medium"
-            htmlFor="linuxSkillLevel"
-          >
-            Linux skill level
-          </label>
-          <select
-            className={inputClassName}
-            id="linuxSkillLevel"
-            name="linuxSkillLevel"
-            defaultValue={member.linuxSkillLevel}
-            required
-          >
-            {VALID_SKILL_LEVELS.map((skillLevel) => (
-              <option key={skillLevel} value={skillLevel}>
-                {formatEnum(skillLevel)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <fieldset className="rounded-md border border-gray-200 p-4">
-          <legend className="px-1 text-sm font-medium">
-            Potential involvement
-          </legend>
-          <div className="space-y-2">
-            {VALID_INVOLVEMENTS.map((involvement) => (
-              <label className="flex items-center gap-2" key={involvement}>
-                <input
-                  type="checkbox"
-                  name="potentialInvolvement"
-                  value={involvement}
-                  defaultChecked={member.potentialInvolvement.includes(
-                    involvement,
-                  )}
-                />
-                {formatEnum(involvement)}
+        <section
+          className={adminCardClass}
+          aria-labelledby="involvement-heading"
+        >
+          <h2 id="involvement-heading" className={adminSectionTitleClass}>
+            Linux &amp; involvement
+          </h2>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div>
+              <label className={adminLabelClass} htmlFor="linuxSkillLevel">
+                Linux skill level
               </label>
-            ))}
+              <AdminSelect
+                variant="field"
+                id="linuxSkillLevel"
+                name="linuxSkillLevel"
+                defaultValue={member.linuxSkillLevel}
+                required
+              >
+                {VALID_SKILL_LEVELS.map((skillLevel) => (
+                  <option key={skillLevel} value={skillLevel}>
+                    {formatEnum(skillLevel)}
+                  </option>
+                ))}
+              </AdminSelect>
+            </div>
+
+            <fieldset>
+              <legend className={adminLabelClass}>Potential involvement</legend>
+              <div className="flex flex-wrap gap-3">
+                {VALID_INVOLVEMENTS.map((involvement) => (
+                  <label className={adminChipClass} key={involvement}>
+                    <input
+                      type="checkbox"
+                      name="potentialInvolvement"
+                      value={involvement}
+                      defaultChecked={member.potentialInvolvement.includes(
+                        involvement,
+                      )}
+                      className={adminCheckInputClass}
+                    />
+                    {formatEnum(involvement)}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
-        </fieldset>
+        </section>
 
         <section
-          className="rounded-md bg-gray-50 p-4 md:col-span-2"
+          className={adminCardClass}
           aria-labelledby="record-information-heading"
         >
-          <h2 className="font-semibold" id="record-information-heading">
+          <h2
+            id="record-information-heading"
+            className={adminSectionTitleClass}
+          >
             Record information
           </h2>
-          <dl className="mt-3 grid gap-3 text-sm md:grid-cols-3">
+          <dl className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
-              <dt className="font-medium text-gray-600">Registration year</dt>
-              <dd>{member.registrationYear}</dd>
+              <dt className={adminHintClass}>Registration year</dt>
+              <dd className="mt-1 font-mono">{member.registrationYear}</dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-600">Created</dt>
-              <dd>
+              <dt className={adminHintClass}>Created</dt>
+              <dd className="mt-1 font-mono">
                 <time dateTime={member.createdAt.toISOString()}>
                   {member.createdAt.toLocaleString("en-NZ")}
                 </time>
               </dd>
             </div>
             <div>
-              <dt className="font-medium text-gray-600">Last updated</dt>
-              <dd>
+              <dt className={adminHintClass}>Last updated</dt>
+              <dd className="mt-1 font-mono">
                 <time dateTime={member.updatedAt.toISOString()}>
                   {member.updatedAt.toLocaleString("en-NZ")}
                 </time>
@@ -457,13 +507,8 @@ export default async function EditMemberPage({
           </dl>
         </section>
 
-        <div className="md:col-span-2">
-          <button
-            className="rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700"
-            type="submit"
-          >
-            Save changes
-          </button>
+        <div className="flex justify-end border-t border-[var(--divider)] pt-6">
+          <FormActions />
         </div>
       </form>
     </section>

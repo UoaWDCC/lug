@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -17,8 +18,10 @@ import {
 } from "@/app/admin/_components/adminStyles";
 
 import { AdminSelect } from "@/app/admin/_components/AdminSelect";
+import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
+import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 
-import { columns } from "./columns";
+import { createColumns } from "./columns";
 
 interface MembersTableProps {
   data: Member[];
@@ -33,6 +36,13 @@ const pinnedColumns: Record<string, string> = {
 };
 
 /* "4 non-UoA students in 2026", "1 member", ... - describes whatever the filters currently show. */
+const deleteErrorMessages = {
+  invalid_id: "That member ID is invalid.",
+  not_found:
+    "That member no longer exists. Refresh the page to update the list.",
+  database: "The member could not be deleted. Please try again.",
+};
+
 function describeCount(
   count: number,
   uoa: boolean | undefined,
@@ -44,6 +54,9 @@ function describeCount(
 }
 
 export default function MembersTable({ data }: MembersTableProps) {
+  const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
+  const columns = useMemo(() => createColumns(setMemberToDelete), []);
+
   const table = useReactTable({
     data,
     columns,
@@ -208,6 +221,50 @@ export default function MembersTable({ data }: MembersTableProps) {
           </tbody>
         </table>
       </div>
+
+      <ConfirmDialog
+        open={memberToDelete !== null}
+        title={
+          memberToDelete
+            ? `Delete ${memberToDelete.firstName} ${memberToDelete.lastName}?`
+            : "Delete member?"
+        }
+        confirmLabel="Delete member"
+        pendingLabel="Deleting…"
+        onClose={() => setMemberToDelete(null)}
+        onConfirm={async () => {
+          if (!memberToDelete) return;
+          // Redirects back to this page on success; only failures come back as a result.
+          const result = await deleteMemberAction(memberToDelete.id);
+          return result ? deleteErrorMessages[result.error] : undefined;
+        }}
+      >
+        {memberToDelete && (
+          <>
+            <p>
+              This permanently removes their {memberToDelete.registrationYear}{" "}
+              registration. This can&apos;t be undone.
+            </p>
+            {/* Plain text with an icon, not a box, so it can't be mistaken for an input. */}
+            <p className="mt-3 flex items-center gap-2 font-mono text-sm break-all text-[var(--fg)]">
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-4 w-4 shrink-0 text-[var(--muted)]"
+              >
+                <rect x="2" y="4" width="20" height="16" rx="2" />
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+              </svg>
+              {memberToDelete.email}
+            </p>
+          </>
+        )}
+      </ConfirmDialog>
     </>
   );
 }

@@ -1,7 +1,6 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { Member } from "@/generated/prisma/client";
 import Link from "next/link";
-import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 import {
   adminBadgeClass,
   adminDeleteActionClass,
@@ -18,7 +17,10 @@ import {
 /* Secondary values (emails, handles, IDs) are mono and muted, so names and badges lead the row. */
 const monoMutedClass = "font-mono text-sm text-[var(--muted)]";
 
-export const columns: ColumnDef<Member>[] = [
+/* A factory so the Delete button can open the table's shared confirm dialog. */
+export const createColumns = (
+  onDelete: (member: Member) => void,
+): ColumnDef<Member>[] => [
   {
     id: "name",
     header: "Name",
@@ -160,17 +162,7 @@ export const columns: ColumnDef<Member>[] = [
           </Link>
           <button
             type="button"
-            onClick={async () => {
-              const confirmed = window.confirm(
-                `Are you sure you want to delete ${member.firstName} ${member.lastName}?`,
-              );
-
-              if (!confirmed) {
-                return;
-              }
-
-              await deleteMemberAction(member.id);
-            }}
+            onClick={() => onDelete(member)}
             className={adminDeleteActionClass}
           >
             Delete

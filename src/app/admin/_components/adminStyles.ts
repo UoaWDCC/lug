@@ -6,8 +6,35 @@ export const adminLabelClass =
 export const adminInputClass =
   "block w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-3 text-base text-[var(--fg)] transition-colors duration-150 placeholder:text-[var(--muted)] focus:border-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";
 
+export const adminHintClass = "text-sm text-[var(--muted)]";
+
+/* Compact mono select used for table filters. */
 export const adminSelectClass =
   "cursor-pointer appearance-none rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] py-2 pr-11 pl-5 font-mono text-base text-[var(--accent-text)] transition-colors duration-150 hover:border-[var(--accent)] focus:border-[var(--accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)]/30";
+
+/* Full-width select that sits alongside text inputs in a form; pr leaves room for the chevron. */
+export const adminFieldSelectClass = `${adminInputClass} cursor-pointer appearance-none pr-11`;
+
+/* Grouped form sections and other content panels. */
+export const adminCardClass =
+  "rounded-2xl border border-[var(--input-border)] bg-[var(--card-bg)] p-5 sm:p-8";
+/* Small mono caps heading, matching the table column headers. */
+export const adminSectionTitleClass =
+  "font-mono text-xs font-medium tracking-[0.12em] text-[var(--muted)] uppercase";
+
+/* Checkbox/radio "chips": a <label> wrapping the input, highlighted while checked or focused. */
+export const adminChipClass =
+  "inline-flex cursor-pointer items-center gap-2.5 rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-2.5 font-mono text-sm text-[var(--fg)] transition-colors duration-150 select-none hover:border-[var(--accent)] has-[:checked]:border-[var(--accent)] has-[:checked]:bg-[var(--accent)]/10 has-[:checked]:text-[var(--accent-text)] has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-[var(--accent)]/30";
+export const adminCheckInputClass =
+  "h-4 w-4 shrink-0 cursor-pointer accent-[var(--accent)]";
+
+/* Page-level buttons. hover:text-* restates the colour so the global a:hover rule can't change it. */
+const buttonBase =
+  "inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border px-6 py-3 font-mono text-base font-semibold whitespace-nowrap no-underline transition-[background,border-color,filter,transform] duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100";
+export const adminPrimaryButtonClass = `${buttonBase} border-transparent bg-[var(--accent)] text-black hover:text-black hover:brightness-[1.08]`;
+export const adminSecondaryButtonClass = `${buttonBase} border-[var(--input-border)] bg-transparent text-[var(--fg)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/10 hover:text-[var(--fg)]`;
+/* Text uses --bg so it is dark on dark mode's light red and white on light mode's deep red. */
+export const adminDangerButtonClass = `${buttonBase} border-transparent bg-[var(--danger)] text-[var(--bg)] hover:text-[var(--bg)] hover:brightness-[1.08]`;
 
 /* Tables: wrapper scrolls sideways on narrow screens instead of squashing columns. */
 export const adminTableWrapClass =
