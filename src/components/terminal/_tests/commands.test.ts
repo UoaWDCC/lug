@@ -131,3 +131,102 @@ describe("didYouMean", () => {
     expect(didYouMean("zzqqxx")).toBeUndefined();
   });
 });
+
+describe("blog commands", () => {
+  const blog = {
+    posts: [
+      { slug: "wdcc-background", tags: ["events"] },
+      { slug: "photobooth-glitch", tags: ["events"] },
+      { slug: "meeting-snacks", tags: ["announcements"] },
+    ],
+    tags: ["announcements", "events", "tutorials"],
+  };
+  const ctx = { blog };
+
+  it.each([
+    "cat wdcc-background",
+    "read ./wdcc-background.md",
+    "cat blog/wdcc-background",
+    "open wdcc-background",
+  ])("%s opens the post", (input) => {
+    const result = resolveCommand(input, ctx);
+    expect(result.navigate).toBe("/blog/wdcc-background");
+    expect(result.lines[0].text).toBe("opening wdcc-background.md");
+  });
+
+  it("reports a missing post", () => {
+    const result = resolveCommand("cat nope", ctx);
+    expect(result.navigate).toBeUndefined();
+    expect(result.lines[0].text).toBe("no such file: nope.md");
+  });
+
+  it("still treats `open <page>` as cd on the blog", () => {
+    expect(resolveCommand("open about-us", ctx).navigate).toBe("/about");
+  });
+
+  it.each(["tag events", "filter #events", "ls --tag=events"])(
+    "%s filters by tag",
+    (input) => {
+      const result = resolveCommand(input, ctx);
+      expect(result.navigate).toBe("/blog?tag=events");
+      expect(result.lines[0].text).toBe("#events: 2 posts");
+    },
+  );
+
+  it("clears the filter with `tag all`", () => {
+    const result = resolveCommand("tag all", ctx);
+    expect(result.navigate).toBe("/blog");
+    expect(result.lines[0].text).toBe("showing all 3 posts");
+  });
+
+  it("rejects an unknown tag with the known ones as a hint", () => {
+    const result = resolveCommand("tag meetings", ctx);
+    expect(result.navigate).toBeUndefined();
+    expect(result.lines[1].text).toBe("try: announcements, events, tutorials");
+  });
+
+  it("counts posts and lists tags", () => {
+    expect(resolveCommand("posts", ctx).lines[0].text).toBe(
+      "3 posts in ~/blog",
+    );
+    expect(resolveCommand("ls ./posts", ctx).lines[0].text).toBe(
+      "3 posts in ~/blog",
+    );
+    expect(resolveCommand("tags", ctx).lines[0].text).toBe(
+      "#announcements  #events  #tutorials",
+    );
+  });
+
+  it("docks the sidebar only when it is collapsed", () => {
+    expect(
+      resolveCommand("dock", { ...ctx, sidebarCollapsed: true }).expandSidebar,
+    ).toBe(true);
+
+    const docked = resolveCommand("sidebar", ctx);
+    expect(docked.expandSidebar).toBeUndefined();
+    expect(docked.lines[0].text).toBe("already docked to the sidebar");
+  });
+
+  it("keeps blog commands to the blog", () => {
+    expect(resolveCommand("posts").navigate).toBe("/blog");
+    expect(resolveCommand("cat wdcc-background").lines[0].text).toBe(
+      "cat: only available on the blog",
+    );
+    expect(resolveCommand("dock").lines[0].text).toBe(
+      "dock: only available on the blog",
+    );
+  });
+
+  it("suggests post slugs and tags as arguments", () => {
+    expect(getSuggestions("cat wd", ctx)[0].value).toBe("cat wdcc-background");
+    expect(getSuggestions("tag ev", ctx)[0].value).toBe("tag events");
+  });
+
+  it("adds a blog section to help", () => {
+    const text = resolveCommand("help", ctx).lines.map((line) => line.text);
+    expect(text).toContain("BLOG");
+    expect(resolveCommand("help").lines.map((line) => line.text)).not.toContain(
+      "BLOG",
+    );
+  });
+});

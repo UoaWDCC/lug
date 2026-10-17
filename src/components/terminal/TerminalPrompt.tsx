@@ -12,14 +12,22 @@ type TerminalPromptProps = {
   onEscape?: () => void;
   /** Root classes; the suggestion popup anchors to the nearest positioned ancestor. */
   className?: string;
+  /** Narrow sidebar variant: `$` prefix, smaller type, no key hints. */
+  compact?: boolean;
+  placeholder?: string;
+  /** The key hint legend; drop it when the row has extra buttons to fit. */
+  showKeyHints?: boolean;
 };
 
 export default function TerminalPrompt({
   cwd = "",
   onEscape,
   className = "relative",
+  compact = false,
+  placeholder,
+  showKeyHints = !compact,
 }: TerminalPromptProps) {
-  const { run, history } = useTerminal();
+  const { run, history, commandContext } = useTerminal();
 
   const [value, setValue] = useState("");
   const [caret, setCaret] = useState(0);
@@ -31,7 +39,11 @@ export default function TerminalPrompt({
   const inputRef = useRef<HTMLInputElement>(null);
   const listId = useId();
 
-  const suggestions = useMemo(() => getSuggestions(value), [value]);
+  const suggestions = useMemo(
+    () => getSuggestions(value, commandContext),
+    [value, commandContext],
+  );
+  const textSize = compact ? "text-[13px]" : "text-[17px]";
   const visible = listOpen ? suggestions : [];
 
   const preview =
@@ -175,7 +187,7 @@ export default function TerminalPrompt({
           role="listbox"
           aria-label="Command suggestions"
           // Margin clears the prompt row's own top padding, keeping the popup aligned to the divider.
-          className="absolute inset-x-0 bottom-full z-20 mb-6 max-h-[300px] overflow-y-auto rounded-lg border border-[var(--input-border)] bg-[var(--menu-bg)] p-2 shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-[10px] [scrollbar-gutter:stable]"
+          className={`absolute inset-x-0 bottom-full z-20 max-h-[300px] ${compact ? "mb-3 p-1.5" : "mb-6 p-2"} overflow-y-auto rounded-lg border border-[var(--input-border)] bg-[var(--menu-bg)] shadow-[0_16px_40px_rgba(0,0,0,0.45)] backdrop-blur-[10px] [scrollbar-gutter:stable]`}
         >
           {visible.map((suggestion, index) => (
             <li key={suggestion.value} role="presentation">
@@ -192,7 +204,7 @@ export default function TerminalPrompt({
                 }}
                 onMouseEnter={() => setActiveIndex(index)}
                 style={{ animationDelay: `${index * 22}ms` }}
-                className={`term-suggestion flex w-full cursor-pointer items-baseline justify-between gap-4 rounded-md px-4 py-2 text-left font-mono text-[16px] transition-colors duration-150 ${
+                className={`term-suggestion flex w-full cursor-pointer items-baseline justify-between gap-4 rounded-md text-left font-mono transition-colors ${compact ? "px-2.5 py-1.5 text-[12.5px]" : "px-4 py-2 text-[16px]"} duration-150 ${
                   index === activeIndex
                     ? "bg-[var(--row-hover-bg)] text-[var(--fg)]"
                     : "text-[var(--muted)]"
@@ -201,9 +213,11 @@ export default function TerminalPrompt({
                 <span className="truncate font-semibold text-[var(--row-cmd)]">
                   {suggestion.label}
                 </span>
-                <span className="shrink-0 text-[15px] text-[var(--muted)]">
-                  {suggestion.hint}
-                </span>
+                {!compact && (
+                  <span className="shrink-0 text-[15px] text-[var(--muted)]">
+                    {suggestion.hint}
+                  </span>
+                )}
               </button>
             </li>
           ))}
@@ -211,9 +225,11 @@ export default function TerminalPrompt({
       )}
 
       {/* A label, so clicking the `lug@uoa:~$` prefix focuses the input natively. */}
-      <label className="flex cursor-text items-baseline gap-2.5 font-mono text-[17px]">
+      <label
+        className={`flex cursor-text items-baseline gap-2.5 font-mono ${textSize}`}
+      >
         <span className="shrink-0 font-semibold whitespace-nowrap text-[var(--accent-text)]">
-          lug@uoa:~{cwd}$
+          {compact ? "$" : `lug@uoa:~${cwd}$`}
         </span>
 
         <div className="relative min-w-0 flex-1 overflow-hidden">
@@ -254,10 +270,15 @@ export default function TerminalPrompt({
               setFocused(false);
               setListOpen(false);
             }}
-            className="absolute inset-0 w-full bg-transparent font-mono text-[17px] text-transparent caret-transparent outline-none"
+            className={`absolute inset-0 w-full bg-transparent font-mono text-transparent caret-transparent outline-none ${textSize}`}
           />
 
           <div aria-hidden className="whitespace-pre text-[var(--fg)]">
+            {placeholder && !value && !focused && (
+              <span className="absolute inset-y-0 left-[1ch] text-[var(--muted)] opacity-70">
+                {placeholder}
+              </span>
+            )}
             {before}
             <span
               className="term-caret"
@@ -272,16 +293,18 @@ export default function TerminalPrompt({
         </div>
 
         {/* Shares the prompt row rather than adding one, so the panel keeps its height. */}
-        <span
-          aria-hidden
-          className={`hidden shrink-0 gap-3.5 text-[13px] text-[var(--muted)] transition-opacity duration-200 sm:flex ${
-            focused ? "opacity-70" : "opacity-0"
-          }`}
-        >
-          <span>↑↓ browse</span>
-          <span>⇥ complete</span>
-          <span>⏎ run</span>
-        </span>
+        {showKeyHints && (
+          <span
+            aria-hidden
+            className={`hidden shrink-0 gap-3.5 text-[13px] text-[var(--muted)] transition-opacity duration-200 sm:flex ${
+              focused ? "opacity-70" : "opacity-0"
+            }`}
+          >
+            <span>up/down browse</span>
+            <span>tab complete</span>
+            <span>enter run</span>
+          </span>
+        )}
       </label>
     </div>
   );

@@ -15,6 +15,22 @@ export type CommandResult = {
   clear?: boolean;
   theme?: "light" | "dark" | "toggle";
   exit?: boolean;
+  /** Bring the collapsed blog terminal back into the sidebar. */
+  expandSidebar?: boolean;
+};
+
+export type BlogContext = {
+  posts: { slug: string; tags: string[] }[];
+  tags: readonly string[];
+};
+
+/* Remembers whether the blog sidebar is folded away; read on the server so the page renders in that state. */
+export const SIDEBAR_COOKIE = "lug-terminal-sidebar";
+
+/* What the engine knows about the page it was typed on. */
+export type CommandContext = {
+  blog?: BlogContext | null;
+  sidebarCollapsed?: boolean;
 };
 
 type Destination = {
@@ -87,7 +103,27 @@ const COMMANDS: CommandSpec[] = [
   { name: "exit", blurb: "Close the terminal", aliases: ["quit", "q"] },
 ];
 
+/* Only offered on the blog, where there are posts and tags to act on. */
+const BLOG_COMMANDS: CommandSpec[] = [
+  { name: "posts", blurb: "Count the posts", aliases: [] },
+  { name: "tags", blurb: "List the post tags", aliases: [] },
+  {
+    name: "tag",
+    args: "<name>",
+    blurb: "Filter posts by tag",
+    aliases: ["filter"],
+  },
+  { name: "cat", args: "<post>", blurb: "Read a post", aliases: ["read"] },
+  {
+    name: "dock",
+    blurb: "Dock the terminal to the sidebar",
+    aliases: ["sidebar", "extend"],
+  },
+];
+
 const NAV_VERBS = new Set(["cd", "open", "goto", "go", "run"]);
+const POST_VERBS = new Set(["cat", "read"]);
+const TAG_VERBS = new Set(["tag", "filter"]);
 
 const normalise = (value: string) => value.trim().toLowerCase();
 
@@ -103,12 +139,27 @@ function findDestination(token: string): Destination | undefined {
   );
 }
 
-function findCommand(token: string): CommandSpec | undefined {
+function findCommand(
+  token: string,
+  ctx: CommandContext = {},
+): CommandSpec | undefined {
   const needle = normalise(token);
+  const specs = ctx.blog ? [...COMMANDS, ...BLOG_COMMANDS] : COMMANDS;
 
-  return COMMANDS.find(
+  return specs.find(
     (cmd) => cmd.name === needle || cmd.aliases.includes(needle),
   );
+}
+
+/* Accepts `slug`, `./slug`, `blog/slug` and `slug.md`. */
+const postSlug = (value: string) =>
+  bare(value)
+    .replace(/^(?:~\/)?blog\//, "")
+    .replace(/\.md$/, "");
+
+function findPost(token: string, blog: BlogContext) {
+  const slug = postSlug(token);
+  return blog.posts.find((post) => post.slug === slug);
 }
 
 /* ---------------------------------------------------------------- matching */
@@ -203,12 +254,49 @@ const ALL_SUGGESTIONS: Suggestion[] = [
 
 const MAX_SUGGESTIONS = 6;
 
-export function getSuggestions(input: string): Suggestion[] {
-  const query = input.trimStart();
+function rankArguments(
+  head: string,
+  arg: string,
+  values: readonly string[],
+  hint: string,
+): Suggestion[] {
+  return values
+    .map((value) => ({ value, score: scoreMatch(value, arg) }))
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MAX_SUGGESTIONS)
+    .map((entry) => ({
+      value: `${head} ${entry.value}`,
+      label: `${head} ${entry.value}`,
+      hint,
+      group: "command",
+      keywords: [],
+    }));
+}
 
-  if (!query.trim()) return ALL_SUGGESTIONS.slice(0, MAX_SUGGESTIONS);
+export function getSuggestions(
+  input: string,
+  ctx: CommandContext = {},
+): Suggestion[] {
+  const query = input.trimStart();
+  const pool = ctx.blog
+    ? [...ALL_SUGGESTIONS, ...BLOG_COMMANDS.map(commandSuggestion)]
+    : ALL_SUGGESTIONS;
+
+  if (!query.trim()) return pool.slice(0, MAX_SUGGESTIONS);
 
   const [head, ...rest] = query.split(/\s+/);
+  const verb = normalise(head);
+
+  if (rest.length > 0 && ctx.blog && POST_VERBS.has(verb)) {
+    const slugs = ctx.blog.posts.map((post) => post.slug);
+    return rankArguments(head, rest.join(" "), slugs, "Read this post");
+  }
+
+  if (rest.length > 0 && ctx.blog && TAG_VERBS.has(verb)) {
+    const tags = ["all", ...ctx.blog.tags];
+    return rankArguments(head, rest.join(" "), tags, "Filter posts");
+  }
 
   // Once a nav verb is typed, only pages can follow - suggest those directly.
   if (rest.length > 0 && NAV_VERBS.has(normalise(head))) {
@@ -231,14 +319,15 @@ export function getSuggestions(input: string): Suggestion[] {
       }));
   }
 
-  return ALL_SUGGESTIONS.map((suggestion) => ({
-    suggestion,
-    score: Math.max(
-      scoreMatch(suggestion.value, query),
-      // Aliases are a weaker signal than the canonical text they resolve to.
-      ...suggestion.keywords.map((word) => scoreMatch(word, query) - 1),
-    ),
-  }))
+  return pool
+    .map((suggestion) => ({
+      suggestion,
+      score: Math.max(
+        scoreMatch(suggestion.value, query),
+        // Aliases are a weaker signal than the canonical text they resolve to.
+        ...suggestion.keywords.map((word) => scoreMatch(word, query) - 1),
+      ),
+    }))
     .filter((entry) => entry.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, MAX_SUGGESTIONS)
@@ -259,7 +348,7 @@ const goTo = (dest: Destination): CommandResult => ({
   navigate: dest.path,
   lines: [
     {
-      text: `→ opening ${dest.path}`,
+      text: `opening ${dest.path}`,
       hint: dest.blurb,
       tone: "accent",
     },
@@ -282,12 +371,24 @@ function unknown(token: string, input: string): CommandResult {
   };
 }
 
-const helpLines = (): TerminalLine[] => [
+const specLine = (cmd: CommandSpec): TerminalLine => ({
+  text: cmd.args ? `  ${cmd.name} ${cmd.args}` : `  ${cmd.name}`,
+  hint: cmd.blurb,
+});
+
+const helpLines = (ctx: CommandContext): TerminalLine[] => [
   { text: "COMMANDS", tone: "accent" },
-  ...COMMANDS.map((cmd) => ({
-    text: cmd.args ? `  ${cmd.name} ${cmd.args}` : `  ${cmd.name}`,
-    hint: cmd.blurb,
-  })),
+  ...COMMANDS.map(specLine),
+  ...(ctx.blog
+    ? [
+        { text: "BLOG", tone: "accent" as const },
+        ...BLOG_COMMANDS.map(specLine),
+        {
+          text: "j/k to scroll, g/G for top and bottom",
+          tone: "muted" as const,
+        },
+      ]
+    : []),
   {
     text: "Page names also work on their own. Try `sign-up`.",
     tone: "muted",
@@ -302,13 +403,92 @@ const listLines = (): TerminalLine[] => [
   })),
 ];
 
-export function resolveCommand(input: string): CommandResult {
+const countPosts = (count: number) =>
+  `${count} ${count === 1 ? "post" : "posts"}`;
+
+function filterByTag(arg: string, blog: BlogContext): CommandResult {
+  const tag = normalise(arg).replace(/^#/, "");
+
+  if (!tag) {
+    return {
+      lines: [{ text: "tag: expected a tag name", tone: "danger" }],
+    };
+  }
+
+  if (tag === "all") {
+    return {
+      navigate: "/blog",
+      lines: [
+        {
+          text: `showing all ${countPosts(blog.posts.length)}`,
+          tone: "accent",
+        },
+      ],
+    };
+  }
+
+  if (!blog.tags.includes(tag)) {
+    return {
+      lines: [
+        { text: `no such tag: ${tag}`, tone: "danger" },
+        { text: `try: ${blog.tags.join(", ")}`, tone: "muted" },
+      ],
+    };
+  }
+
+  const count = blog.posts.filter((post) => post.tags.includes(tag)).length;
+  return {
+    navigate: `/blog?tag=${tag}`,
+    lines: [{ text: `#${tag}: ${countPosts(count)}`, tone: "accent" }],
+  };
+}
+
+function openPost(arg: string, blog: BlogContext): CommandResult {
+  if (!arg) {
+    return { lines: [{ text: "cat: expected a post", tone: "danger" }] };
+  }
+
+  const post = findPost(arg, blog);
+  if (!post) {
+    return {
+      lines: [
+        { text: `no such file: ${postSlug(arg)}.md`, tone: "danger" },
+        { text: "run `ls ./posts` to see the posts", tone: "muted" },
+      ],
+    };
+  }
+
+  return {
+    navigate: `/blog/${post.slug}`,
+    lines: [{ text: `opening ${post.slug}.md`, tone: "accent" }],
+  };
+}
+
+function blogOnly(name: string): CommandResult {
+  return {
+    lines: [
+      { text: `${name}: only available on the blog`, tone: "danger" },
+      { text: "run `cd blog` first", tone: "muted" },
+    ],
+  };
+}
+
+export function resolveCommand(
+  input: string,
+  ctx: CommandContext = {},
+): CommandResult {
   const trimmed = input.trim();
   if (!trimmed) return { lines: [] };
 
   const [head, ...rest] = trimmed.split(/\s+/);
   const arg = rest.join(" ");
-  const command = findCommand(head);
+  const command = findCommand(head, ctx);
+  const blog = ctx.blog;
+
+  // `open <post>` reads a post on the blog; anything else falls through to `cd`.
+  if (blog && normalise(head) === "open" && arg && findPost(arg, blog)) {
+    return openPost(arg, blog);
+  }
 
   if (command?.name === "cd") {
     // `cd` with no argument, or `cd ..`, behaves like a shell: go home.
@@ -335,10 +515,65 @@ export function resolveCommand(input: string): CommandResult {
 
   switch (command?.name) {
     case "help":
-      return { lines: helpLines() };
+      return { lines: helpLines(ctx) };
 
-    case "ls":
+    case "ls": {
+      const flag = normalise(arg);
+      const tagFlag = flag.match(/^--tag=?\s*(.*)$/);
+      if (tagFlag) return blog ? filterByTag(tagFlag[1], blog) : blogOnly("ls");
+
+      if (blog && postSlug(flag) === "posts") {
+        return {
+          lines: [
+            {
+              text: `${countPosts(blog.posts.length)} in ~/blog`,
+              tone: "accent",
+            },
+            ...blog.posts.map((post) => ({ text: `  ${post.slug}.md` })),
+          ],
+        };
+      }
+
       return { lines: listLines() };
+    }
+
+    case "posts":
+      return {
+        lines: [
+          {
+            text: `${countPosts(blog!.posts.length)} in ~/blog`,
+            tone: "accent",
+          },
+        ],
+      };
+
+    case "tags":
+      return {
+        lines: [
+          {
+            text: blog!.tags.map((tag) => `#${tag}`).join("  "),
+            tone: "accent",
+          },
+        ],
+      };
+
+    case "tag":
+      return filterByTag(arg, blog!);
+
+    case "cat":
+      return openPost(arg, blog!);
+
+    case "dock":
+      return ctx.sidebarCollapsed
+        ? {
+            expandSidebar: true,
+            lines: [
+              { text: "docking the terminal to the sidebar", tone: "accent" },
+            ],
+          }
+        : {
+            lines: [{ text: "already docked to the sidebar", tone: "muted" }],
+          };
 
     case "clear":
       return { clear: true, lines: [] };
@@ -353,7 +588,7 @@ export function resolveCommand(input: string): CommandResult {
 
       return {
         theme: wanted === "dark" || wanted === "light" ? wanted : "toggle",
-        lines: [{ text: "→ theme switched", tone: "accent" }],
+        lines: [{ text: "theme switched", tone: "accent" }],
       };
     }
 
@@ -375,6 +610,10 @@ export function resolveCommand(input: string): CommandResult {
   // Bare page names: `sign-up`, `./about-us`, `lug-blog`.
   const dest = findDestination(trimmed);
   if (dest) return goTo(dest);
+
+  if (!blog && BLOG_COMMANDS.some((cmd) => cmd.name === normalise(head))) {
+    return blogOnly(normalise(head));
+  }
 
   if (normalise(head) === "sudo") {
     return {

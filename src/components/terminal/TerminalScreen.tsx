@@ -19,11 +19,17 @@ const SCROLLING_CLASS = "gap-1.5 overflow-y-auto leading-[1.55]";
 const FIXED_CLASS =
   "justify-end gap-0.5 overflow-hidden leading-[1.4] short:text-[14px] shorter:text-[13px] shorter:leading-[1.35]";
 
+const COMPACT_CLASS =
+  "gap-0.5 overflow-y-auto text-[12px] leading-[1.7] [&>:first-child]:mt-auto";
+
 export default function TerminalScreen({
   className = "",
   scrollable = true,
+  compact = false,
 }: {
   className?: string;
+  /** Narrow sidebar variant: small type, hints wrap under their line. */
+  compact?: boolean;
   /** Off: newest lines pin to the bottom and older ones slide out the top, like a real tty. */
   scrollable?: boolean;
 }) {
@@ -42,12 +48,12 @@ export default function TerminalScreen({
       role="log"
       aria-live="polite"
       aria-label="Terminal output"
-      className={`term-screen flex flex-col font-mono text-[16px] ${scrollable ? SCROLLING_CLASS : FIXED_CLASS} ${className}`}
+      className={`term-screen flex flex-col font-mono ${compact ? COMPACT_CLASS : `text-[16px] ${scrollable ? SCROLLING_CLASS : FIXED_CLASS}`} ${className}`}
     >
       {lines.map((line) => (
         <div
           key={line.id}
-          className={`term-line flex items-baseline gap-4 ${TONE_CLASS[line.tone ?? "default"]}`}
+          className={`term-line flex items-baseline ${compact ? "flex-wrap gap-x-3" : "gap-4"} ${TONE_CLASS[line.tone ?? "default"]}`}
         >
           <span className="min-w-0 flex-1 break-words whitespace-pre-wrap">
             {line.tone === "command" && (
