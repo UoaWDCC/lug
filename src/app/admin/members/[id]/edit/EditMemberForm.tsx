@@ -1,3 +1,16 @@
+/**
+ * Wraps the member edit form with undo/redo support.
+ *
+ * The form uses uncontrolled inputs (defaultValue) so that the server-rendered
+ * page is interactive without client-side hydration delay. Because React does
+ * not own uncontrolled input values, undo/redo restores them imperatively
+ * through the DOM via `applySnapshot`.
+ *
+ * Every save, undo and redo writes to the database immediately — there is no
+ * client-side-only state. This keeps the form and the database always in sync
+ * at the cost of a server round-trip per action.
+ */
+
 "use client";
 
 import {
@@ -5,7 +18,7 @@ import {
   useEffect,
   useRef,
   useState,
-  type FormEvent,
+  type SyntheticEvent,
   type ReactNode,
 } from "react";
 import updateMemberAction from "@/features/admin-members/updateMemberAction";
@@ -19,6 +32,9 @@ type EditMemberFormProps = {
 
 type FormControl = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
+/** Converts a saved snapshot back into FormData so it can be replayed through
+ *  the server action during undo/redo. Arrays use `append` to match what
+ *  `formData.getAll()` expects on the server side. */
 function toFormData(memberId: number, state: MemberUpdateData) {
   const data = new FormData();
   data.set("id", String(memberId));
@@ -46,6 +62,12 @@ export default function EditMemberForm({
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState("");
 
+  // Imperatively sets every form input to match the given snapshot.
+  // Needed because uncontrolled inputs ignore React state — the only way to
+  // change what the user sees is through the DOM. Handles three input types:
+  // - Text/select fields: set .value directly
+  // - Majors (array of text inputs): matched by index
+  // - Checkboxes (faculty, potentialInvolvement): set .checked by set membership
   const applySnapshot = useCallback((state: MemberUpdateData) => {
     const form = formRef.current;
     if (!form) return;
@@ -90,7 +112,10 @@ export default function EditMemberForm({
       });
   }, []);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  // Normal save flow. On success, the previous savedState is pushed onto the
+  // undo stack and the redo stack is cleared (standard undo behaviour — a new
+  // edit invalidates any forward history).
+  async function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending) return;
 
@@ -118,6 +143,9 @@ export default function EditMemberForm({
     }
   }
 
+  // Shared undo/redo handler. Replays the top of the relevant stack through
+  // the server action, then shuffles the stacks: the source stack is popped
+  // and the current savedState is pushed onto the opposite stack.
   const applyHistory = useCallback(
     async (direction: "undo" | "redo") => {
       const source = direction === "undo" ? undoStack : redoStack;
@@ -155,6 +183,9 @@ export default function EditMemberForm({
     [applySnapshot, memberId, pending, redoStack, savedState, undoStack],
   );
 
+  // Global keyboard shortcut listener for Ctrl+Z (undo) and Ctrl+Y / Ctrl+Shift+Z (redo).
+  // Bails out when focus is inside a form control so the browser's native
+  // text-level undo still works within individual inputs.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
       const target = event.target;
@@ -204,6 +235,9 @@ export default function EditMemberForm({
         >
           {pending ? "Saving..." : "Save changes"}
         </button>
+
+        {/* Undo and redo are disabled while a save is in flight (pending) or
+        when their respective stack is empty. */}
         <button
           className="rounded-md border border-gray-300 px-4 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-50"
           type="button"
