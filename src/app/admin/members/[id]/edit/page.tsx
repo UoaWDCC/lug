@@ -1,7 +1,10 @@
-import { notFound, redirect } from "next/navigation";
-import updateMemberAction from "@/features/admin-members/updateMemberAction";
+import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/session";
-import { findMemberById } from "@/repositories/memberRepository";
+import {
+  findMemberById,
+  type MemberUpdateData,
+} from "@/repositories/memberRepository";
+import EditMemberForm from "./EditMemberForm";
 import {
   MAX_LENGTHS,
   MAX_MAJORS,
@@ -16,45 +19,17 @@ import { formatEnum } from "@/app/admin/members/utils";
 const inputClassName =
   "mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm";
 
-const errorMessages: Record<string, string> = {
-  invalid_data: "Some of the submitted member details were invalid.",
-  not_found: "The member could not be found.",
-  duplicate: "That email is already used by another registration.",
-  database: "The member could not be updated. Please try again.",
-};
-
 type EditMemberPageProps = {
   params: Promise<{
     id: string;
   }>;
-  searchParams: Promise<{
-    error?: string;
-  }>;
 };
 
-async function submitMemberUpdate(formData: FormData) {
-  "use server";
-
-  const result = await updateMemberAction(formData);
-  const rawId = formData.get("id");
-  const memberId = typeof rawId === "string" ? Number(rawId) : NaN;
-
-  if (Number.isInteger(memberId) && memberId > 0) {
-    redirect(`/admin/members/${memberId}/edit?error=${result.error}`);
-  }
-
-  redirect("/admin/members?error=invalid_id");
-}
-
-export default async function EditMemberPage({
-  params,
-  searchParams,
-}: EditMemberPageProps) {
+export default async function EditMemberPage({ params }: EditMemberPageProps) {
   await requireAdmin();
 
   // Read the [id] part of the URL.
   const { id } = await params;
-  const { error } = await searchParams;
   const memberId = Number(id);
 
   // Display a 404 page for invalid ID
@@ -78,7 +53,21 @@ export default async function EditMemberPage({
       : member.isCurrentUoaStudent === false
         ? "nonUoa"
         : "both";
-  const errorMessage = error ? errorMessages[error] : undefined;
+  const initialState: MemberUpdateData = {
+    firstName: member.firstName,
+    lastName: member.lastName,
+    email: member.email,
+    discordUsername: member.discordUsername,
+    faculty: member.faculty,
+    programmeType: member.programmeType,
+    majors: member.majors,
+    yearsRemaining: member.yearsRemaining,
+    linuxSkillLevel: member.linuxSkillLevel,
+    potentialInvolvement: member.potentialInvolvement,
+    primaryAffiliation: member.primaryAffiliation,
+    nonUoaExcerpt: member.nonUoaExcerpt,
+    nonUoaPitch: member.nonUoaPitch,
+  };
 
   return (
     <section className="px-4 py-8 sm:px-6 lg:px-8">
@@ -86,19 +75,7 @@ export default async function EditMemberPage({
         Edit Member Details: {member.firstName} {member.lastName}
       </h1>
 
-      {errorMessage && (
-        <div
-          className="mt-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-700"
-          role="alert"
-        >
-          <strong>Unable to save changes:</strong> {errorMessage}
-        </div>
-      )}
-
-      <form
-        action={submitMemberUpdate}
-        className="mt-6 grid gap-6 md:grid-cols-2"
-      >
+      <EditMemberForm memberId={memberId} initialState={initialState}>
         <input type="hidden" name="id" value={member.id} />
 
         <div>
@@ -456,16 +433,7 @@ export default async function EditMemberPage({
             </div>
           </dl>
         </section>
-
-        <div className="md:col-span-2">
-          <button
-            className="rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700"
-            type="submit"
-          >
-            Save changes
-          </button>
-        </div>
-      </form>
+      </EditMemberForm>
     </section>
   );
 }

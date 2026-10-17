@@ -1,15 +1,24 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { UpdateMemberSchema } from "@/domain/member/validation";
 import { requireAdmin } from "@/lib/auth/session";
-import { updateMember } from "@/repositories/memberRepository";
+import {
+  updateMember,
+  type MemberUpdateData,
+} from "@/repositories/memberRepository";
 
-export type UpdateMemberActionResult = {
-  ok: false;
-  error: "invalid_id" | "invalid_data" | "not_found" | "duplicate" | "database";
-  message: string;
-};
+export type UpdateMemberActionResult =
+  | { ok: true; data: MemberUpdateData }
+  | {
+      ok: false;
+      error:
+        | "invalid_id"
+        | "invalid_data"
+        | "not_found"
+        | "duplicate"
+        | "database";
+      message: string;
+    };
 
 export default async function updateMemberAction(
   formData: FormData,
@@ -57,7 +66,7 @@ export default async function updateMemberAction(
     return repositoryError(result.error.type);
   }
 
-  redirect("/admin/members");
+  return { ok: true, data: parsed.data };
 }
 
 function repositoryError(

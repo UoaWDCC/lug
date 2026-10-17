@@ -1,11 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { requireAdminMock, updateMemberMock, redirectMock } = vi.hoisted(() => ({
+const { requireAdminMock, updateMemberMock } = vi.hoisted(() => ({
   requireAdminMock: vi.fn(),
   updateMemberMock: vi.fn(),
-  redirectMock: vi.fn((url: string) => {
-    throw new Error(`REDIRECT:${url}`);
-  }),
 }));
 
 vi.mock("@/lib/auth/session", () => ({
@@ -14,10 +11,6 @@ vi.mock("@/lib/auth/session", () => ({
 
 vi.mock("@/repositories/memberRepository", () => ({
   updateMember: updateMemberMock,
-}));
-
-vi.mock("next/navigation", () => ({
-  redirect: redirectMock,
 }));
 
 import updateMemberAction from "../updateMemberAction";
@@ -56,16 +49,32 @@ function buildFormData(
 beforeEach(() => {
   requireAdminMock.mockReset();
   updateMemberMock.mockReset();
-  redirectMock.mockClear();
   requireAdminMock.mockResolvedValue({ adminId: 1, role: "PRESIDENT" });
   updateMemberMock.mockResolvedValue({ ok: true });
 });
 
 describe("updateMemberAction", () => {
-  it("normalises valid data and redirects to the members page", async () => {
-    await expect(updateMemberAction(buildFormData())).rejects.toThrow(
-      "REDIRECT:/admin/members",
-    );
+  it("normalises valid data and returns it", async () => {
+    const result = await updateMemberAction(buildFormData());
+
+    expect(result).toEqual({
+      ok: true,
+      data: {
+        firstName: "Ada",
+        lastName: "Lovelace",
+        email: "ada@example.com",
+        discordUsername: null,
+        faculty: ["science"],
+        programmeType: "BACHELOR",
+        majors: ["Computer Science"],
+        yearsRemaining: 2,
+        linuxSkillLevel: "BEGINNER_USER",
+        potentialInvolvement: ["ATTENDING"],
+        primaryAffiliation: null,
+        nonUoaExcerpt: null,
+        nonUoaPitch: null,
+      },
+    });
 
     expect(updateMemberMock).toHaveBeenCalledWith(1, {
       firstName: "Ada",
@@ -85,11 +94,11 @@ describe("updateMemberAction", () => {
   });
 
   it("treats blank programme type and years remaining as null", async () => {
-    await expect(
-      updateMemberAction(
-        buildFormData({ programmeType: "", yearsRemaining: "" }),
-      ),
-    ).rejects.toThrow("REDIRECT:/admin/members");
+    const result = await updateMemberAction(
+      buildFormData({ programmeType: "", yearsRemaining: "" }),
+    );
+
+    expect(result).toEqual(expect.objectContaining({ ok: true }));
 
     expect(updateMemberMock).toHaveBeenCalledWith(
       1,
@@ -207,6 +216,5 @@ describe("updateMemberAction", () => {
     const result = await updateMemberAction(buildFormData());
 
     expect(result).toEqual({ ok: false, error: type, message });
-    expect(redirectMock).not.toHaveBeenCalled();
   });
 });
