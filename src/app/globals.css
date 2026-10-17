@@ -95,6 +95,23 @@
     rgba(15, 122, 96, 0.45) var(--mix)
   );
 
+  /* Blog reader. */
+  --hairline: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.12),
+    rgba(10, 10, 10, 0.12) var(--mix)
+  );
+  --body-text: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.82),
+    rgba(10, 10, 10, 0.84) var(--mix)
+  );
+  --sticky-bg: color-mix(
+    in srgb,
+    rgba(0, 0, 0, 0.86),
+    rgba(255, 255, 255, 0.9) var(--mix)
+  );
+
   /* Feeds the rainFall keyframes; 0.34 dark -> 0.28 light. */
   --rain-base-opacity: calc(0.34 - 0.06 * var(--theme-mix));
 }
@@ -145,6 +162,74 @@
 
 :root[data-theme="light"] .hero-layer--light {
   opacity: 1;
+}
+
+/* The blog draws its own shorter hero band, so the site-wide one steps aside. */
+:root:has([data-blog-shell]) .hero-layer {
+  display: none;
+}
+
+/* Blog index band: a shorter take on the hero, oversized so parallax never shows an edge. */
+.blog-hero-img {
+  position: absolute;
+  inset: -14% 0;
+  background-size: cover;
+  background-position: right top;
+  transition: opacity var(--theme-transition) var(--theme-ease);
+  will-change: transform;
+}
+
+.blog-hero-img--dark {
+  background-image: url("/LUG_dark.png");
+}
+
+.blog-hero-img--light {
+  background-image: url("/LUG_light.png");
+  opacity: 0;
+}
+
+:root[data-theme="light"] .blog-hero-img--dark {
+  opacity: 0;
+}
+
+:root[data-theme="light"] .blog-hero-img--light {
+  opacity: 0.85;
+}
+
+.blog-hero-scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.35) 62%,
+      #000 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.82) 0%,
+      rgba(0, 0, 0, 0.6) 34%,
+      rgba(0, 0, 0, 0.2) 66%,
+      rgba(0, 0, 0, 0.05) 100%
+    );
+}
+
+:root[data-theme="light"] .blog-hero-scrim {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.35) 62%,
+      #fff 100%
+    ),
+    linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.86) 0%,
+      rgba(255, 255, 255, 0.66) 34%,
+      rgba(255, 255, 255, 0.25) 66%,
+      rgba(255, 255, 255, 0.08) 100%
+    );
 }
 
 html,
@@ -341,8 +426,13 @@ main[tabindex="-1"]:focus {
 
 @media (prefers-reduced-motion: reduce) {
   :root,
-  .hero-layer {
+  .hero-layer,
+  .blog-hero-img {
     transition: none !important;
+  }
+
+  .blog-hero-img {
+    transform: none !important;
   }
 
   .rain-column {

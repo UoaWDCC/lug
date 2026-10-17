@@ -1,106 +1,98 @@
 import { Metadata } from "next";
 import Link from "next/link";
 
+import { scrollableMainClass } from "@/components/primitive/buttonStyles";
 import {
-  ghostButtonClass,
-  scrollableMainClass,
-} from "@/components/primitive/buttonStyles";
-import { findPublishedBlogPosts } from "@/repositories/blogPostRepository";
+  BLOG_TAGS,
+  getPublishedPostSummaries,
+  normaliseTag,
+  postCountLabel,
+  usingPlaceholderPosts,
+} from "@/features/blog/publicPosts";
+import { BlogHero } from "./_components/BlogScroll";
 
-import type { BlogPost } from "@/generated/prisma/client";
+export default async function Blog({
+  searchParams,
+}: {
+  searchParams: Promise<{ tag?: string | string[] }>;
+}) {
+  const { tag: rawTag } = await searchParams;
+  const tag = normaliseTag(
+    Array.isArray(rawTag) ? rawTag[0] : rawTag,
+    BLOG_TAGS,
+  );
 
-/* Split so one- and two-digit days keep the mono column aligned. */
-function formatDate(publishedAt: string) {
-  const date = new Date(publishedAt);
-  const parts = new Intl.DateTimeFormat("en-NZ", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).formatToParts(date);
-
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-
-  return { day: part("weekday"), date: part("day"), month: part("month") };
-}
-
-export default async function Blog() {
-  let posts: BlogPost[] = [];
-  let dbError = false;
-
-  try {
-    posts = await findPublishedBlogPosts();
-  } catch {
-    posts = [];
-    dbError = true;
-  }
+  const { posts: allPosts, error: dbError } = await getPublishedPostSummaries();
+  const posts = tag
+    ? allPosts.filter((post) => post.tags.includes(tag))
+    : allPosts;
 
   return (
-    <main className={scrollableMainClass}>
-      <div className="mx-auto max-w-[1080px]">
-        <div className="mb-2 font-mono text-lg text-[var(--accent-text)] sm:text-xl">
-          $ ls ./blog
-        </div>
+    <>
+      <BlogHero />
 
-        <h1 className="m-0 mb-5 text-[clamp(40px,7vw,73px)] font-black tracking-[-1px]">
-          Blog
-        </h1>
+      <main data-blog-scroll className={scrollableMainClass}>
+        <div className="max-w-[680px] pt-4">
+          <div className="mb-1.5 font-mono text-[14px] text-[var(--accent-text)]">
+            $ cd ~/blog
+          </div>
 
-        {posts.length === 0 ? (
-          <div className="mb-7 rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-6 sm:p-8">
-            <div className="mb-2 font-mono text-[17px] text-[var(--muted)]">
-              $ ls ./posts
+          <h1 className="m-0 mb-2.5 text-[clamp(40px,7vw,46px)] leading-none font-black tracking-[-1.4px]">
+            Blog
+          </h1>
+
+          <div className="flex flex-wrap items-center gap-2.5 font-mono text-[12.5px] text-[var(--muted)]">
+            {postCountLabel(posts.length, tag)}
+            {usingPlaceholderPosts() && (
+              <span className="rounded-full border border-dashed border-[var(--input-border)] px-2.5 py-0.5 text-[11.5px]">
+                placeholder posts
+              </span>
+            )}
+          </div>
+
+          {posts.length === 0 ? (
+            <div className="mt-[22px] rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-[26px]">
+              <div className="mb-2.5 font-mono text-[13px] text-[var(--muted)]">
+                $ ls ./posts
+              </div>
+              <p className="m-0 mb-1.5 text-[24px] font-bold">
+                {dbError ? "Could not load posts." : "No blogs yet."}
+              </p>
+              <p className="m-0 text-[15.5px] leading-[1.5] text-[var(--muted)]">
+                {dbError
+                  ? "The database server has not been deployed yet."
+                  : "Stay tuned, the first post is on its way."}
+              </p>
             </div>
-            <p className="m-0 mb-1.5 text-[24px] font-bold sm:text-[27px]">
-              {dbError ? "Could not load posts." : "No blog posts yet."}
-            </p>
-            <p className="m-0 text-lg leading-[1.5] text-[var(--muted)]">
-              {dbError
-                ? "The database server has not been deployed yet."
-                : "Stay tuned, the first post is on its way."}
-            </p>
-          </div>
-        ) : (
-          <div className="mb-7 flex flex-col gap-2.5">
-            {posts.map((post) => {
-              const when = post.publishedAt
-                ? formatDate(post.publishedAt.toISOString())
-                : null;
-
-              return (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}`}
-                  className="flex flex-wrap items-start gap-4 rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-5 no-underline transition-[border-color,transform] duration-150 hover:border-[var(--accent)] sm:gap-5"
-                >
-                  {/* Where the date column renders, guard it: */}
-                  {when && (
-                    <div className="flex min-w-[140px] items-baseline gap-2 font-mono ...">
-                      <span className="w-[3ch]">{when.day}</span>
-                      <span className="w-[2ch] text-right">{when.date}</span>
-                      <span className="w-[3ch]">{when.month}</span>
-                    </div>
-                  )}
-                  <div className="min-w-[200px] flex-1">
-                    <div className="mb-1.5 text-[22px] font-bold text-[var(--fg)] sm:text-[27px]">
+          ) : (
+            <ul className="m-0 mt-[22px] flex list-none flex-col p-0">
+              {posts.map((post) => (
+                <li key={post.slug}>
+                  <Link
+                    href={`/blog/${post.slug}`}
+                    className="flex flex-col gap-1.5 border-t border-[var(--hairline)] px-0.5 py-5 no-underline transition-[transform,border-color] duration-200 hover:translate-x-1 hover:border-[var(--accent)]"
+                  >
+                    <span className="font-mono text-[12px] font-medium text-[var(--accent-text)]">
+                      {[post.date, post.authorName, post.readTime]
+                        .filter(Boolean)
+                        .join(" | ")}
+                    </span>
+                    <span className="text-[21px] leading-[1.28] font-bold text-[var(--fg)] [text-wrap:pretty]">
                       {post.title}
-                    </div>
-                    <div className="text-base leading-[1.5] text-[var(--muted)] sm:text-lg">
-                      {post.excerpt}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-
-        <Link href="/" className={ghostButtonClass}>
-          &#8592; back home
-        </Link>
-      </div>
-    </main>
+                    </span>
+                    {post.excerpt && (
+                      <span className="text-[14.5px] leading-[1.5] text-[var(--muted)] [text-wrap:pretty]">
+                        {post.excerpt}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </main>
+    </>
   );
 }
 

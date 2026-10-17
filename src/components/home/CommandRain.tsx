@@ -16,15 +16,26 @@ const COMMANDS = [
 const FADE_MASK =
   "linear-gradient(to bottom, transparent 0%, #000 14%, #000 86%, transparent 100%)";
 
-export default function CommandRain() {
+export default function CommandRain({
+  commands = COMMANDS,
+  from = 6,
+  step = 10,
+  textClassName = "text-base",
+}: {
+  commands?: string[];
+  /** Left edge of the first column and the gap between columns, in percent. */
+  from?: number;
+  step?: number;
+  textClassName?: string;
+}) {
   return (
     <div aria-hidden className="relative h-full min-h-0">
-      {COMMANDS.map((text, i) => (
+      {commands.map((text, i) => (
         <div
           key={text}
-          className="rain-column pointer-events-none absolute top-0 font-mono text-base whitespace-nowrap text-[var(--accent)] [writing-mode:vertical-rl]"
+          className={`rain-column pointer-events-none absolute top-0 font-mono whitespace-nowrap text-[var(--accent)] [writing-mode:vertical-rl] ${textClassName}`}
           style={{
-            left: `${6 + i * 10}%`,
+            left: `${from + i * step}%`,
             opacity: 0,
             // Each column sits at one of three brightness steps.
             ["--rain-op" as string]: `calc(var(--rain-base-opacity) + ${(i % 3) * 0.12})`,
