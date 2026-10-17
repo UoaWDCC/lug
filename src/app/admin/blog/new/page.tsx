@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createBlogPostAction } from "@/features/blog/createBlogPostAction";
+import { applyPublishIntent } from "@/domain/blog/publishIntent";
 import { requireAdmin } from "@/lib/auth/session";
 import { BlogPostForm } from "../BlogPostForm";
 
@@ -19,22 +20,13 @@ export default async function Page({ searchParams }: PageProps) {
   const { error } = await searchParams;
   const errorMessage = error ? errorMessages[error] : undefined;
 
-  return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <h1 className="text-3xl font-bold">New blog post</h1>
-      {errorMessage && (
-        <p role="alert" className="mt-4 text-red-700">
-          {errorMessage}
-        </p>
-      )}
-      <BlogPostForm action={submitPost} />
-    </main>
-  );
+  return <BlogPostForm action={submitPost} errorMessage={errorMessage} />;
 }
 
 async function submitPost(formData: FormData): Promise<void> {
   "use server";
 
+  applyPublishIntent(formData);
   const result = await createBlogPostAction(formData);
   if (result) {
     redirect(`/admin/blog/new?error=${encodeURIComponent(result.error)}`);

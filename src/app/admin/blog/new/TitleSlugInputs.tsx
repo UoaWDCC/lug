@@ -55,12 +55,10 @@ export function TitleSlugInputs({
             setSlugEdited(event.target.value !== "");
           }}
           pattern="[a-z0-9]+(-[a-z0-9]+)*"
+          placeholder="generated-from-the-title"
           title="Use lowercase letters, numbers and hyphens only"
-          className={inputClass}
+          className={`${inputClass} font-mono text-sm text-[var(--muted)] focus:text-[var(--fg)]`}
         />
-        <p className="mt-1 text-xs text-gray-600">
-          Generated from the title; you can change it.
-        </p>
       </div>
     </>
   );

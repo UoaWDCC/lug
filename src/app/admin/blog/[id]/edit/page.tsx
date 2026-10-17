@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { updateBlogPostAction } from "@/features/blog/updateBlogPostAction";
+import { applyPublishIntent } from "@/domain/blog/publishIntent";
 import { requireAdmin } from "@/lib/auth/session";
 import { findBlogPostById } from "@/repositories/blogPostRepository";
 import { BlogPostForm } from "../../BlogPostForm";
@@ -31,24 +31,14 @@ export default async function EditBlogPostPage({
   const errorMessage = error ? errorMessages[error] : undefined;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
-      <Link href="/admin/blog" className="text-sm">
-        ← All posts
-      </Link>
-      <h1 className="mt-4 text-3xl font-bold">Edit blog post</h1>
-      {errorMessage && (
-        <p role="alert" className="mt-4 text-red-700">
-          {errorMessage}
-        </p>
-      )}
-      <BlogPostForm action={submitPost} post={post} />
-    </main>
+    <BlogPostForm action={submitPost} post={post} errorMessage={errorMessage} />
   );
 }
 
 async function submitPost(formData: FormData): Promise<void> {
   "use server";
 
+  applyPublishIntent(formData);
   const result = await updateBlogPostAction(formData);
   if (result) {
     const id = formData.get("id");
