@@ -43,6 +43,20 @@ export async function findPublishedBlogPosts(): Promise<BlogPost[]> {
   });
 }
 
+export async function findPublishedBlogPostBySlug(
+  slug: string,
+): Promise<BlogPost | null> {
+  return getPrisma().blogPost.findFirst({
+    where: {
+      slug,
+      status: "PUBLISHED",
+      publishedAt: {
+        lte: new Date(),
+      },
+    },
+  });
+}
+
 export async function findBlogPostById(id: string): Promise<BlogPost | null> {
   return getPrisma().blogPost.findUnique({
     where: {
