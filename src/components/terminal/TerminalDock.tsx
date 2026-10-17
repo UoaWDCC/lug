@@ -6,6 +6,9 @@ import TerminalPrompt from "./TerminalPrompt";
 import TerminalScreen from "./TerminalScreen";
 import { useTerminal } from "./TerminalProvider";
 
+const pillClass =
+  "pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-3 rounded-full border border-[var(--term-border)] bg-[var(--term-bg)] px-5 py-2.5 font-mono text-[15px] shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-[8px]";
+
 /* Off-home, the same terminal session follows as a collapsed prompt that expands into a window. */
 export default function TerminalDock() {
   const pathname = usePathname();
@@ -32,14 +35,14 @@ export default function TerminalDock() {
             onClick={openDock}
             aria-expanded={isDockOpen}
             aria-label="Open the command terminal"
-            className={`pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-3 rounded-full border border-[var(--term-border)] bg-[var(--term-bg)] px-5 py-2.5 font-mono text-[15px] shadow-[0_10px_30px_rgba(0,0,0,0.35)] backdrop-blur-[8px] transition-[opacity,transform,border-color,box-shadow] duration-300 hover:border-[var(--accent)] hover:shadow-[0_10px_34px_rgba(63,204,168,0.28)] ${
+            className={`${pillClass} transition-[opacity,transform,border-color,box-shadow] duration-300 hover:border-[var(--accent)] hover:shadow-[0_10px_34px_rgba(63,204,168,0.28)] nojs:hidden ${
               isDockOpen
                 ? "pointer-events-none translate-y-2 scale-[0.97] opacity-0"
                 : "cursor-pointer opacity-100"
             }`}
           >
             <span className="font-semibold text-[var(--accent-text)]">
-              lugatuoa:~{pathname}$
+              lug@uoa:~{pathname}$
             </span>
             <span className="cursor-blink h-4 w-2 shrink-0 bg-[var(--fg)]" />
             <span className="hidden text-[13px] text-[var(--muted)] sm:inline">
@@ -50,6 +53,17 @@ export default function TerminalDock() {
               to type a command
             </span>
           </button>
+
+          <div
+            className={`${pillClass} hidden cursor-not-allowed opacity-60 nojs:flex`}
+          >
+            <span className="shrink-0 font-semibold text-[var(--accent-text)]">
+              lug@uoa:~{pathname}$
+            </span>
+            <span className="text-[13px] text-[var(--muted)]">
+              enable JavaScript to use the terminal
+            </span>
+          </div>
 
           <div
             inert={!isDockOpen}

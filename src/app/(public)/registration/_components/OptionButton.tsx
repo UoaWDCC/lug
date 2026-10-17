@@ -11,6 +11,7 @@ type OptionButtonProps = {
   label: string;
   defaultChecked?: boolean;
   required?: boolean;
+  disabled?: boolean;
   /** Layout classes for the button surface (padding, alignment, flex sizing). */
   surfaceClassName?: string;
   /** Layout classes for the wrapping label. */
@@ -25,6 +26,7 @@ export default function OptionButton({
   label,
   defaultChecked,
   required,
+  disabled,
   surfaceClassName = "justify-center px-5 py-3",
   className = "",
   inputRef,
@@ -38,6 +40,7 @@ export default function OptionButton({
         value={value}
         defaultChecked={defaultChecked}
         required={required}
+        disabled={disabled}
         className="sr-only"
       />
       <span
