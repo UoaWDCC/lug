@@ -1,5 +1,5 @@
 import { getPrisma } from "../lib/db/prisma";
-import { Prisma, type BlogPost } from "@/generated/prisma/client";
+import { Prisma, type BlogPost, type BlogTag } from "@/generated/prisma/client";
 import {
   runRepositoryOperation,
   type RepositoryResult,
@@ -35,6 +35,39 @@ export async function findPublishedBlogPosts(): Promise<BlogPost[]> {
       status: "PUBLISHED",
       publishedAt: {
         lte: new Date(),
+      },
+    },
+    orderBy: {
+      publishedAt: "desc",
+    },
+  });
+}
+
+export async function findPublishedBlogPostBySlug(
+  slug: string,
+): Promise<BlogPost | null> {
+  return getPrisma().blogPost.findFirst({
+    where: {
+      slug,
+      status: "PUBLISHED",
+      publishedAt: {
+        lte: new Date(),
+      },
+    },
+  });
+}
+
+export async function findPublishedBlogPostsByTag(
+  tag: BlogTag,
+): Promise<BlogPost[]> {
+  return getPrisma().blogPost.findMany({
+    where: {
+      status: "PUBLISHED",
+      publishedAt: {
+        lte: new Date(),
+      },
+      tags: {
+        has: tag,
       },
     },
     orderBy: {

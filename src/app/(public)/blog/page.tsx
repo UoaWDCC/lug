@@ -7,23 +7,9 @@ import {
 } from "@/components/primitive/buttonStyles";
 import { findPublishedBlogPosts } from "@/repositories/blogPostRepository";
 
+import { BlogPostList } from "./BlogPostList";
+
 import type { BlogPost } from "@/generated/prisma/client";
-
-/* Split so one- and two-digit days keep the mono column aligned. */
-function formatDate(publishedAt: string) {
-  const date = new Date(publishedAt);
-  const parts = new Intl.DateTimeFormat("en-NZ", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  }).formatToParts(date);
-
-  const part = (type: Intl.DateTimeFormatPartTypes) =>
-    parts.find((p) => p.type === type)?.value ?? "";
-
-  return { day: part("weekday"), date: part("day"), month: part("month") };
-}
 
 export default async function Blog() {
   let posts: BlogPost[] = [];
@@ -62,38 +48,7 @@ export default async function Blog() {
             </p>
           </div>
         ) : (
-          <div className="mb-7 flex flex-col gap-2.5">
-            {posts.map((post) => {
-              const when = post.publishedAt
-                ? formatDate(post.publishedAt.toISOString())
-                : null;
-
-              return (
-                <Link
-                  key={post.slug}
-                  href={`/blog/${post.slug}`}
-                  className="flex flex-wrap items-start gap-4 rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] p-5 no-underline transition-[border-color,transform] duration-150 hover:border-[var(--accent)] sm:gap-5"
-                >
-                  {/* Where the date column renders, guard it: */}
-                  {when && (
-                    <div className="flex min-w-[140px] items-baseline gap-2 font-mono ...">
-                      <span className="w-[3ch]">{when.day}</span>
-                      <span className="w-[2ch] text-right">{when.date}</span>
-                      <span className="w-[3ch]">{when.month}</span>
-                    </div>
-                  )}
-                  <div className="min-w-[200px] flex-1">
-                    <div className="mb-1.5 text-[22px] font-bold text-[var(--fg)] sm:text-[27px]">
-                      {post.title}
-                    </div>
-                    <div className="text-base leading-[1.5] text-[var(--muted)] sm:text-lg">
-                      {post.excerpt}
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
+          <BlogPostList posts={posts} />
         )}
 
         <Link href="/" className={ghostButtonClass}>
