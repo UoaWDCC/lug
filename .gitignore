@@ -9,6 +9,7 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.pnpm-store/
 
 # testing
 /coverage
@@ -44,7 +45,7 @@ next-env.d.ts
 .env.keys
 .env.local
 .env.*.local
-.env
+.env*
 
 # IDE / Editor
 .idea
@@ -60,3 +61,6 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# Image storage uploads folder
+uploads/

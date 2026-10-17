@@ -11,7 +11,7 @@ import { useTerminal } from "@/components/terminal/TerminalProvider";
 const NAV_ROWS = [
   { n: "01", cmd: "./sign-up", desc: "Join LUG@UoA", href: "/registration" },
   { n: "02", cmd: "./about-us", desc: "What we do", href: "/about" },
-  { n: "03", cmd: "./lug-blog", desc: "Posts and updates", href: "/blog" },
+  { n: "03", cmd: "./blog", desc: "Posts and updates", href: "/blog" },
 ];
 
 export default function TerminalPanel() {
