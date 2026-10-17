@@ -199,6 +199,13 @@ main[tabindex="-1"]:focus {
   outline: none;
 }
 
+/* Admin: while the theme fades (data-theme-fading, set by ThemeFadeSync), pause per-element
+   transitions so hover-styled elements follow the root fade rather than jumping ahead of it. */
+:root[data-theme-fading] .admin-shell,
+:root[data-theme-fading] .admin-shell * {
+  transition: none !important;
+}
+
 /* CSS picks the visible theme label - no client state, no hydration mismatch. */
 :root[data-theme="light"] .theme-label-dark,
 :root:not([data-theme="light"]) .theme-label-light {

@@ -1,68 +1,63 @@
+import { redirect } from "next/navigation";
 import { getMockMembers } from "@/lib/mock/members";
 import { requireAdmin } from "@/lib/auth/session";
+import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
+import { adminNoticeClass } from "@/app/admin/_components/adminStyles";
+import { EmailComposer } from "./EmailComposer";
+
+const intents = ["send", "schedule", "draft"] as const;
+type Intent = (typeof intents)[number];
+
+/* Shown after submitting, until real sending exists, so nobody thinks an email went out. */
+const notices: Record<Intent, string> = {
+  send: "Nothing was sent: email delivery isn't connected yet. The message was only logged on the server.",
+  schedule:
+    "Nothing was scheduled: email delivery isn't connected yet. The message was only logged on the server.",
+  draft:
+    "Drafts aren't saved yet: email storage isn't connected. The message was only logged on the server.",
+};
 
 async function sendEmail(formData: FormData) {
   "use server";
   await requireAdmin();
   // TODO: Fix with real mailing list later
   const email = {
+    intent: formData.get("intent"),
+    audience: formData.get("audience"),
+    scheduledAt: formData.get("scheduledAt"),
     subject: formData.get("subject"),
     body: formData.get("body"),
   };
   console.log("mailing list send", email);
+
+  const intent = intents.find((value) => value === email.intent) ?? "send";
+  redirect(`/admin/emails?notice=${intent}`);
 }
 
-const inputClass =
-  "block w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none";
-const labelClass = "block text-sm font-medium mb-1";
+type PageProps = {
+  searchParams: Promise<{ notice?: string }>;
+};
 
-export default async function AdminEmailsPage() {
+export default async function AdminEmailsPage({ searchParams }: PageProps) {
+  await requireAdmin();
   const members = await getMockMembers();
+  const { notice } = await searchParams;
+  const noticeMessage = intents.find((value) => value === notice);
 
   return (
-    <section className="py-8 max-w-xl">
-      <h1 className="text-3xl font-bold tracking-tight">Send email</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
-          {members.length} recipients
-        </span>{" "}
-        will receive this.
-      </p>
+    <section>
+      <AdminPageHeader
+        title="Send Email"
+        description="Compose and send emails to your mailing list."
+      />
 
-      <form action={sendEmail} className="mt-6 space-y-4">
-        <div>
-          <label htmlFor="subject" className={labelClass}>
-            Subject
-          </label>
-          <input
-            id="subject"
-            name="subject"
-            type="text"
-            required
-            className={inputClass}
-          />
-        </div>
+      {noticeMessage && (
+        <p role="status" className={`mt-6 ${adminNoticeClass}`}>
+          {notices[noticeMessage]}
+        </p>
+      )}
 
-        <div>
-          <label htmlFor="body" className={labelClass}>
-            Body
-          </label>
-          <textarea
-            id="body"
-            name="body"
-            rows={8}
-            required
-            className={inputClass}
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
-        >
-          Send to mailing list
-        </button>
-      </form>
+      <EmailComposer action={sendEmail} memberCount={members.length} />
     </section>
   );
 }

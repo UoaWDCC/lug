@@ -80,6 +80,10 @@ const rowActionBase =
 export const adminEditActionClass = `${rowActionBase} border-[var(--input-border)] text-[var(--accent-text)] hover:border-[var(--accent)] hover:bg-[var(--accent)]/10 hover:text-[var(--accent-text)]`;
 export const adminDeleteActionClass = `${rowActionBase} border-[var(--danger)]/40 text-[var(--danger)] hover:border-[var(--danger)] hover:bg-[var(--danger)]/10 hover:text-[var(--danger)]`;
 
+/** Amber heads-up banner for things that aren't errors (e.g. features not wired up yet). */
+export const adminNoticeClass =
+  "rounded-lg border border-[var(--warning)]/40 bg-[var(--warning)]/10 px-4 py-3 text-sm text-[var(--fg)]";
+
 /** Inline error banner; pair with role="alert". */
 export const adminErrorClass =
   "rounded-lg border border-[var(--danger)]/40 bg-[var(--danger)]/10 px-4 py-3 text-sm text-[var(--danger)]";

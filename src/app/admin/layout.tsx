@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { findAdminById } from "@/repositories/adminRepository";
 import { logoutAdmin } from "@/features/admin-auth/logoutAdmin";
 import { AdminHeader } from "./_components/AdminHeader";
+import { ThemeFadeSync } from "./_components/ThemeFadeSync";
 
 export default async function AdminLayout({
   children,
@@ -21,7 +22,8 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]">
+    <div className="admin-shell flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]">
+      <ThemeFadeSync />
       {session && (
         <AdminHeader
           adminName={admin ? `${admin.firstName} ${admin.lastName}` : "Admin"}
