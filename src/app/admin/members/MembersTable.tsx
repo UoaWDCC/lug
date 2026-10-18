@@ -11,6 +11,8 @@ import type { Member } from "@/generated/prisma/client";
 
 import { columns } from "./columns";
 
+import { exportMembers } from "./exportMembers";
+
 interface MembersTableProps {
   data: Member[];
 }
@@ -95,6 +97,21 @@ export default function MembersTable({ data }: MembersTableProps) {
             <option value="false">No</option>
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            const members = table
+              .getFilteredRowModel()
+              .rows.map((row) => row.original);
+
+            exportMembers(members);
+          }}
+          disabled={table.getFilteredRowModel().rows.length === 0}
+          className="self-end rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="overflow-x-auto">
