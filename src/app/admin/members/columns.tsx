@@ -22,6 +22,7 @@ export const columns: ColumnDef<Member>[] = [
   {
     accessorKey: "registrationYear",
     header: "Registration year",
+    filterFn: "equals",
   },
   {
     accessorKey: "isCurrentUoaStudent",
@@ -43,6 +44,7 @@ export const columns: ColumnDef<Member>[] = [
   {
     accessorKey: "faculty",
     header: "Faculty",
+    filterFn: "arrIncludes",
     cell: ({ getValue }) => {
       const faculties = getValue<string[]>();
       return faculties.length > 0 ? faculties.join(", ") : "—";
@@ -51,6 +53,7 @@ export const columns: ColumnDef<Member>[] = [
   {
     accessorKey: "programmeType",
     header: "Programme type",
+    filterFn: "equals",
     cell: ({ getValue }) => formatEnum(getValue<string | null>()),
   },
   {
@@ -85,6 +88,7 @@ export const columns: ColumnDef<Member>[] = [
   {
     accessorKey: "linuxSkillLevel",
     header: "Linux skill",
+    filterFn: "equals",
     cell: ({ getValue }) => formatEnum(getValue<string>()),
   },
   {

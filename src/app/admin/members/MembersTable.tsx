@@ -1,15 +1,104 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
+  type Table,
 } from "@tanstack/react-table";
 
 import type { Member } from "@/generated/prisma/client";
+import {
+  FACULTY_OPTIONS,
+  VALID_PROGRAMME_TYPES,
+  VALID_SKILL_LEVELS,
+  VALID_YEARS_REMAINING,
+} from "@/domain/member/constants";
 
 import { columns } from "./columns";
+import { formatEnum } from "./utils";
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+const UOA_STUDENT_OPTIONS: FilterOption[] = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
+];
+
+const PROGRAMME_TYPE_OPTIONS: FilterOption[] = VALID_PROGRAMME_TYPES.map(
+  (programmeType) => ({
+    value: programmeType,
+    label: formatEnum(programmeType),
+  }),
+);
+
+const YEARS_REMAINING_OPTIONS: FilterOption[] = VALID_YEARS_REMAINING.map(
+  (years, index) => ({
+    value: String(years),
+    // The highest option also covers anyone with more years remaining.
+    label:
+      index === VALID_YEARS_REMAINING.length - 1 ? `${years}+` : String(years),
+  }),
+);
+
+const LINUX_SKILL_OPTIONS: FilterOption[] = VALID_SKILL_LEVELS.map(
+  (skillLevel) => ({ value: skillLevel, label: formatEnum(skillLevel) }),
+);
+
+interface FilterSelectProps {
+  table: Table<Member>;
+  columnId: string;
+  label: string;
+  options: readonly FilterOption[];
+  // Converts the selected option value into the column's filter value.
+  parseValue?: (value: string) => unknown;
+}
+
+function FilterSelect({
+  table,
+  columnId,
+  label,
+  options,
+  parseValue = (value) => value,
+}: FilterSelectProps) {
+  const column = table.getColumn(columnId);
+  const filterValue = column?.getFilterValue();
+  const selectId = `${columnId}Filter`;
+
+  return (
+    <div>
+      <label
+        htmlFor={selectId}
+        className="mr-2 text-sm font-medium text-gray-700"
+      >
+        {label}
+      </label>
+
+      <select
+        id={selectId}
+        value={filterValue === undefined ? "" : String(filterValue)}
+        onChange={(event) => {
+          const value = event.target.value;
+
+          column?.setFilterValue(value === "" ? undefined : parseValue(value));
+        }}
+        className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+      >
+        <option value="">All</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 interface MembersTableProps {
   data: Member[];
@@ -23,78 +112,61 @@ export default function MembersTable({ data }: MembersTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const registrationYearOptions = useMemo<FilterOption[]>(
+    () =>
+      [...new Set(data.map((member) => member.registrationYear))]
+        .sort((a, b) => b - a)
+        .map((year) => ({ value: String(year), label: String(year) })),
+    [data],
+  );
+
   return (
     <>
       <div className="mb-4 flex flex-wrap gap-4">
-        <div>
-          <label
-            htmlFor="yearsRemaining"
-            className="mr-2 text-sm font-medium text-gray-700"
-          >
-            Years remaining
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="registrationYear"
+          label="Registration year"
+          options={registrationYearOptions}
+          parseValue={Number}
+        />
 
-          <select
-            id="yearsRemaining"
-            value={
-              (table.getColumn("yearsRemaining")?.getFilterValue() as
-                | number
-                | undefined) ?? ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="isCurrentUoaStudent"
+          label="UoA student"
+          options={UOA_STUDENT_OPTIONS}
+          parseValue={(value) => value === "true"}
+        />
 
-              table
-                .getColumn("yearsRemaining")
-                ?.setFilterValue(value === "" ? undefined : Number(value));
-            }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="">All</option>
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5+</option>
-          </select>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="faculty"
+          label="Faculty"
+          options={FACULTY_OPTIONS}
+        />
 
-        <div>
-          <label
-            htmlFor="uoaStatus"
-            className="mr-2 text-sm font-medium text-gray-700"
-          >
-            UoA student
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="programmeType"
+          label="Programme type"
+          options={PROGRAMME_TYPE_OPTIONS}
+        />
 
-          <select
-            id="uoaStatus"
-            value={
-              (table.getColumn("isCurrentUoaStudent")?.getFilterValue() as
-                | boolean
-                | undefined) === true
-                ? "true"
-                : (table.getColumn("isCurrentUoaStudent")?.getFilterValue() as
-                      | boolean
-                      | undefined) === false
-                  ? "false"
-                  : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="yearsRemaining"
+          label="Years remaining"
+          options={YEARS_REMAINING_OPTIONS}
+          parseValue={Number}
+        />
 
-              table
-                .getColumn("isCurrentUoaStudent")
-                ?.setFilterValue(value === "" ? undefined : value === "true");
-            }}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-          >
-            <option value="">All</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </select>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="linuxSkillLevel"
+          label="Linux skill"
+          options={LINUX_SKILL_OPTIONS}
+        />
       </div>
 
       <div className="overflow-x-auto">
