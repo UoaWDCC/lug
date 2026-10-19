@@ -7,9 +7,13 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
+import { useState } from "react";
+
 import type { Member } from "@/generated/prisma/client";
 
 import { columns } from "./columns";
+
+import { exportColumns, exportMembers } from "./exportMembers";
 
 interface MembersTableProps {
   data: Member[];
@@ -22,6 +26,32 @@ export default function MembersTable({ data }: MembersTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
+
+  const [isExportOpen, setIsExportOpen] = useState(false);
+  const [selectedColumnIds, setSelectedColumnIds] = useState<string[]>(() =>
+    exportColumns.map((column) => column.id),
+  );
+
+  const toggleColumn = (id: string, checked: boolean) => {
+    setSelectedColumnIds((current) =>
+      checked
+        ? [...current, id]
+        : current.filter((columnId) => columnId !== id),
+    );
+  };
+
+  const handleExport = () => {
+    const selectedColumns = exportColumns.filter((column) =>
+      selectedColumnIds.includes(column.id),
+    );
+
+    if (selectedColumns.length === 0) return;
+
+    const members = table.getFilteredRowModel().rows.map((row) => row.original);
+
+    exportMembers(members, selectedColumns);
+    setIsExportOpen(false);
+  };
 
   return (
     <>
@@ -95,6 +125,17 @@ export default function MembersTable({ data }: MembersTableProps) {
             <option value="false">No</option>
           </select>
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setIsExportOpen(true);
+          }}
+          disabled={table.getFilteredRowModel().rows.length === 0}
+          className="self-end rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className="overflow-x-auto">
@@ -132,6 +173,107 @@ export default function MembersTable({ data }: MembersTableProps) {
           </tbody>
         </table>
       </div>
+
+      {isExportOpen && (
+        <div
+          className="fixed inset-0 z-10 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setIsExportOpen(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-2xl rounded-lg bg-white p-6">
+            <h2 className="mb-4 text-lg font-semibold">Export CSV</h2>
+
+            <p className="mb-3 text-sm text-gray-600">
+              Select the columns you want to export:
+            </p>
+
+            {/* <div className="mb-4 flex flex-col items-start gap-2 text-sm">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedColumnIds(
+                    exportColumns.map((column) => column.id),
+                  )
+                }
+                className="text-blue-700 underline hover:text-blue-900 cursor-pointer"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedColumnIds([])}
+                className="text-blue-700 underline hover:text-blue-900 cursor-pointer"
+              >
+                Clear all
+              </button>
+            </div> */}
+
+            <div className="grid grid-flow-col grid-rows-8 gap-3 sm:grid-rows-8">
+              {exportColumns.map((column) => (
+                <label
+                  key={column.id}
+                  className="flex cursor-pointer items-center gap-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedColumnIds.includes(column.id)}
+                    onChange={(event) =>
+                      toggleColumn(column.id, event.target.checked)
+                    }
+                    className="size-4 accent-blue-700 cursor-pointer"
+                  />
+                  {column.header}
+                </label>
+              ))}
+            </div>
+
+            <div className="flex justify-between">
+              <div className="mt-4 flex flex-col items-start gap-1 text-sm">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedColumnIds(
+                      exportColumns.map((column) => column.id),
+                    )
+                  }
+                  className="text-blue-700 underline hover:text-blue-900 cursor-pointer"
+                >
+                  Select all
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedColumnIds([])}
+                  className="text-blue-700 underline hover:text-blue-900 cursor-pointer"
+                >
+                  Clear all
+                </button>
+              </div>
+
+              <div className="mt-6 flex flex-end justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsExportOpen(false)}
+                  className="rounded-md border px-4 py-2 text-sm hover:bg-gray-50 cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExport}
+                  disabled={selectedColumnIds.length === 0}
+                  className="rounded-md bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                >
+                  Export
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
