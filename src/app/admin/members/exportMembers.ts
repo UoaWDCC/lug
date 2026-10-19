@@ -2,48 +2,86 @@ import type { Member } from "@/generated/prisma/client";
 
 import { formatEnum, formatEnumList, formatBoolean } from "./utils";
 
-const exportColumns = [
-  { header: "Name", value: (m: Member) => `${m.firstName} ${m.lastName}` },
-  { header: "Email", value: (m: Member) => m.email },
-  { header: "Registration year", value: (m: Member) => m.registrationYear },
+type ExportColumn = {
+  id: string;
+  header: string;
+  value: (member: Member) => unknown;
+};
+
+export const exportColumns = [
   {
+    id: "name",
+    header: "Name",
+    value: (m: Member) => `${m.firstName} ${m.lastName}`,
+  },
+  { id: "email", header: "Email", value: (m: Member) => m.email },
+  {
+    id: "registrationYear",
+    header: "Registration year",
+    value: (m: Member) => m.registrationYear,
+  },
+  {
+    id: "isCurrentUoaStudent",
     header: "UoA student",
     value: (m: Member) => formatBoolean(m.isCurrentUoaStudent),
   },
-  { header: "UPI", value: (m: Member) => m.upi ?? "-" },
-  { header: "Student ID", value: (m: Member) => m.studentId ?? "-" },
+  { id: "upi", header: "UPI", value: (m: Member) => m.upi ?? "-" },
   {
+    id: "studentId",
+    header: "Student ID",
+    value: (m: Member) => m.studentId ?? "-",
+  },
+  {
+    id: "faculty",
     header: "Faculty",
     value: (m: Member) => (m.faculty.length ? m.faculty.join(", ") : "-"),
   },
   {
+    id: "programmeType",
     header: "Programme type",
     value: (m: Member) => formatEnum(m.programmeType),
   },
   {
+    id: "majors",
     header: "Majors",
     value: (m: Member) => (m.majors.length ? m.majors.join(", ") : "-"),
   },
-  { header: "Years remaining", value: (m: Member) => m.yearsRemaining ?? "-" },
   {
+    id: "yearRemaining",
+    header: "Years remaining",
+    value: (m: Member) => m.yearsRemaining ?? "-",
+  },
+  {
+    id: "primaryAffiliation",
     header: "Primary affiliation",
     value: (m: Member) => m.primaryAffiliation ?? "-",
   },
-  { header: "Non-UoA excerpt", value: (m: Member) => m.nonUoaExcerpt ?? "-" },
-  { header: "Non-UoA pitch", value: (m: Member) => m.nonUoaPitch ?? "-" },
   {
+    id: "nonUoaExcerpt",
+    header: "Non-UoA excerpt",
+    value: (m: Member) => m.nonUoaExcerpt ?? "-",
+  },
+  {
+    id: "nonUoaPitch",
+    header: "Non-UoA pitch",
+    value: (m: Member) => m.nonUoaPitch ?? "-",
+  },
+  {
+    id: "linuxSkillLevel",
     header: "Linux skill",
     value: (m: Member) => formatEnum(m.linuxSkillLevel),
   },
   {
+    id: "potentialInvolvement",
     header: "Potential involvement",
     value: (m: Member) => formatEnumList(m.potentialInvolvement),
   },
   {
+    id: "discordUsername",
     header: "Discord username",
     value: (m: Member) => m.discordUsername ?? "-",
   },
-] satisfies { header: string; value: (member: Member) => unknown }[];
+] satisfies ExportColumn[];
 
 function escapeCsv(value: unknown): string {
   let text = value == null ? "" : String(value);
@@ -55,10 +93,13 @@ function escapeCsv(value: unknown): string {
   return `"${text.replace(/"/g, '""')}"`;
 }
 
-export function exportMembers(members: Member[]): void {
-  const header = exportColumns.map(({ header }) => escapeCsv(header));
+export function exportMembers(
+  members: Member[],
+  selectedColumns: ExportColumn[] = exportColumns,
+): void {
+  const header = selectedColumns.map(({ header }) => escapeCsv(header));
   const rows = members.map((member) =>
-    exportColumns.map(({ value }) => escapeCsv(value(member))),
+    selectedColumns.map(({ value }) => escapeCsv(value(member))),
   );
 
   const csv = [header, ...rows].map((row) => row.join(",")).join("\r\n");
