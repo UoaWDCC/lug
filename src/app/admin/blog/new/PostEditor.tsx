@@ -217,7 +217,7 @@ export function PostEditor({ initialContent = "" }: Props) {
             }
           }}
           placeholder="## Start writing in markdown…"
-          className="min-h-[32rem] w-full flex-1 resize-y bg-transparent px-5 py-5 font-mono text-sm leading-7 text-[var(--fg)] placeholder:text-[var(--muted)] focus:outline-none focus-visible:bg-[var(--accent)]/[0.03]"
+          className="min-h-[32rem] w-full flex-1 resize-y bg-transparent px-5 py-5 font-mono text-sm leading-7 [font-variant-ligatures:none] text-[var(--fg)] placeholder:text-[var(--muted)] focus:outline-none focus-visible:bg-[var(--accent)]/[0.03]"
         />
       </div>
 

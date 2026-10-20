@@ -123,7 +123,7 @@ export function EmailComposer({ action, memberCount }: Props) {
                 placeholder={
                   "Hey everyone!\n\nWrite your email in **markdown**…"
                 }
-                className={`${adminInputClass} min-h-[28rem] flex-1 resize-y font-mono text-sm leading-7`}
+                className={`${adminInputClass} min-h-[28rem] flex-1 resize-y font-mono text-sm leading-7 [font-variant-ligatures:none]`}
               />
             </div>
           </div>
