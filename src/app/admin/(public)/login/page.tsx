@@ -1,6 +1,13 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { loginAdmin } from "@/features/admin-auth/loginAdmin";
+import { accentButtonClass } from "@/components/primitive/buttonStyles";
+import {
+  adminErrorClass,
+  adminInputClass,
+  adminLabelClass,
+} from "@/app/admin/_lib/adminStyles";
 
 async function login(formData: FormData) {
   "use server";
@@ -33,31 +40,43 @@ export default async function AdminLoginPage({
   const showError = error === "invalid";
 
   return (
-    <section className="flex min-h-[70vh] items-center justify-center py-12">
-      <div className="w-full max-w-sm">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <h1 className="text-2xl font-bold tracking-tight">Admin login</h1>
-          <p className="mt-1 text-sm text-gray-600">
-            For club executives only.
-          </p>
+    <section className="flex min-h-[70vh] items-center justify-center">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex items-center justify-center gap-3">
+          <Image
+            src="/logo.svg"
+            alt=""
+            width={48}
+            height={48}
+            priority
+            className="h-12 w-12 rounded-full"
+          />
+          <span className="font-sans text-3xl font-black tracking-[-0.3px]">
+            LUG@UoA
+          </span>
+          <span className="rounded-md border border-[var(--input-border)] bg-[var(--chip-bg)] px-2 py-0.5 font-mono text-xs font-medium tracking-wider text-[var(--accent-text)]">
+            ADMIN
+          </span>
+        </div>
+
+        <div className="rounded-2xl border border-[var(--input-border)] bg-[var(--card-bg)] p-6 sm:p-8">
+          <p className="font-mono text-sm text-[var(--muted)]">$ sudo login</p>
+          <h1 className="mt-2 text-3xl font-black tracking-tight">
+            Admin login
+          </h1>
+          <p className="mt-1 text-[var(--muted)]">For club executives only.</p>
 
           {showError && (
-            <div
-              role="alert"
-              className="mt-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
-            >
+            <div role="alert" className={`mt-6 ${adminErrorClass}`}>
               Invalid email or password. Please try again.
             </div>
           )}
 
-          <form action={login} className="mt-6 space-y-4">
+          <form action={login} className="mt-6 space-y-5">
             <input type="hidden" name="next" value={next ?? ""} />
 
             <div>
-              <label
-                htmlFor="email"
-                className="mb-1 block text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="email" className={adminLabelClass}>
                 Email
               </label>
               <input
@@ -68,15 +87,12 @@ export default async function AdminLoginPage({
                 autoComplete="email"
                 spellCheck={false}
                 placeholder="you@example.com"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 transition focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className={adminInputClass}
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="mb-1 block text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="password" className={adminLabelClass}>
                 Password
               </label>
               <input
@@ -85,20 +101,17 @@ export default async function AdminLoginPage({
                 type="password"
                 required
                 autoComplete="current-password"
-                className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm transition focus:border-gray-500 focus:outline-none focus:ring-2 focus:ring-black/10"
+                className={adminInputClass}
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full rounded-md bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 focus-visible:ring-offset-2 active:bg-gray-900"
-            >
+            <button type="submit" className={`${accentButtonClass} w-full`}>
               Log in
             </button>
           </form>
         </div>
 
-        <p className="mt-4 text-center text-xs text-gray-500">
+        <p className="mt-6 text-center text-sm text-[var(--muted)]">
           Trouble logging in? Contact the website team.
         </p>
       </div>

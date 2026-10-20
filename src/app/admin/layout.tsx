@@ -1,8 +1,9 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import { findAdminById } from "@/repositories/adminRepository";
 import { logoutAdmin } from "@/features/admin-auth/logoutAdmin";
+import { AdminHeader } from "./_components/AdminHeader";
+import { ThemeFadeSync } from "./_components/ThemeFadeSync";
 
 export default async function AdminLayout({
   children,
@@ -21,26 +22,16 @@ export default async function AdminLayout({
   }
 
   return (
-    /* Outermost wrapper div with min-h-screen and full viewport background */
-    <div className="min-h-screen bg-white text-gray-900 flex flex-col">
+    <div className="admin-shell flex min-h-screen flex-col bg-[var(--bg)] text-[var(--fg)]">
+      <ThemeFadeSync />
       {session && (
-        <nav className="flex items-center gap-4 p-4 border-b border-gray-300">
-          {/* Fix 1: Display firstName and lastName */}
-          <span>
-            Welcome, {admin ? `${admin.firstName} ${admin.lastName}` : "Admin"}
-          </span>
-          <Link href="/admin/members" className="hover:underline">
-            Members
-          </Link>
-          <form action={handleLogout}>
-            <button type="submit" className="cursor-pointer hover:underline">
-              Logout
-            </button>
-          </form>
-        </nav>
+        <AdminHeader
+          adminName={admin ? `${admin.firstName} ${admin.lastName}` : "Admin"}
+          logoutAction={handleLogout}
+        />
       )}
 
-      <main className="flex-1 p-4">{children}</main>
+      <main className="flex-1 px-5 py-12 sm:px-14 sm:py-16">{children}</main>
     </div>
   );
 }

@@ -85,6 +85,16 @@ export async function findAllMembers() {
   });
 }
 
+export async function countMembers() {
+  return getPrisma().member.count();
+}
+
+export async function countUoaStudentMembers() {
+  return getPrisma().member.count({
+    where: { isCurrentUoaStudent: true },
+  });
+}
+
 function toMemberCreateInput(
   registration: MemberRegistration,
 ): Prisma.MemberCreateInput {
