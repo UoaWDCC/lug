@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import { getMockMembers } from "@/lib/mock/members";
 import { requireAdmin } from "@/lib/auth/session";
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
-import { adminNoticeClass } from "@/app/admin/_components/adminStyles";
-import { EmailComposer } from "./EmailComposer";
+import { adminNoticeClass } from "@/app/admin/_lib/adminStyles";
+import { EmailComposer } from "./_components/EmailComposer";
 
 const intents = ["send", "schedule", "draft"] as const;
 type Intent = (typeof intents)[number];

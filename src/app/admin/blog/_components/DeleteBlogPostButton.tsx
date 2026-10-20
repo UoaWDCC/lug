@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { deleteBlogPostAction } from "@/features/blog/deleteBlogPostAction";
 import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
-import { adminDeleteActionClass } from "@/app/admin/_components/adminStyles";
+import { adminDeleteActionClass } from "@/app/admin/_lib/adminStyles";
 
 type Props = {
   id: string;

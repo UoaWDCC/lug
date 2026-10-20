@@ -9,11 +9,11 @@ import {
   adminLabelClass,
   adminPrimaryButtonClass,
   adminSecondaryButtonClass,
-} from "@/app/admin/_components/adminStyles";
-import { PostEditor } from "./new/PostEditor";
-import { TitleSlugInputs } from "./new/TitleSlugInputs";
+} from "@/app/admin/_lib/adminStyles";
+import { PostEditor } from "./PostEditor";
+import { TitleSlugInputs } from "./TitleSlugInputs";
 import { PublishDateInput } from "./PublishDateInput";
-import { postStatusBadges } from "./postStatus";
+import { postStatusBadges } from "../_lib/postStatus";
 
 const FORM_ID = "blog-post-form";
 

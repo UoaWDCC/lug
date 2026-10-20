@@ -15,14 +15,14 @@ import {
   adminTableWrapClass,
   adminTdClass,
   adminThClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
 import { AdminSelect } from "@/app/admin/_components/AdminSelect";
 import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 
-import { createColumns } from "./columns";
+import { createColumns } from "../_lib/columns";
 
 interface MembersTableProps {
   data: Member[];

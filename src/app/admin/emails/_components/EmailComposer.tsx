@@ -15,7 +15,7 @@ import {
   adminSecondaryButtonClass,
   adminSectionTitleClass,
   adminTagClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 const audiences = [
   { value: "all", label: "All members" },

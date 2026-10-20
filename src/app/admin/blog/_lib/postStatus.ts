@@ -1,5 +1,5 @@
 import type { PostStatus } from "@/generated/prisma/client";
-import { adminBadgeClass } from "@/app/admin/_components/adminStyles";
+import { adminBadgeClass } from "@/app/admin/_lib/adminStyles";
 
 /* Shared by the post list and the editor header. */
 export const postStatusBadges: Record<

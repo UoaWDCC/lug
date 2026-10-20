@@ -11,9 +11,9 @@ import {
   adminTagClass,
   adminTdClass,
   adminThClass,
-} from "@/app/admin/_components/adminStyles";
-import { DeleteBlogPostButton } from "./DeleteBlogPostButton";
-import { postStatusBadges } from "./postStatus";
+} from "@/app/admin/_lib/adminStyles";
+import { DeleteBlogPostButton } from "./_components/DeleteBlogPostButton";
+import { postStatusBadges } from "./_lib/postStatus";
 
 type PageProps = {
   searchParams: Promise<{ error?: string }>;

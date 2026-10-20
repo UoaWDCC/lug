@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth/session";
 import { findAllMembers } from "@/repositories/memberRepository";
 
-import MembersTable from "./MembersTable";
+import MembersTable from "./_components/MembersTable";
 
 export default async function AdminMembersPage() {
   await requireAdmin();

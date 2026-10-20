@@ -5,7 +5,7 @@ import {
   adminDangerButtonClass,
   adminErrorClass,
   adminSecondaryButtonClass,
-} from "./adminStyles";
+} from "../_lib/adminStyles";
 
 type Props = {
   open: boolean;

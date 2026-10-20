@@ -3,7 +3,7 @@ import { updateBlogPostAction } from "@/features/blog/updateBlogPostAction";
 import { applyPublishIntent } from "@/domain/blog/publishIntent";
 import { requireAdmin } from "@/lib/auth/session";
 import { findBlogPostById } from "@/repositories/blogPostRepository";
-import { BlogPostForm } from "../../BlogPostForm";
+import { BlogPostForm } from "../../_components/BlogPostForm";
 
 type PageProps = {
   params: Promise<{ id: string }>;

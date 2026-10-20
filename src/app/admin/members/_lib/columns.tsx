@@ -5,7 +5,7 @@ import {
   adminBadgeClass,
   adminDeleteActionClass,
   adminEditActionClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 import {
   formatBoolean,
   formatEnum,

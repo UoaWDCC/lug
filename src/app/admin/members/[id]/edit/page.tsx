@@ -12,7 +12,7 @@ import {
   VALID_YEARS_REMAINING,
   FACULTY_OPTIONS,
 } from "@/domain/member/constants";
-import { formatEnum } from "@/app/admin/members/utils";
+import { formatEnum } from "@/app/admin/members/_lib/utils";
 import { AdminSelect } from "@/app/admin/_components/AdminSelect";
 import {
   adminBackLinkClass,
@@ -26,7 +26,7 @@ import {
   adminPrimaryButtonClass,
   adminSecondaryButtonClass,
   adminSectionTitleClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 const FORM_ID = "edit-member-form";
 

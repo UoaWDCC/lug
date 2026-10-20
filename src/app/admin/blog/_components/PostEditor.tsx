@@ -8,7 +8,7 @@ import uploadBlogImage from "@/features/blog/uploadBlogImage";
 import {
   adminErrorClass,
   adminSectionTitleClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 type Props = {
   initialContent?: string;

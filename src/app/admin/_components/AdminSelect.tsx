@@ -1,4 +1,4 @@
-import { adminFieldSelectClass, adminSelectClass } from "./adminStyles";
+import { adminFieldSelectClass, adminSelectClass } from "../_lib/adminStyles";
 
 type Props = React.ComponentProps<"select"> & {
   /** "filter": compact mono (table filters). "field": full width, matches text inputs (forms). */

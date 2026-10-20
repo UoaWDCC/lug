@@ -5,7 +5,7 @@ import {
   adminHintClass,
   adminInputClass,
   adminLabelClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 type Props = {
   /** Existing publish date as an ISO string, if any. */

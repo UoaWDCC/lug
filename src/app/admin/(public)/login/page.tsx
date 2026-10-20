@@ -7,7 +7,7 @@ import {
   adminErrorClass,
   adminInputClass,
   adminLabelClass,
-} from "@/app/admin/_components/adminStyles";
+} from "@/app/admin/_lib/adminStyles";
 
 async function login(formData: FormData) {
   "use server";

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { createBlogPostAction } from "@/features/blog/createBlogPostAction";
 import { applyPublishIntent } from "@/domain/blog/publishIntent";
 import { requireAdmin } from "@/lib/auth/session";
-import { BlogPostForm } from "../BlogPostForm";
+import { BlogPostForm } from "../_components/BlogPostForm";
 
 const errorMessages: Record<string, string> = {
   validation: "Check the post fields and try again.",
