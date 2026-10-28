@@ -1,4 +1,4 @@
-import type { Email } from "@/generated/prisma/client";
+import type { Email, Prisma } from "@/generated/prisma/client";
 import { selectRecipients } from "@/domain/email/audience";
 import { renderEmail } from "@/lib/email/renderEmail";
 import { sendEmail } from "@/lib/email/sendEmail";
@@ -56,12 +56,12 @@ export async function deliverEmail(email: Email): Promise<DeliveryResult> {
 
   const failed = recipients.length - delivered;
   if (delivered === 0) {
-    await updateEmail(email.id, { status: "DRAFT" });
+    await markEmail(email.id, { status: "DRAFT" });
     return { status: "failed" };
   }
 
   // Partly sent emails are FAILED, not DRAFT: sending again would reach some members twice
-  await updateEmail(email.id, {
+  await markEmail(email.id, {
     status: failed === 0 ? "SENT" : "FAILED",
     sentAt: new Date(),
     recipientCount: delivered,
@@ -81,4 +81,15 @@ async function findRecipients(email: Email): Promise<string[]> {
     earlierMembers,
     optedOutEmails,
   });
+}
+
+// The emails have already gone out by now, so a failed status update is logged, not shown
+async function markEmail(id: string, data: Prisma.EmailUpdateInput) {
+  const result = await updateEmail(id, data);
+  if (!result.ok) {
+    console.error("Mailing list: failed to update email status", {
+      emailId: id,
+      error: result.error,
+    });
+  }
 }

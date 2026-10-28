@@ -25,7 +25,7 @@ Mailpit keeps messages in memory, so restarting it empties the inbox.
 | `SMTP_PORT` | `1025` for Mailpit. Defaults to `587` if unset. Port `465` uses TLS from the start. |
 | `SMTP_USER`, `SMTP_PASS` | Login for the mail server. Leave empty for Mailpit. |
 | `EMAIL_FROM` | Sender shown to members, e.g. `LUG@UoA <no-reply@example.com>`. |
-| `NEXT_PUBLIC_SITE_URL` | Used to build the absolute unsubscribe links inside emails. |
+| `NEXT_PUBLIC_SITE_URL` | Used to build the absolute unsubscribe links and logo URL inside emails. |
 | `AUTH_SECRET` | Also signs the unsubscribe tokens. |
 
 ## Audiences
@@ -69,7 +69,7 @@ Migration: `prisma/migrations/20261025070428_add_mailing_list`.
 ## Handover checklist
 
 - [ ] Set up a real sending account and set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` and `EMAIL_FROM` in production. Free options include a club Gmail account with an app password, or a free tier of a transactional email service. Check its daily sending limit.
-- [ ] Set `NEXT_PUBLIC_SITE_URL` to the real site address, or unsubscribe links will point at localhost.
+- [ ] Set `NEXT_PUBLIC_SITE_URL` to the real site address, or unsubscribe links and the logo will point at localhost.
 - [ ] Don't change `AUTH_SECRET` casually: that breaks every unsubscribe link in emails already sent (and logs out admins).
 - [ ] Send a test email to yourself and check it lands in the inbox, not spam.
 

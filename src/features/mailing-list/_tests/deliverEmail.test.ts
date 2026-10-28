@@ -127,6 +127,22 @@ describe("deliverEmail", () => {
     });
   });
 
+  it("still reports the send, and logs it, when the final status update fails", async () => {
+    mocks.updateEmail.mockResolvedValue({
+      ok: false,
+      error: { type: "database" },
+    });
+
+    await expect(deliverEmail(email)).resolves.toEqual({
+      status: "sent",
+      delivered: 2,
+    });
+    expect(console.error).toHaveBeenCalledWith(
+      "Mailing list: failed to update email status",
+      { emailId: "email-1", error: { type: "database" } },
+    );
+  });
+
   it("puts the email back to DRAFT when nothing could be sent", async () => {
     mocks.sendEmail.mockRejectedValue(new Error("connection refused"));
 
