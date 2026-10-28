@@ -3,12 +3,13 @@ import { z } from "zod";
 import { AUDIENCE_FORM_VALUES, MAX_LENGTHS } from "./constants";
 import type { AudienceFormValue, EmailAudience } from "./types";
 
-const AUDIENCE_BY_FORM_VALUE: Record<AudienceFormValue, EmailAudience> = {
-  all: "ALL",
-  new: "NEW",
-  returning: "RETURNING",
-  uoa: "UOA_STUDENTS",
-};
+export const AUDIENCE_BY_FORM_VALUE: Record<AudienceFormValue, EmailAudience> =
+  {
+    all: "ALL",
+    new: "NEW",
+    returning: "RETURNING",
+    uoa: "UOA_STUDENTS",
+  };
 
 const audience = z
   .enum(AUDIENCE_FORM_VALUES, { error: "Choose who to send this email to." })

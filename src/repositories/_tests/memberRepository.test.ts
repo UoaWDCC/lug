@@ -3,10 +3,15 @@ import type { MemberRegistration } from "@/domain/member/types";
 
 const mockCreate = vi.hoisted(() => vi.fn());
 const mockFindFirst = vi.hoisted(() => vi.fn());
+const mockFindMany = vi.hoisted(() => vi.fn());
 
 vi.mock("@/lib/db/prisma", () => ({
   getPrisma: () => ({
-    member: { create: mockCreate, findFirst: mockFindFirst },
+    member: {
+      create: mockCreate,
+      findFirst: mockFindFirst,
+      findMany: mockFindMany,
+    },
   }),
 }));
 
@@ -30,6 +35,7 @@ vi.mock("@/generated/prisma/client", () => ({
 
 import {
   createMembershipRegistration,
+  findAudienceMembers,
   findMemberByUpiAndStudentId,
 } from "../memberRepository";
 
@@ -172,5 +178,50 @@ describe("findMemberByUpiAndStudentId", () => {
     const result = await findMemberByUpiAndStudentId("xyz999", "000000000");
 
     expect(result).toBeNull();
+  });
+});
+describe("findAudienceMembers", () => {
+  const audienceMemberSelect = {
+    email: true,
+    isCurrentUoaStudent: true,
+    upi: true,
+    studentId: true,
+  };
+
+  it("loads this year's members and all earlier-year members separately", async () => {
+    mockFindMany.mockResolvedValue([]);
+
+    await findAudienceMembers();
+
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { registrationYear: currentYear },
+      select: audienceMemberSelect,
+    });
+    expect(mockFindMany).toHaveBeenCalledWith({
+      where: { registrationYear: { lt: currentYear } },
+      select: audienceMemberSelect,
+    });
+  });
+
+  it("returns the two lists under their own names", async () => {
+    const amy = {
+      email: "amy@example.com",
+      isCurrentUoaStudent: true,
+      upi: "achen123",
+      studentId: "123456789",
+    };
+    const jane = {
+      email: "jane@example.com",
+      isCurrentUoaStudent: false,
+      upi: null,
+      studentId: null,
+    };
+    mockFindMany.mockImplementation(({ where }) =>
+      Promise.resolve(where.registrationYear === currentYear ? [amy] : [jane]),
+    );
+
+    const result = await findAudienceMembers();
+
+    expect(result).toEqual({ currentMembers: [amy], earlierMembers: [jane] });
   });
 });

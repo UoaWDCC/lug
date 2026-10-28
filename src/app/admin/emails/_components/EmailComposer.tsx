@@ -16,6 +16,7 @@ import {
   adminSectionTitleClass,
   adminTagClass,
 } from "@/app/admin/_lib/adminStyles";
+import type { AudienceFormValue, RecipientCounts } from "@/domain/email/types";
 
 const audiences = [
   { value: "all", label: "All members" },
@@ -37,15 +38,16 @@ const emailBodyClass =
 
 type Props = {
   action: (formData: FormData) => Promise<void>;
-  /** Recipient count for "All members"; other groups aren't defined on the backend yet. */
-  memberCount: number;
+  /** Recipient counts for different audience segments */
+  recipientCounts: RecipientCounts;
 };
 
-export function EmailComposer({ action, memberCount }: Props) {
+export function EmailComposer({ action, recipientCounts }: Props) {
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
-  const [audience, setAudience] = useState<string>("all");
+  const [audience, setAudience] = useState<AudienceFormValue>("all");
   const [scheduleLater, setScheduleLater] = useState(false);
+  const recipientCount = recipientCounts[audience];
 
   return (
     <form action={action} className="mt-10 flex flex-col gap-6">
@@ -61,9 +63,7 @@ export function EmailComposer({ action, memberCount }: Props) {
             aria-live="polite"
             className="rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3.5 py-1 font-mono text-sm text-[var(--accent-text)]"
           >
-            {audience === "all"
-              ? `${memberCount} recipient${memberCount === 1 ? "" : "s"} will receive this email`
-              : "Count for this group coming soon"}
+            {`${recipientCount} recipient${recipientCount === 1 ? "" : "s"} will receive this email`}
           </p>
         </div>
         <fieldset className="mt-5">

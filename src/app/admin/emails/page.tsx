@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { getMockMembers } from "@/lib/mock/members";
 import { requireAdmin } from "@/lib/auth/session";
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
 import { adminNoticeClass } from "@/app/admin/_lib/adminStyles";
+import { getRecipientCounts } from "@/features/mailing-list/getRecipientCounts";
 import { EmailComposer } from "./_components/EmailComposer";
 
 const intents = ["send", "schedule", "draft"] as const;
@@ -40,7 +40,7 @@ type PageProps = {
 
 export default async function AdminEmailsPage({ searchParams }: PageProps) {
   await requireAdmin();
-  const members = await getMockMembers();
+  const recipientCounts = await getRecipientCounts();
   const { notice } = await searchParams;
   const noticeMessage = intents.find((value) => value === notice);
 
@@ -57,7 +57,7 @@ export default async function AdminEmailsPage({ searchParams }: PageProps) {
         </p>
       )}
 
-      <EmailComposer action={sendEmail} memberCount={members.length} />
+      <EmailComposer action={sendEmail} recipientCounts={recipientCounts} />
     </section>
   );
 }
