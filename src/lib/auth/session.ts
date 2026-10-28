@@ -18,7 +18,7 @@ export type AdminSession = {
  * This string secret is used to sign and verify every JWT; anyone who has it can forge valid tokens
  */
 
-function getSecretKey() {
+export function getSecretKey() {
   const secret = process.env.AUTH_SECRET;
   if (!secret) {
     throw new Error("AUTH_SECRET is not set.");
