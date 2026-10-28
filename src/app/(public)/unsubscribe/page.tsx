@@ -53,8 +53,7 @@ export default async function UnsubscribePage({ searchParams }: PageProps) {
       return (
         <Card title="You're unsubscribed">
           <Text>
-            {maskedEmail} won&apos;t get LUG@UoA mailing list emails any more.
-            Clicked by mistake?
+            {`${maskedEmail} won't get LUG@UoA mailing list emails any more. Clicked by mistake?`}
           </Text>
           <TokenForm
             action={resubscribeAction}
