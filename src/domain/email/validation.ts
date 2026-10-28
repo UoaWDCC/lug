@@ -10,6 +10,13 @@ export const AUDIENCE_BY_FORM_VALUE: Record<AudienceFormValue, EmailAudience> =
     returning: "RETURNING",
     uoa: "UOA_STUDENTS",
   };
+export const FORM_VALUE_BY_AUDIENCE: Record<EmailAudience, AudienceFormValue> =
+  {
+    ALL: "all",
+    NEW: "new",
+    RETURNING: "returning",
+    UOA_STUDENTS: "uoa",
+  };
 
 const audience = z
   .enum(AUDIENCE_FORM_VALUES, { error: "Choose who to send this email to." })
