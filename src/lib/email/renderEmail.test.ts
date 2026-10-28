@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderEmail } from "./renderEmail";
 
 const unsubscribeUrl = "https://lug.example/unsubscribe?token=abc.def&x=1";
@@ -6,6 +6,10 @@ const unsubscribeUrl = "https://lug.example/unsubscribe?token=abc.def&x=1";
 function render(body: string, subject = "Welcome back") {
   return renderEmail({ subject, body, unsubscribeUrl });
 }
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe("renderEmail", () => {
   it("renders Markdown to HTML with inline styles", () => {
@@ -49,6 +53,14 @@ describe("renderEmail", () => {
     expect(
       text.startsWith("Welcome back\n\nHi **all**\n\n- one\n- two\n\n--\n"),
     ).toBe(true);
+  });
+
+  it("shows the logo from the site's absolute URL", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://lug.example/");
+
+    const { html } = render("Body");
+
+    expect(html).toContain('<img src="https://lug.example/logo.png"');
   });
 
   it("does not give code inside a code block its own background", () => {

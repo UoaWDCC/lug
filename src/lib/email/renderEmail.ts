@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+import { getSiteUrl } from "./siteUrl";
 
 type RenderEmailInput = {
   subject: string;
@@ -85,6 +86,7 @@ export function renderEmail({
   const bodyHtml = String(markdownToHtml.processSync(body));
   const safeSubject = escapeHtml(subject);
   const safeUnsubscribeUrl = escapeHtml(unsubscribeUrl);
+  const safeLogoUrl = escapeHtml(`${getSiteUrl()}/logo.png`);
 
   // Table layout: the most reliable way to centre and size things across email clients
   const html = `<!doctype html>
@@ -98,7 +100,9 @@ export function renderEmail({
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef1ef;">
 <tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:576px;background:#ffffff;border-radius:12px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;">
-<tr><td align="center" style="background:#000000;border-bottom:4px solid #3fcca8;padding:28px 24px;color:#ffffff;font-size:20px;font-weight:900;letter-spacing:-0.3px;">LUG@UoA</td></tr>
+<tr><td align="center" style="background:#000000;border-bottom:4px solid #3fcca8;padding:28px 24px;color:#ffffff;font-size:20px;font-weight:900;letter-spacing:-0.3px;">
+<img src="${safeLogoUrl}" width="56" height="56" alt="" style="display:block;margin:0 auto 12px;width:56px;height:56px;border:0;">
+LUG@UoA</td></tr>
 <tr><td style="padding:28px 32px;color:#1f2421;font-size:15px;line-height:1.6;">
 <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#111412;">${safeSubject}</h1>
 ${bodyHtml}

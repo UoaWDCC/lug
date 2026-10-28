@@ -1,6 +1,7 @@
 import { SignJWT, jwtVerify } from "jose";
 import { normaliseEmail } from "@/domain/email/audience";
 import { getSecretKey } from "@/lib/auth/session";
+import { getSiteUrl } from "./siteUrl";
 
 // Marks these tokens as unsubscribe-only, so a session token can't be used here (and vice versa)
 const UNSUBSCRIBE_AUDIENCE = "unsubscribe";
@@ -46,9 +47,7 @@ export async function buildUnsubscribeLinks(
   email: string,
 ): Promise<UnsubscribeLinks> {
   const token = encodeURIComponent(await createUnsubscribeToken(email));
-  const siteUrl = (
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  ).replace(/\/$/, "");
+  const siteUrl = getSiteUrl();
 
   return {
     pageUrl: `${siteUrl}/unsubscribe?token=${token}`,
