@@ -40,6 +40,14 @@
     rgba(10, 10, 10, 0.68) var(--mix)
   );
   --danger: color-mix(in srgb, #ff8b8b, #c0392b var(--mix));
+  /* Amber for in-progress states (e.g. draft posts); deepened in light mode to stay readable on white. */
+  --warning: color-mix(in srgb, #f2c14e, #8a5a00 var(--mix));
+  /* Hairlines between regions (admin header, table rows) - quieter than --input-border. */
+  --divider: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.08),
+    rgba(10, 10, 10, 0.1) var(--mix)
+  );
 
   --input-bg: color-mix(in srgb, rgba(255, 255, 255, 0.04), #ffffff var(--mix));
   --input-border: color-mix(
@@ -189,6 +197,13 @@ body {
 /* Skip-link pattern: focus lands on <main> after a terminal navigation, so no focus ring. */
 main[tabindex="-1"]:focus {
   outline: none;
+}
+
+/* Admin: while the theme fades (data-theme-fading, set by ThemeFadeSync), pause per-element
+   transitions so hover-styled elements follow the root fade rather than jumping ahead of it. */
+:root[data-theme-fading] .admin-shell,
+:root[data-theme-fading] .admin-shell * {
+  transition: none !important;
 }
 
 /* CSS picks the visible theme label - no client state, no hydration mismatch. */

@@ -23,6 +23,10 @@ import {
 } from "react";
 import updateMemberAction from "@/features/admin-members/updateMemberAction";
 import type { MemberUpdateData } from "@/repositories/memberRepository";
+import {
+  adminPrimaryButtonClass,
+  adminSecondaryButtonClass,
+} from "@/app/admin/_lib/adminStyles";
 
 type EditMemberFormProps = {
   memberId: number;
@@ -223,13 +227,13 @@ export default function EditMemberForm({
     <form
       ref={formRef}
       onSubmit={handleSubmit}
-      className="mt-6 grid gap-6 md:grid-cols-2"
+      className="mt-8 flex flex-col gap-6"
     >
       {children}
 
-      <div className="flex flex-wrap items-center gap-3 md:col-span-2">
+      <div className="flex flex-wrap items-center gap-3">
         <button
-          className="rounded-md bg-gray-900 px-4 py-2 font-medium text-white hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${adminPrimaryButtonClass} disabled:cursor-not-allowed disabled:opacity-50`}
           type="submit"
           disabled={pending}
         >
@@ -239,7 +243,7 @@ export default function EditMemberForm({
         {/* Undo and redo are disabled while a save is in flight (pending) or
         when their respective stack is empty. */}
         <button
-          className="rounded-md border border-gray-300 px-4 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${adminSecondaryButtonClass} disabled:cursor-not-allowed disabled:border-[color-mix(in_srgb,var(--fg),transparent_85%)] disabled:text-[color-mix(in_srgb,var(--fg),transparent_85%)]`}
           type="button"
           onClick={() => void applyHistory("undo")}
           disabled={pending || undoStack.length === 0}
@@ -247,14 +251,18 @@ export default function EditMemberForm({
           Undo
         </button>
         <button
-          className="rounded-md border border-gray-300 px-4 py-2 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${adminSecondaryButtonClass} disabled:cursor-not-allowed disabled:border-[color-mix(in_srgb,var(--fg),transparent_85%)] disabled:text-[color-mix(in_srgb,var(--fg),transparent_85%)]`}
           type="button"
           onClick={() => void applyHistory("redo")}
           disabled={pending || redoStack.length === 0}
         >
           Redo
         </button>
-        <p className="text-sm" role="status" aria-live="polite">
+        <p
+          className="text-sm text-[var(--muted)]"
+          role="status"
+          aria-live="polite"
+        >
           {message}
         </p>
       </div>

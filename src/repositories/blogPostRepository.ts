@@ -29,6 +29,10 @@ export async function findAllBlogPosts(): Promise<BlogPost[]> {
   });
 }
 
+export async function countBlogPosts(): Promise<number> {
+  return getPrisma().blogPost.count();
+}
+
 export async function findPublishedBlogPosts(): Promise<BlogPost[]> {
   return getPrisma().blogPost.findMany({
     where: {
