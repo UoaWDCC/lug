@@ -1,3 +1,5 @@
+import { FACULTY_OPTIONS } from "@/domain/member/constants";
+
 const enumLabels: Record<string, string> = {
   TFC_PRE_UNI: "TFC / Pre-Uni",
   PHD: "PhD",
@@ -24,6 +26,22 @@ export function formatEnumList(values: readonly string[] | null | undefined) {
   }
 
   return values.map(formatEnum).join(", ");
+}
+
+const facultyLabels = new Map(
+  FACULTY_OPTIONS.map((option) => [
+    option.value,
+    // "Faculty of Science" -> "Science"; keeps the table column narrow.
+    option.label.replace(/^Faculty of /, ""),
+  ]),
+);
+
+export function formatFaculties(values: readonly string[] | null | undefined) {
+  if (!values || values.length === 0) {
+    return "—";
+  }
+
+  return values.map((value) => facultyLabels.get(value) ?? value).join(", ");
 }
 
 export function formatBoolean(value: boolean | null | undefined) {
