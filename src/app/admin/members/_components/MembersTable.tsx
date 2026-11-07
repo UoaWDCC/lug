@@ -6,9 +6,16 @@ import {
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
+  type Table,
 } from "@tanstack/react-table";
 
 import type { Member } from "@/generated/prisma/client";
+import {
+  FACULTY_OPTIONS,
+  VALID_PROGRAMME_TYPES,
+  VALID_SKILL_LEVELS,
+  VALID_YEARS_REMAINING,
+} from "@/domain/member/constants";
 import {
   adminPinnedClass,
   adminRowClass,
@@ -23,6 +30,7 @@ import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 
 import { createColumns } from "../_lib/columns";
+import { formatEnum } from "../_lib/utils";
 
 interface MembersTableProps {
   data: Member[];
@@ -54,6 +62,81 @@ function describeCount(
   return `${count} ${noun}${count === 1 ? "" : "s"}${year ? ` in ${year}` : ""}`;
 }
 
+/* ── Filter select ──────────────────────────────────────────────── */
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+const UOA_STUDENT_OPTIONS: FilterOption[] = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
+];
+
+const PROGRAMME_TYPE_OPTIONS: FilterOption[] = VALID_PROGRAMME_TYPES.map(
+  (programmeType) => ({
+    value: programmeType,
+    label: formatEnum(programmeType),
+  }),
+);
+
+const YEARS_REMAINING_OPTIONS: FilterOption[] = VALID_YEARS_REMAINING.map(
+  (years, index) => ({
+    value: String(years),
+    label:
+      index === VALID_YEARS_REMAINING.length - 1 ? `${years}+` : String(years),
+  }),
+);
+
+const LINUX_SKILL_OPTIONS: FilterOption[] = VALID_SKILL_LEVELS.map(
+  (skillLevel) => ({ value: skillLevel, label: formatEnum(skillLevel) }),
+);
+
+interface FilterSelectProps {
+  table: Table<Member>;
+  columnId: string;
+  label: string;
+  options: readonly FilterOption[];
+  parseValue?: (value: string) => unknown;
+}
+
+function FilterSelect({
+  table,
+  columnId,
+  label,
+  options,
+  parseValue = (value) => value,
+}: FilterSelectProps) {
+  const column = table.getColumn(columnId);
+  const filterValue = column?.getFilterValue();
+  const selectId = `${columnId}Filter`;
+
+  return (
+    <div>
+      <label htmlFor={selectId} className={filterLabelClass}>
+        {label}
+      </label>
+
+      <AdminSelect
+        id={selectId}
+        value={filterValue === undefined ? "" : String(filterValue)}
+        onChange={(event) => {
+          const value = event.target.value;
+          column?.setFilterValue(value === "" ? undefined : parseValue(value));
+        }}
+      >
+        <option value="">All</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </AdminSelect>
+    </div>
+  );
+}
+
 export default function MembersTable({ data }: MembersTableProps) {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const columns = useMemo(() => createColumns(setMemberToDelete), []);
@@ -65,9 +148,13 @@ export default function MembersTable({ data }: MembersTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  const years = [
-    ...new Set(data.map((member) => member.registrationYear)),
-  ].sort((a, b) => b - a);
+  const registrationYearOptions = useMemo<FilterOption[]>(
+    () =>
+      [...new Set(data.map((member) => member.registrationYear))]
+        .sort((a, b) => b - a)
+        .map((year) => ({ value: String(year), label: String(year) })),
+    [data],
+  );
 
   const yearFilter = table.getColumn("registrationYear")?.getFilterValue() as
     | number
@@ -86,84 +173,50 @@ export default function MembersTable({ data }: MembersTableProps) {
       />
 
       <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div>
-          <label htmlFor="registrationYear" className={filterLabelClass}>
-            Year
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="registrationYear"
+          label="Year"
+          options={registrationYearOptions}
+          parseValue={Number}
+        />
 
-          <AdminSelect
-            id="registrationYear"
-            value={yearFilter ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="isCurrentUoaStudent"
+          label="UoA student"
+          options={UOA_STUDENT_OPTIONS}
+          parseValue={(value) => value === "true"}
+        />
 
-              table
-                .getColumn("registrationYear")
-                ?.setFilterValue(value === "" ? undefined : Number(value));
-            }}
-          >
-            <option value="">All</option>
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </AdminSelect>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="faculty"
+          label="Faculty"
+          options={FACULTY_OPTIONS}
+        />
 
-        <div>
-          <label htmlFor="uoaStatus" className={filterLabelClass}>
-            UoA student
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="programmeType"
+          label="Programme type"
+          options={PROGRAMME_TYPE_OPTIONS}
+        />
 
-          <AdminSelect
-            id="uoaStatus"
-            value={
-              uoaFilter === true ? "true" : uoaFilter === false ? "false" : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="yearsRemaining"
+          label="Years remaining"
+          options={YEARS_REMAINING_OPTIONS}
+          parseValue={Number}
+        />
 
-              table
-                .getColumn("isCurrentUoaStudent")
-                ?.setFilterValue(value === "" ? undefined : value === "true");
-            }}
-          >
-            <option value="">All</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </AdminSelect>
-        </div>
-
-        <div>
-          <label htmlFor="yearsRemaining" className={filterLabelClass}>
-            Years remaining
-          </label>
-
-          <AdminSelect
-            id="yearsRemaining"
-            value={
-              (table.getColumn("yearsRemaining")?.getFilterValue() as
-                | number
-                | undefined) ?? ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
-
-              table
-                .getColumn("yearsRemaining")
-                ?.setFilterValue(value === "" ? undefined : Number(value));
-            }}
-          >
-            <option value="">All</option>
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5+</option>
-          </AdminSelect>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="linuxSkillLevel"
+          label="Linux skill"
+          options={LINUX_SKILL_OPTIONS}
+        />
       </div>
 
       <div className={`mt-6 ${adminTableWrapClass}`}>
