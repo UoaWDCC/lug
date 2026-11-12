@@ -1,8 +1,8 @@
 import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe";
 import {
-  addEmailOptOut,
-  removeEmailOptOut,
-} from "@/repositories/emailOptOutRepository";
+  addEmailAddressOptOut,
+  removeEmailAddressOptOut,
+} from "@/repositories/emailAddressOptOutRepository";
 
 export type SubscriptionChange = "unsubscribe" | "resubscribe";
 
@@ -22,8 +22,8 @@ export async function updateSubscription(
 
   const result =
     change === "unsubscribe"
-      ? await addEmailOptOut(email)
-      : await removeEmailOptOut(email);
+      ? await addEmailAddressOptOut(email)
+      : await removeEmailAddressOptOut(email);
   if (!result.ok) {
     console.error(`Mailing list: failed to ${change}`, result.error);
     return "error";

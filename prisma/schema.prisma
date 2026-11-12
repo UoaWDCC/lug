@@ -67,6 +67,8 @@ model Email {
   status         EmailStatus @default(DRAFT)
   scheduledAt    DateTime?
   sentAt         DateTime?
+
+  // Only set after delivery, records how many actually got it, not how many were targeted. Important for partial failures
   recipientCount Int?
 
   authorName String
@@ -92,9 +94,9 @@ enum EmailStatus {
   FAILED
 }
 
-// Keyed by email (not Member.id) so an opt-out survives re-registering in a later year.
-model EmailOptOut {
-  email String @id // stored lowercased
+// Keyed by email address (not Member.id) so an opt-out survives re-registering in a later year.
+model EmailAddressOptOut {
+  emailAddress String @id // stored lowercased
 
   createdAt DateTime @default(now())
 }

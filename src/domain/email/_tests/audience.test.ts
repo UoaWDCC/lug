@@ -34,13 +34,13 @@ const earlierMembers = [
 
 function recipients(
   audience: Parameters<typeof selectRecipients>[0]["audience"],
-  optedOutEmails: string[] = [],
+  optedOutEmailAddresses: string[] = [],
 ) {
   return selectRecipients({
     audience,
     currentMembers,
     earlierMembers,
-    optedOutEmails,
+    optedOutEmailAddresses,
   });
 }
 
@@ -76,7 +76,7 @@ describe("selectRecipients", () => {
       audience: "RETURNING",
       currentMembers: [member({ upi: "abcd123", studentId: null })],
       earlierMembers: [member({ email: "x@y.com", upi: "abcd123" })],
-      optedOutEmails: [],
+      optedOutEmailAddresses: [],
     });
     expect(result).toEqual([]);
   });
@@ -96,7 +96,7 @@ describe("selectRecipients", () => {
         member({ email: "DUP@example.com" }),
       ],
       earlierMembers: [],
-      optedOutEmails: [],
+      optedOutEmailAddresses: [],
     });
     expect(result).toEqual(["dup@example.com"]);
   });

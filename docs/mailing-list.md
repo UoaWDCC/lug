@@ -57,12 +57,12 @@ Each email has two ways to unsubscribe, both using a signed token that identifie
 - **Footer link** → `/unsubscribe?token=…` shows a confirm page with a button. Opening the page changes nothing, because mail scanners (e.g. Outlook Safe Links) open every link automatically. The button unsubscribes, and the member can resubscribe from the same page.
 - **Inbox "Unsubscribe" button** (Gmail, Outlook, etc.) uses the `List-Unsubscribe` headers and POSTs to `/api/unsubscribe?token=…`, which unsubscribes straight away.
 
-Opt-outs are stored in `EmailOptOut` by lowercased email, so they still apply after a member re-registers in a later year.
+Opt-outs are stored in `EmailAddressOptOut` by lowercased email address, so they still apply after a member re-registers in a later year.
 
 ## Data model
 
 - `Email`: subject, Markdown body, audience, status, `sentAt`, `recipientCount`, author name.
-- `EmailOptOut`: one row per opted-out email address.
+- `EmailAddressOptOut`: one row per opted-out email address.
 
 Migration: `prisma/migrations/20261025070428_add_mailing_list`.
 

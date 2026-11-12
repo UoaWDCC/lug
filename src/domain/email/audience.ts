@@ -8,20 +8,20 @@ type SelectRecipientsInput = {
   audience: EmailAudience;
   currentMembers: readonly AudienceMember[];
   earlierMembers: readonly AudienceMember[];
-  optedOutEmails: readonly string[];
+  optedOutEmailAddresses: readonly string[];
 };
 
 export function selectRecipients({
   audience,
   currentMembers,
   earlierMembers,
-  optedOutEmails,
+  optedOutEmailAddresses,
 }: SelectRecipientsInput): string[] {
   const earlierEmails = new Set(
     earlierMembers.map((member) => normaliseEmail(member.email)),
   );
   const earlierStudentKeys = new Set(earlierMembers.flatMap(studentKey));
-  const optedOut = new Set(optedOutEmails.map(normaliseEmail));
+  const optedOut = new Set(optedOutEmailAddresses.map(normaliseEmail));
 
   const isReturning = (member: AudienceMember) =>
     earlierEmails.has(normaliseEmail(member.email)) ||

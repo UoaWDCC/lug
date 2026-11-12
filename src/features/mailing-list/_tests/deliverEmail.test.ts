@@ -3,7 +3,7 @@ import type { Email } from "@/generated/prisma/client";
 
 const mocks = vi.hoisted(() => ({
   findAudienceMembers: vi.fn(),
-  findAllOptedOutEmails: vi.fn(),
+  findAllOptedOutEmailAddresses: vi.fn(),
   claimEmailForSending: vi.fn(),
   updateEmail: vi.fn(),
   sendEmail: vi.fn(),
@@ -13,8 +13,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/repositories/memberRepository", () => ({
   findAudienceMembers: mocks.findAudienceMembers,
 }));
-vi.mock("@/repositories/emailOptOutRepository", () => ({
-  findAllOptedOutEmails: mocks.findAllOptedOutEmails,
+vi.mock("@/repositories/emailAddressOptOutRepository", () => ({
+  findAllOptedOutEmailAddresses: mocks.findAllOptedOutEmailAddresses,
 }));
 vi.mock("@/repositories/emailRepository", () => ({
   claimEmailForSending: mocks.claimEmailForSending,
@@ -47,7 +47,7 @@ beforeEach(() => {
     currentMembers: [member("amy@example.com"), member("ben@example.com")],
     earlierMembers: [],
   });
-  mocks.findAllOptedOutEmails.mockResolvedValue([]);
+  mocks.findAllOptedOutEmailAddresses.mockResolvedValue([]);
   mocks.claimEmailForSending.mockResolvedValue({ ok: true, data: true });
   mocks.updateEmail.mockResolvedValue({ ok: true, data: email });
   mocks.sendEmail.mockResolvedValue(undefined);
@@ -79,7 +79,7 @@ describe("deliverEmail", () => {
   });
 
   it("skips opted-out members", async () => {
-    mocks.findAllOptedOutEmails.mockResolvedValue(["ben@example.com"]);
+    mocks.findAllOptedOutEmailAddresses.mockResolvedValue(["ben@example.com"]);
 
     await expect(deliverEmail(email)).resolves.toEqual({
       status: "sent",
@@ -89,7 +89,7 @@ describe("deliverEmail", () => {
   });
 
   it("does nothing when the group has no recipients", async () => {
-    mocks.findAllOptedOutEmails.mockResolvedValue([
+    mocks.findAllOptedOutEmailAddresses.mockResolvedValue([
       "amy@example.com",
       "ben@example.com",
     ]);

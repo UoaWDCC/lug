@@ -3,7 +3,7 @@ import { selectRecipients } from "@/domain/email/audience";
 import { renderEmail } from "@/lib/email/renderEmail";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { buildUnsubscribeLinks } from "@/lib/email/unsubscribe";
-import { findAllOptedOutEmails } from "@/repositories/emailOptOutRepository";
+import { findAllOptedOutEmailAddresses } from "@/repositories/emailAddressOptOutRepository";
 import {
   claimEmailForSending,
   updateEmail,
@@ -72,14 +72,14 @@ export async function deliverEmail(email: Email): Promise<DeliveryResult> {
 }
 
 async function findRecipients(email: Email): Promise<string[]> {
-  const [{ currentMembers, earlierMembers }, optedOutEmails] =
-    await Promise.all([findAudienceMembers(), findAllOptedOutEmails()]);
+  const [{ currentMembers, earlierMembers }, optedOutEmailAddresses] =
+    await Promise.all([findAudienceMembers(), findAllOptedOutEmailAddresses()]);
 
   return selectRecipients({
     audience: email.audience,
     currentMembers,
     earlierMembers,
-    optedOutEmails,
+    optedOutEmailAddresses,
   });
 }
 
