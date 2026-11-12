@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -22,6 +22,8 @@ import {
   adminTableWrapClass,
   adminTdClass,
   adminThClass,
+  adminPrimaryButtonClass,
+  adminSecondaryButtonClass,
 } from "@/app/admin/_lib/adminStyles";
 
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
@@ -31,6 +33,8 @@ import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 
 import { createColumns } from "../_lib/columns";
 import { formatEnum } from "../_lib/utils";
+
+import { exportColumns, exportMembers } from "../_lib/exportMembers";
 
 interface MembersTableProps {
   data: Member[];
@@ -156,6 +160,32 @@ export default function MembersTable({ data }: MembersTableProps) {
     [data],
   );
 
+  const exportDialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedColumnIds, setSelectedColumnIds] = useState<string[]>(() =>
+    exportColumns.map((column) => column.id),
+  );
+
+  const toggleColumn = (id: string, checked: boolean) => {
+    setSelectedColumnIds((current) =>
+      checked
+        ? [...current, id]
+        : current.filter((columnId) => columnId !== id),
+    );
+  };
+
+  const handleExport = () => {
+    const selectedColumns = exportColumns.filter((column) =>
+      selectedColumnIds.includes(column.id),
+    );
+
+    if (selectedColumns.length === 0) return;
+
+    const members = table.getFilteredRowModel().rows.map((row) => row.original);
+
+    exportMembers(members, selectedColumns);
+    exportDialogRef.current?.close();
+  };
+
   const yearFilter = table.getColumn("registrationYear")?.getFilterValue() as
     | number
     | undefined;
@@ -217,6 +247,15 @@ export default function MembersTable({ data }: MembersTableProps) {
           label="Linux skill"
           options={LINUX_SKILL_OPTIONS}
         />
+
+        <button
+          type="button"
+          onClick={() => exportDialogRef.current?.showModal()}
+          disabled={rows.length === 0}
+          className={adminSecondaryButtonClass}
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className={`mt-6 ${adminTableWrapClass}`}>
@@ -269,6 +308,83 @@ export default function MembersTable({ data }: MembersTableProps) {
           </tbody>
         </table>
       </div>
+
+      <dialog
+        ref={exportDialogRef}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
+        className="m-auto w-full max-w-2xl rounded-lg bg-[var(--card-bg)] p-0 backdrop:bg-black/50"
+      >
+        <div className="p-6">
+          <h2 className="mb-4 text-lg font-semibold text-[var(--fg)]">
+            Export CSV
+          </h2>
+
+          <p className="mb-3 text-sm text-[var(--muted)]">
+            Select the columns you want to export:
+          </p>
+
+          <div className="grid grid-flow-col grid-rows-8 gap-3 sm:grid-rows-8">
+            {exportColumns.map((column) => (
+              <label
+                key={column.id}
+                className="flex cursor-pointer items-center gap-2 text-sm text-[var(--fg)]"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedColumnIds.includes(column.id)}
+                  onChange={(event) =>
+                    toggleColumn(column.id, event.target.checked)
+                  }
+                  className="size-4 cursor-pointer accent-[var(--accent)]"
+                />
+                {column.header}
+              </label>
+            ))}
+          </div>
+
+          <div className="flex justify-between">
+            <div className="mt-4 flex flex-col items-start gap-1 text-sm">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedColumnIds(exportColumns.map((column) => column.id))
+                }
+                className="cursor-pointer text-[var(--accent-text)] underline hover:opacity-80"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedColumnIds([])}
+                className="cursor-pointer text-[var(--accent-text)] underline hover:opacity-80"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => exportDialogRef.current?.close()}
+                className={adminSecondaryButtonClass}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={selectedColumnIds.length === 0}
+                className={adminPrimaryButtonClass}
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
 
       <ConfirmDialog
         open={memberToDelete !== null}
