@@ -1,48 +1,104 @@
-import { redirect } from "next/navigation";
-import { getMockMembers } from "@/lib/mock/members";
 import { requireAdmin } from "@/lib/auth/session";
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
-import { adminNoticeClass } from "@/app/admin/_lib/adminStyles";
-import { EmailComposer } from "./_components/EmailComposer";
+import {
+  adminErrorClass,
+  adminNoticeClass,
+} from "@/app/admin/_lib/adminStyles";
+import { FORM_VALUE_BY_AUDIENCE } from "@/domain/email/validation";
+import { composeEmailAction } from "@/features/mailing-list/composeEmailAction";
+import { getRecipientCounts } from "@/features/mailing-list/getRecipientCounts";
+import { findEmailById } from "@/repositories/emailRepository";
+import { EmailComposer, type ComposerDraft } from "./_components/EmailComposer";
 
-const intents = ["send", "schedule", "draft"] as const;
-type Intent = (typeof intents)[number];
-
-/* Shown after submitting, until real sending exists, so nobody thinks an email went out. */
-const notices: Record<Intent, string> = {
-  send: "Nothing was sent: email delivery isn't connected yet. The message was only logged on the server.",
-  schedule:
-    "Nothing was scheduled: email delivery isn't connected yet. The message was only logged on the server.",
-  draft:
-    "Drafts aren't saved yet: email storage isn't connected. The message was only logged on the server.",
+type SearchParams = {
+  notice?: string;
+  draft?: string;
+  count?: string;
+  failed?: string;
 };
 
-async function sendEmail(formData: FormData) {
-  "use server";
-  await requireAdmin();
-  // TODO: Fix with real mailing list later
-  const email = {
-    intent: formData.get("intent"),
-    audience: formData.get("audience"),
-    scheduledAt: formData.get("scheduledAt"),
-    subject: formData.get("subject"),
-    body: formData.get("body"),
-  };
-  console.log("mailing list send", email);
+type Notice = { message: string; isError: boolean };
 
-  const intent = intents.find((value) => value === email.intent) ?? "send";
-  redirect(`/admin/emails?notice=${intent}`);
+function plural(count: string | undefined, word: string): string {
+  return `${count ?? 0} ${word}${count === "1" ? "" : "s"}`;
+}
+
+/** Maps every possible outcome string to a user-friendly message.
+ *  Changing the draft ID remounts the component so React resets all the useState values.  */
+function readNotice(params: SearchParams): Notice | null {
+  switch (params.notice) {
+    case "draft":
+      return { message: "Draft saved.", isError: false };
+    case "sent":
+      return {
+        message: `Email sent to ${plural(params.count, "recipient")}.`,
+        isError: false,
+      };
+    case "partial":
+      return {
+        message: `Sent to ${plural(params.count, "recipient")}, but ${plural(params.failed, "email")} couldn't be sent. Don't send it again, or the others will get it twice. Check the server logs.`,
+        isError: true,
+      };
+    case "failed":
+      return {
+        message:
+          "Nothing was sent: the mail server couldn't be reached. Your email is saved as a draft, so you can try again.",
+        isError: true,
+      };
+    case "no_recipients":
+      return {
+        message:
+          "Nothing was sent: nobody in this group is on the mailing list. Your email is saved as a draft.",
+        isError: true,
+      };
+    case "already_sent":
+      return {
+        message: "This email was already sent, so it wasn't sent again.",
+        isError: true,
+      };
+    case "invalid":
+      return {
+        message:
+          "Check the subject and body: both are needed to send, and they have length limits.",
+        isError: true,
+      };
+    case "error":
+      return {
+        message: "Something went wrong saving the email. Please try again.",
+        isError: true,
+      };
+    default:
+      return null;
+  }
 }
 
 type PageProps = {
-  searchParams: Promise<{ notice?: string }>;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function AdminEmailsPage({ searchParams }: PageProps) {
   await requireAdmin();
-  const members = await getMockMembers();
-  const { notice } = await searchParams;
-  const noticeMessage = intents.find((value) => value === notice);
+  const params = await searchParams;
+
+  // Load recipient counts and optionally a saved draft in parallel
+  const [recipientCounts, saved] = await Promise.all([
+    getRecipientCounts(),
+    params.draft ? findEmailById(params.draft) : null,
+  ]);
+
+  // Read notice query param (set by composeEmailAction after redirect) to show success/error banners
+  const notice = readNotice(params);
+
+  // Only drafts can be reopened; a sent email's link just shows an empty composer
+  const draft: ComposerDraft | undefined =
+    saved?.status === "DRAFT"
+      ? {
+          id: saved.id,
+          audience: FORM_VALUE_BY_AUDIENCE[saved.audience],
+          subject: saved.subject,
+          body: saved.body,
+        }
+      : undefined;
 
   return (
     <section>
@@ -51,13 +107,22 @@ export default async function AdminEmailsPage({ searchParams }: PageProps) {
         description="Compose and send emails to your mailing list."
       />
 
-      {noticeMessage && (
-        <p role="status" className={`mt-6 ${adminNoticeClass}`}>
-          {notices[noticeMessage]}
+      {notice && (
+        <p
+          role={notice.isError ? "alert" : "status"}
+          className={`mt-6 ${notice.isError ? adminErrorClass : adminNoticeClass}`}
+        >
+          {notice.message}
         </p>
       )}
 
-      <EmailComposer action={sendEmail} memberCount={members.length} />
+      {/* key: a different draft (or none) remounts the composer with fresh values */}
+      <EmailComposer
+        key={draft?.id ?? "new"}
+        action={composeEmailAction}
+        recipientCounts={recipientCounts}
+        draft={draft}
+      />
     </section>
   );
 }

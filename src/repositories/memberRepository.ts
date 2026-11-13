@@ -1,6 +1,7 @@
 import { getPrisma } from "../lib/db/prisma";
 import { MemberRegistration } from "@/domain/member/types";
 import { Prisma } from "@/generated/prisma/client";
+import type { AudienceMember } from "@/domain/email/types";
 
 import type {
   LinuxSkillLevel,
@@ -75,6 +76,34 @@ export async function findMemberByUpiAndStudentId(
     where: { upi, studentId, registrationYear: { lt: currentYear } },
     orderBy: { registrationYear: "desc" },
   });
+}
+
+// The fields selectRecipientAddresses needs, and nothing else.
+const audienceMemberSelect = {
+  email: true,
+  isCurrentUoaStudent: true,
+  upi: true,
+  studentId: true,
+} satisfies Prisma.MemberSelect;
+
+export async function findAudienceMembers(): Promise<{
+  currentMembers: AudienceMember[];
+  earlierMembers: AudienceMember[];
+}> {
+  const currentYear = new Date().getFullYear();
+
+  const [currentMembers, earlierMembers] = await Promise.all([
+    getPrisma().member.findMany({
+      where: { registrationYear: currentYear },
+      select: audienceMemberSelect,
+    }),
+    getPrisma().member.findMany({
+      where: { registrationYear: { lt: currentYear } },
+      select: audienceMemberSelect,
+    }),
+  ]);
+
+  return { currentMembers, earlierMembers };
 }
 
 export async function findAllMembers() {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
@@ -16,6 +17,7 @@ import {
   adminSectionTitleClass,
   adminTagClass,
 } from "@/app/admin/_lib/adminStyles";
+import type { AudienceFormValue, RecipientCounts } from "@/domain/email/types";
 
 const audiences = [
   { value: "all", label: "All members" },
@@ -25,7 +27,9 @@ const audiences = [
 ] as const;
 
 /* The preview mimics what lands in an inbox, so it keeps email-client colours (white body)
-   in both admin themes rather than using the theme tokens. */
+   in both admin themes rather than using the theme tokens.
+   
+   Note these are duplicated in renderEmail.ts, so they could diverge. */
 const emailBodyClass =
   "text-[15px] leading-relaxed text-[#1f2421] [overflow-wrap:anywhere] " +
   "[&>:first-child]:mt-0 [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1.5 " +
@@ -35,20 +39,32 @@ const emailBodyClass =
   "[&_code]:rounded [&_code]:bg-[#eef3f1] [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.9em] [&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-[#eef3f1] [&_pre]:p-3 [&_pre_code]:bg-transparent [&_pre_code]:p-0 " +
   "[&_img]:max-w-full [&_img]:rounded-md";
 
-type Props = {
-  action: (formData: FormData) => Promise<void>;
-  /** Recipient count for "All members"; other groups aren't defined on the backend yet. */
-  memberCount: number;
+export type ComposerDraft = {
+  id: string;
+  audience: AudienceFormValue;
+  subject: string;
+  body: string;
 };
 
-export function EmailComposer({ action, memberCount }: Props) {
-  const [subject, setSubject] = useState("");
-  const [body, setBody] = useState("");
-  const [audience, setAudience] = useState<string>("all");
-  const [scheduleLater, setScheduleLater] = useState(false);
+type Props = {
+  action: (formData: FormData) => Promise<void>;
+  /** Recipient counts for different audience segments */
+  recipientCounts: RecipientCounts;
+  /** A saved draft to keep editing; saving or sending updates it instead of creating a new email */
+  draft?: ComposerDraft;
+};
+
+export function EmailComposer({ action, recipientCounts, draft }: Props) {
+  const [subject, setSubject] = useState(draft?.subject ?? "");
+  const [body, setBody] = useState(draft?.body ?? "");
+  const [audience, setAudience] = useState<AudienceFormValue>(
+    draft?.audience ?? "all",
+  );
+  const recipientCount = recipientCounts[audience];
 
   return (
     <form action={action} className="mt-10 flex flex-col gap-6">
+      {draft && <input type="hidden" name="emailId" value={draft.id} />}
       <section className={adminCardClass} aria-labelledby="recipients-heading">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2
@@ -61,9 +77,7 @@ export function EmailComposer({ action, memberCount }: Props) {
             aria-live="polite"
             className="rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3.5 py-1 font-mono text-sm text-[var(--accent-text)]"
           >
-            {audience === "all"
-              ? `${memberCount} recipient${memberCount === 1 ? "" : "s"} will receive this email`
-              : "Count for this group coming soon"}
+            {`${recipientCount} recipient${recipientCount === 1 ? "" : "s"} will receive this email`}
           </p>
         </div>
         <fieldset className="mt-5">
@@ -182,55 +196,47 @@ export function EmailComposer({ action, memberCount }: Props) {
           </div>
         </div>
       </div>
-
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex cursor-pointer items-center gap-2.5 font-mono text-sm text-[var(--muted)]">
-            <input
-              type="checkbox"
-              checked={scheduleLater}
-              onChange={(event) => setScheduleLater(event.target.checked)}
-              className={adminCheckInputClass}
-            />
-            Schedule for later
-          </label>
-          <label htmlFor="scheduledAt" className="sr-only">
-            Send at
-          </label>
-          {/* Fixed-width wrapper: adminInputClass is full-width by design. */}
-          <div className="w-60">
-            <input
-              id="scheduledAt"
-              name="scheduledAt"
-              type="datetime-local"
-              disabled={!scheduleLater}
-              required={scheduleLater}
-              className={`${adminInputClass} py-2 font-mono text-sm disabled:cursor-not-allowed disabled:opacity-50`}
-            />
-          </div>
-        </div>
-
-        {/* Save draft comes first so Enter in the subject saves rather than sends. */}
-        <div className="flex flex-wrap gap-3">
-          <button
-            type="submit"
-            name="intent"
-            value="draft"
-            formNoValidate
-            className={adminSecondaryButtonClass}
-          >
-            Save draft
-          </button>
-          <button
-            type="submit"
-            name="intent"
-            value={scheduleLater ? "schedule" : "send"}
-            className={adminPrimaryButtonClass}
-          >
-            {scheduleLater ? "Schedule" : "Send now"}
-          </button>
-        </div>
-      </div>
+      <FormButtons recipientCount={recipientCount} />
     </form>
+  );
+}
+
+function FormButtons({ recipientCount }: { recipientCount: number }) {
+  // pending is true while the action runs; data says which button was pressed
+  const { pending, data } = useFormStatus();
+  const sending = pending && data?.get("intent") === "send";
+
+  return (
+    /* Save draft comes first so Enter in the subject saves rather than sends. */
+    <div className="flex flex-wrap gap-3 sm:justify-end">
+      <button
+        type="submit"
+        name="intent"
+        value="draft"
+        formNoValidate
+        disabled={pending}
+        className={adminSecondaryButtonClass}
+      >
+        Save draft
+      </button>
+      <button
+        type="submit"
+        name="intent"
+        value="send"
+        disabled={pending}
+        // Last check before an email nobody can unsend. Without JS the form just submits.
+        onClick={(event) => {
+          // Let the browser point out an empty subject/body first
+          if (!event.currentTarget.form?.checkValidity()) return;
+          const people = `${recipientCount} recipient${recipientCount === 1 ? "" : "s"}`;
+          if (!window.confirm(`Send this email to ${people}?`)) {
+            event.preventDefault();
+          }
+        }}
+        className={adminPrimaryButtonClass}
+      >
+        {sending ? "Sending…" : "Send now"}
+      </button>
+    </div>
   );
 }
