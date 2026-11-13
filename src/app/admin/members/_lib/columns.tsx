@@ -81,11 +81,13 @@ export const createColumns = (
   {
     accessorKey: "faculty",
     header: "Faculty",
+    filterFn: "arrIncludes",
     cell: ({ getValue }) => formatFaculties(getValue<string[]>()),
   },
   {
     accessorKey: "programmeType",
     header: "Programme type",
+    filterFn: "equals",
     cell: ({ getValue }) => formatEnum(getValue<string | null>()),
   },
   {
@@ -129,6 +131,7 @@ export const createColumns = (
   {
     accessorKey: "linuxSkillLevel",
     header: "Linux skill",
+    filterFn: "equals",
     cell: ({ getValue }) => (
       <span className="whitespace-nowrap">
         {formatEnum(getValue<string>())}

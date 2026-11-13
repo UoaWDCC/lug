@@ -1,20 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   useReactTable,
+  type Table,
 } from "@tanstack/react-table";
 
 import type { Member } from "@/generated/prisma/client";
+import {
+  FACULTY_OPTIONS,
+  VALID_PROGRAMME_TYPES,
+  VALID_SKILL_LEVELS,
+  VALID_YEARS_REMAINING,
+} from "@/domain/member/constants";
 import {
   adminPinnedClass,
   adminRowClass,
   adminTableWrapClass,
   adminTdClass,
   adminThClass,
+  adminPrimaryButtonClass,
+  adminSecondaryButtonClass,
 } from "@/app/admin/_lib/adminStyles";
 
 import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
@@ -23,6 +32,9 @@ import { ConfirmDialog } from "@/app/admin/_components/ConfirmDialog";
 import deleteMemberAction from "@/features/admin-members/deleteMemberAction";
 
 import { createColumns } from "../_lib/columns";
+import { formatEnum } from "../_lib/utils";
+
+import { exportColumns, exportMembers } from "../_lib/exportMembers";
 
 interface MembersTableProps {
   data: Member[];
@@ -54,6 +66,81 @@ function describeCount(
   return `${count} ${noun}${count === 1 ? "" : "s"}${year ? ` in ${year}` : ""}`;
 }
 
+/* ── Filter select ──────────────────────────────────────────────── */
+
+interface FilterOption {
+  value: string;
+  label: string;
+}
+
+const UOA_STUDENT_OPTIONS: FilterOption[] = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
+];
+
+const PROGRAMME_TYPE_OPTIONS: FilterOption[] = VALID_PROGRAMME_TYPES.map(
+  (programmeType) => ({
+    value: programmeType,
+    label: formatEnum(programmeType),
+  }),
+);
+
+const YEARS_REMAINING_OPTIONS: FilterOption[] = VALID_YEARS_REMAINING.map(
+  (years, index) => ({
+    value: String(years),
+    label:
+      index === VALID_YEARS_REMAINING.length - 1 ? `${years}+` : String(years),
+  }),
+);
+
+const LINUX_SKILL_OPTIONS: FilterOption[] = VALID_SKILL_LEVELS.map(
+  (skillLevel) => ({ value: skillLevel, label: formatEnum(skillLevel) }),
+);
+
+interface FilterSelectProps {
+  table: Table<Member>;
+  columnId: string;
+  label: string;
+  options: readonly FilterOption[];
+  parseValue?: (value: string) => unknown;
+}
+
+function FilterSelect({
+  table,
+  columnId,
+  label,
+  options,
+  parseValue = (value) => value,
+}: FilterSelectProps) {
+  const column = table.getColumn(columnId);
+  const filterValue = column?.getFilterValue();
+  const selectId = `${columnId}Filter`;
+
+  return (
+    <div>
+      <label htmlFor={selectId} className={filterLabelClass}>
+        {label}
+      </label>
+
+      <AdminSelect
+        id={selectId}
+        value={filterValue === undefined ? "" : String(filterValue)}
+        onChange={(event) => {
+          const value = event.target.value;
+          column?.setFilterValue(value === "" ? undefined : parseValue(value));
+        }}
+      >
+        <option value="">All</option>
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </AdminSelect>
+    </div>
+  );
+}
+
 export default function MembersTable({ data }: MembersTableProps) {
   const [memberToDelete, setMemberToDelete] = useState<Member | null>(null);
   const columns = useMemo(() => createColumns(setMemberToDelete), []);
@@ -65,9 +152,39 @@ export default function MembersTable({ data }: MembersTableProps) {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  const years = [
-    ...new Set(data.map((member) => member.registrationYear)),
-  ].sort((a, b) => b - a);
+  const registrationYearOptions = useMemo<FilterOption[]>(
+    () =>
+      [...new Set(data.map((member) => member.registrationYear))]
+        .sort((a, b) => b - a)
+        .map((year) => ({ value: String(year), label: String(year) })),
+    [data],
+  );
+
+  const exportDialogRef = useRef<HTMLDialogElement>(null);
+  const [selectedColumnIds, setSelectedColumnIds] = useState<string[]>(() =>
+    exportColumns.map((column) => column.id),
+  );
+
+  const toggleColumn = (id: string, checked: boolean) => {
+    setSelectedColumnIds((current) =>
+      checked
+        ? [...current, id]
+        : current.filter((columnId) => columnId !== id),
+    );
+  };
+
+  const handleExport = () => {
+    const selectedColumns = exportColumns.filter((column) =>
+      selectedColumnIds.includes(column.id),
+    );
+
+    if (selectedColumns.length === 0) return;
+
+    const members = table.getFilteredRowModel().rows.map((row) => row.original);
+
+    exportMembers(members, selectedColumns);
+    exportDialogRef.current?.close();
+  };
 
   const yearFilter = table.getColumn("registrationYear")?.getFilterValue() as
     | number
@@ -86,84 +203,59 @@ export default function MembersTable({ data }: MembersTableProps) {
       />
 
       <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-        <div>
-          <label htmlFor="registrationYear" className={filterLabelClass}>
-            Year
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="registrationYear"
+          label="Year"
+          options={registrationYearOptions}
+          parseValue={Number}
+        />
 
-          <AdminSelect
-            id="registrationYear"
-            value={yearFilter ?? ""}
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="isCurrentUoaStudent"
+          label="UoA student"
+          options={UOA_STUDENT_OPTIONS}
+          parseValue={(value) => value === "true"}
+        />
 
-              table
-                .getColumn("registrationYear")
-                ?.setFilterValue(value === "" ? undefined : Number(value));
-            }}
-          >
-            <option value="">All</option>
-            {years.map((year) => (
-              <option key={year} value={year}>
-                {year}
-              </option>
-            ))}
-          </AdminSelect>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="faculty"
+          label="Faculty"
+          options={FACULTY_OPTIONS}
+        />
 
-        <div>
-          <label htmlFor="uoaStatus" className={filterLabelClass}>
-            UoA student
-          </label>
+        <FilterSelect
+          table={table}
+          columnId="programmeType"
+          label="Programme type"
+          options={PROGRAMME_TYPE_OPTIONS}
+        />
 
-          <AdminSelect
-            id="uoaStatus"
-            value={
-              uoaFilter === true ? "true" : uoaFilter === false ? "false" : ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
+        <FilterSelect
+          table={table}
+          columnId="yearsRemaining"
+          label="Years remaining"
+          options={YEARS_REMAINING_OPTIONS}
+          parseValue={Number}
+        />
 
-              table
-                .getColumn("isCurrentUoaStudent")
-                ?.setFilterValue(value === "" ? undefined : value === "true");
-            }}
-          >
-            <option value="">All</option>
-            <option value="true">Yes</option>
-            <option value="false">No</option>
-          </AdminSelect>
-        </div>
+        <FilterSelect
+          table={table}
+          columnId="linuxSkillLevel"
+          label="Linux skill"
+          options={LINUX_SKILL_OPTIONS}
+        />
 
-        <div>
-          <label htmlFor="yearsRemaining" className={filterLabelClass}>
-            Years remaining
-          </label>
-
-          <AdminSelect
-            id="yearsRemaining"
-            value={
-              (table.getColumn("yearsRemaining")?.getFilterValue() as
-                | number
-                | undefined) ?? ""
-            }
-            onChange={(event) => {
-              const value = event.target.value;
-
-              table
-                .getColumn("yearsRemaining")
-                ?.setFilterValue(value === "" ? undefined : Number(value));
-            }}
-          >
-            <option value="">All</option>
-            <option value="0">0</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5+</option>
-          </AdminSelect>
-        </div>
+        <button
+          type="button"
+          onClick={() => exportDialogRef.current?.showModal()}
+          disabled={rows.length === 0}
+          className={adminSecondaryButtonClass}
+        >
+          Export CSV
+        </button>
       </div>
 
       <div className={`mt-6 ${adminTableWrapClass}`}>
@@ -216,6 +308,83 @@ export default function MembersTable({ data }: MembersTableProps) {
           </tbody>
         </table>
       </div>
+
+      <dialog
+        ref={exportDialogRef}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
+        className="m-auto w-full max-w-2xl rounded-lg bg-[var(--card-bg)] p-0 backdrop:bg-black/50"
+      >
+        <div className="p-6">
+          <h2 className="mb-4 text-lg font-semibold text-[var(--fg)]">
+            Export CSV
+          </h2>
+
+          <p className="mb-3 text-sm text-[var(--muted)]">
+            Select the columns you want to export:
+          </p>
+
+          <div className="grid grid-flow-col grid-rows-8 gap-3 sm:grid-rows-8">
+            {exportColumns.map((column) => (
+              <label
+                key={column.id}
+                className="flex cursor-pointer items-center gap-2 text-sm text-[var(--fg)]"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedColumnIds.includes(column.id)}
+                  onChange={(event) =>
+                    toggleColumn(column.id, event.target.checked)
+                  }
+                  className="size-4 cursor-pointer accent-[var(--accent)]"
+                />
+                {column.header}
+              </label>
+            ))}
+          </div>
+
+          <div className="flex justify-between">
+            <div className="mt-4 flex flex-col items-start gap-1 text-sm">
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedColumnIds(exportColumns.map((column) => column.id))
+                }
+                className="cursor-pointer text-[var(--accent-text)] underline hover:opacity-80"
+              >
+                Select all
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedColumnIds([])}
+                className="cursor-pointer text-[var(--accent-text)] underline hover:opacity-80"
+              >
+                Clear all
+              </button>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => exportDialogRef.current?.close()}
+                className={adminSecondaryButtonClass}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={selectedColumnIds.length === 0}
+                className={adminPrimaryButtonClass}
+              >
+                Export
+              </button>
+            </div>
+          </div>
+        </div>
+      </dialog>
 
       <ConfirmDialog
         open={memberToDelete !== null}
