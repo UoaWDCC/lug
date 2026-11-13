@@ -15,6 +15,9 @@ export function applyTheme(next: Theme | "toggle"): Theme {
   /* The cross-fade is entirely CSS; flipping the attribute is all that's needed. */
   document.documentElement.dataset.theme = resolved;
 
+  // Mirrored to a cookie so the server renders the same theme, with or without JS.
+  document.cookie = `${THEME_STORAGE_KEY}=${resolved}; path=/; max-age=31536000; samesite=lax`;
+
   try {
     localStorage.setItem(THEME_STORAGE_KEY, resolved);
   } catch {

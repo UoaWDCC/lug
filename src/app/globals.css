@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+/* Matches when JavaScript is off; see ScriptingFlag. */
+@custom-variant nojs (&:where(:root:not([data-js]) *));
+
+/* Height steps: the home hero has no page scroll to fall back on. */
+@custom-variant short (@media (max-height: 920px));
+@custom-variant shorter (@media (max-height: 760px));
+@custom-variant shortest (@media (max-height: 680px));
+
 /* One registered scalar drives the whole theme fade: 0 = dark, 1 = light, mixed "in srgb" so midpoints stay neutral. */
 @property --theme-mix {
   syntax: "<number>";
@@ -32,6 +40,14 @@
     rgba(10, 10, 10, 0.68) var(--mix)
   );
   --danger: color-mix(in srgb, #ff8b8b, #c0392b var(--mix));
+  /* Amber for in-progress states (e.g. draft posts); deepened in light mode to stay readable on white. */
+  --warning: color-mix(in srgb, #f2c14e, #8a5a00 var(--mix));
+  /* Hairlines between regions (admin header, table rows) - quieter than --input-border. */
+  --divider: color-mix(
+    in srgb,
+    rgba(255, 255, 255, 0.08),
+    rgba(10, 10, 10, 0.1) var(--mix)
+  );
 
   --input-bg: color-mix(in srgb, rgba(255, 255, 255, 0.04), #ffffff var(--mix));
   --input-border: color-mix(
@@ -80,6 +96,12 @@
     rgba(10, 10, 10, 0.68) var(--mix)
   );
   --row-hover-bg: color-mix(in srgb, #0f2f27, #b7e7d3 var(--mix));
+
+  --scrollbar-thumb: color-mix(
+    in srgb,
+    rgba(63, 204, 168, 0.4),
+    rgba(15, 122, 96, 0.45) var(--mix)
+  );
 
   /* Feeds the rainFall keyframes; 0.34 dark -> 0.28 light. */
   --rain-base-opacity: calc(0.34 - 0.06 * var(--theme-mix));
@@ -152,18 +174,36 @@ body {
 /* Components keep their own hover timings; theme changes reach them via the interpolating tokens above. */
 
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
+/* Transparent border insets the thumb so it never sits flush against the text. */
 ::-webkit-scrollbar-thumb {
-  background: rgba(63, 204, 168, 0.4);
+  background: var(--scrollbar-thumb);
+  background-clip: content-box;
+  border: 3px solid transparent;
   border-radius: 8px;
+}
+
+/* Firefox only; in Chrome these disable the ::-webkit- rules above. */
+@supports not selector(::-webkit-scrollbar) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
 }
 
 /* Skip-link pattern: focus lands on <main> after a terminal navigation, so no focus ring. */
 main[tabindex="-1"]:focus {
   outline: none;
+}
+
+/* Admin: while the theme fades (data-theme-fading, set by ThemeFadeSync), pause per-element
+   transitions so hover-styled elements follow the root fade rather than jumping ahead of it. */
+:root[data-theme-fading] .admin-shell,
+:root[data-theme-fading] .admin-shell * {
+  transition: none !important;
 }
 
 /* CSS picks the visible theme label - no client state, no hydration mismatch. */

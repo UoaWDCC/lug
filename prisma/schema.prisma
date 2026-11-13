@@ -57,12 +57,56 @@ enum BlogTag {
   TUTORIALS
 }
 
+model Email {
+  id String @id @default(cuid())
+
+  subject  String
+  body     String // markdown, rendered to HTML at send time
+  audience EmailAudience
+
+  status         EmailStatus @default(DRAFT)
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+
+  // Only set after delivery, records how many actually got it, not how many were targeted. Important for partial failures
+  recipientCount Int?
+
+  authorName String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status, scheduledAt])
+}
+
+enum EmailAudience {
+  ALL
+  NEW
+  RETURNING
+  UOA_STUDENTS
+}
+
+enum EmailStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  FAILED
+}
+
+// Keyed by email address (not Member.id) so an opt-out survives re-registering in a later year.
+model EmailAddressOptOut {
+  emailAddress String @id // stored lowercased
+
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   PRESIDENT
   VICE_PRESIDENT
   SECRETARY
   TREASURER
-  MEDIA
+  GENERAL
 }
 
 model Member {

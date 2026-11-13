@@ -1,68 +1,128 @@
-import { getMockMembers } from "@/lib/mock/members";
 import { requireAdmin } from "@/lib/auth/session";
+import { AdminPageHeader } from "@/app/admin/_components/AdminPageHeader";
+import {
+  adminErrorClass,
+  adminNoticeClass,
+} from "@/app/admin/_lib/adminStyles";
+import { FORM_VALUE_BY_AUDIENCE } from "@/domain/email/validation";
+import { composeEmailAction } from "@/features/mailing-list/composeEmailAction";
+import { getRecipientCounts } from "@/features/mailing-list/getRecipientCounts";
+import { findEmailById } from "@/repositories/emailRepository";
+import { EmailComposer, type ComposerDraft } from "./_components/EmailComposer";
 
-async function sendEmail(formData: FormData) {
-  "use server";
-  await requireAdmin();
-  // TODO: Fix with real mailing list later
-  const email = {
-    subject: formData.get("subject"),
-    body: formData.get("body"),
-  };
-  console.log("mailing list send", email);
+type SearchParams = {
+  notice?: string;
+  draft?: string;
+  count?: string;
+  failed?: string;
+};
+
+type Notice = { message: string; isError: boolean };
+
+function plural(count: string | undefined, word: string): string {
+  return `${count ?? 0} ${word}${count === "1" ? "" : "s"}`;
 }
 
-const inputClass =
-  "block w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none";
-const labelClass = "block text-sm font-medium mb-1";
+/** Maps every possible outcome string to a user-friendly message.
+ *  Changing the draft ID remounts the component so React resets all the useState values.  */
+function readNotice(params: SearchParams): Notice | null {
+  switch (params.notice) {
+    case "draft":
+      return { message: "Draft saved.", isError: false };
+    case "sent":
+      return {
+        message: `Email sent to ${plural(params.count, "recipient")}.`,
+        isError: false,
+      };
+    case "partial":
+      return {
+        message: `Sent to ${plural(params.count, "recipient")}, but ${plural(params.failed, "email")} couldn't be sent. Don't send it again, or the others will get it twice. Check the server logs.`,
+        isError: true,
+      };
+    case "failed":
+      return {
+        message:
+          "Nothing was sent: the mail server couldn't be reached. Your email is saved as a draft, so you can try again.",
+        isError: true,
+      };
+    case "no_recipients":
+      return {
+        message:
+          "Nothing was sent: nobody in this group is on the mailing list. Your email is saved as a draft.",
+        isError: true,
+      };
+    case "already_sent":
+      return {
+        message: "This email was already sent, so it wasn't sent again.",
+        isError: true,
+      };
+    case "invalid":
+      return {
+        message:
+          "Check the subject and body: both are needed to send, and they have length limits.",
+        isError: true,
+      };
+    case "error":
+      return {
+        message: "Something went wrong saving the email. Please try again.",
+        isError: true,
+      };
+    default:
+      return null;
+  }
+}
 
-export default async function AdminEmailsPage() {
-  const members = await getMockMembers();
+type PageProps = {
+  searchParams: Promise<SearchParams>;
+};
+
+export default async function AdminEmailsPage({ searchParams }: PageProps) {
+  await requireAdmin();
+  const params = await searchParams;
+
+  // Load recipient counts and optionally a saved draft in parallel
+  const [recipientCounts, saved] = await Promise.all([
+    getRecipientCounts(),
+    params.draft ? findEmailById(params.draft) : null,
+  ]);
+
+  // Read notice query param (set by composeEmailAction after redirect) to show success/error banners
+  const notice = readNotice(params);
+
+  // Only drafts can be reopened; a sent email's link just shows an empty composer
+  const draft: ComposerDraft | undefined =
+    saved?.status === "DRAFT"
+      ? {
+          id: saved.id,
+          audience: FORM_VALUE_BY_AUDIENCE[saved.audience],
+          subject: saved.subject,
+          body: saved.body,
+        }
+      : undefined;
 
   return (
-    <section className="py-8 max-w-xl">
-      <h1 className="text-3xl font-bold tracking-tight">Send email</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        <span className="inline-block rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">
-          {members.length} recipients
-        </span>{" "}
-        will receive this.
-      </p>
+    <section>
+      <AdminPageHeader
+        title="Send Email"
+        description="Compose and send emails to your mailing list."
+      />
 
-      <form action={sendEmail} className="mt-6 space-y-4">
-        <div>
-          <label htmlFor="subject" className={labelClass}>
-            Subject
-          </label>
-          <input
-            id="subject"
-            name="subject"
-            type="text"
-            required
-            className={inputClass}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="body" className={labelClass}>
-            Body
-          </label>
-          <textarea
-            id="body"
-            name="body"
-            rows={8}
-            required
-            className={inputClass}
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+      {notice && (
+        <p
+          role={notice.isError ? "alert" : "status"}
+          className={`mt-6 ${notice.isError ? adminErrorClass : adminNoticeClass}`}
         >
-          Send to mailing list
-        </button>
-      </form>
+          {notice.message}
+        </p>
+      )}
+
+      {/* key: a different draft (or none) remounts the composer with fresh values */}
+      <EmailComposer
+        key={draft?.id ?? "new"}
+        action={composeEmailAction}
+        recipientCounts={recipientCounts}
+        draft={draft}
+      />
     </section>
   );
 }

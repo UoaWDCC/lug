@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState, useSyncExternalStore } from "react";
+
+import OptionButton from "./OptionButton";
 
 /* Slider shows 3 curated stops from the 6-value backend enum — display simplification only, no schema change. */
 
@@ -24,6 +26,8 @@ const FULL_LABELS: Record<(typeof DISPLAY_LEVELS)[number], string> = {
 
 const DEFAULT_INDEX = DISPLAY_LEVELS.indexOf("BEGINNER_USER");
 
+const noopSubscribe = () => () => {};
+
 export default function SkillSlider({
   defaultValue,
 }: {
@@ -33,12 +37,19 @@ export default function SkillSlider({
     defaultValue as (typeof DISPLAY_LEVELS)[number],
   );
   const [index, setIndex] = useState(stored >= 0 ? stored : DEFAULT_INDEX);
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
+  const labelId = useId();
 
   const level = DISPLAY_LEVELS[index];
 
   return (
     <div>
       <label
+        id={labelId}
         htmlFor="linuxSkillLevelRange"
         className="mb-2.5 block text-lg font-bold"
       >
@@ -56,36 +67,60 @@ export default function SkillSlider({
         choice!
       </p>
 
-      <input
-        id="linuxSkillLevelRange"
-        type="range"
-        name="linuxSkillLevel"
-        min={0}
-        max={DISPLAY_LEVELS.length - 1}
-        step={1}
-        value={index}
-        onChange={(event) => setIndex(Number(event.target.value))}
-        aria-valuetext={FULL_LABELS[level]}
-        className="w-full cursor-pointer accent-[var(--accent)]"
-      />
-
-      <div aria-hidden className="mt-2 flex">
+      {/* Before the range on purpose: formData.get returns the first match, so
+          without JS the checked radio wins. Disabled once hydrated so only the
+          range submits. */}
+      <div
+        role="radiogroup"
+        aria-labelledby={labelId}
+        className="hidden grid-cols-3 gap-2 nojs:grid"
+      >
         {DISPLAY_LEVELS.map((value, i) => (
-          <span
+          <OptionButton
             key={value}
-            className={`flex-1 text-center font-mono text-[13px] ${
-              i === index
-                ? "font-extrabold text-[var(--accent-text)]"
-                : "text-[var(--muted)]"
-            }`}
-          >
-            {SHORT_LABELS[value]}
-          </span>
+            type="radio"
+            name="linuxSkillLevel"
+            value={String(i)}
+            label={SHORT_LABELS[value]}
+            defaultChecked={i === index}
+            disabled={hydrated}
+            surfaceClassName="justify-center px-2.5 py-3 text-center text-base"
+          />
         ))}
       </div>
 
-      <div className="mt-2.5 text-center text-lg font-extrabold text-[var(--accent-text)]">
-        {FULL_LABELS[level]}
+      <div className="nojs:hidden">
+        <input
+          id="linuxSkillLevelRange"
+          type="range"
+          name="linuxSkillLevel"
+          min={0}
+          max={DISPLAY_LEVELS.length - 1}
+          step={1}
+          value={index}
+          onChange={(event) => setIndex(Number(event.target.value))}
+          aria-valuetext={FULL_LABELS[level]}
+          className="w-full cursor-pointer accent-[var(--accent)]"
+        />
+
+        <div aria-hidden className="mt-2 flex">
+          {DISPLAY_LEVELS.map((value, i) => (
+            <span
+              key={value}
+              className={`flex-1 text-center font-mono text-[13px] ${
+                i === index
+                  ? "font-extrabold text-[var(--accent-text)]"
+                  : "text-[var(--muted)]"
+              }`}
+            >
+              {SHORT_LABELS[value]}
+            </span>
+          ))}
+        </div>
+
+        <div className="mt-2.5 text-center text-lg font-extrabold text-[var(--accent-text)]">
+          {FULL_LABELS[level]}
+        </div>
       </div>
     </div>
   );
