@@ -57,7 +57,7 @@ async function seedMembers() {
     {
       firstName: "Samantha",
       lastName: "Collins",
-      email: "sam67@gmail.com",
+      email: "sam.collins@example.com",
       registrationYear,
       isCurrentUoaStudent: false,
       upi: null,
@@ -76,7 +76,7 @@ async function seedMembers() {
     {
       firstName: "JoJo",
       lastName: "Siwa",
-      email: "jojo@hotmail.com",
+      email: "jojo.siwa@example.com",
       registrationYear,
       isCurrentUoaStudent: false,
       upi: null,

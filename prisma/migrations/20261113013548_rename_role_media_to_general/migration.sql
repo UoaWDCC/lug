@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "Role" RENAME VALUE 'MEDIA' TO 'GENERAL';

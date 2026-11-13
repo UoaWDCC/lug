@@ -106,7 +106,7 @@ enum Role {
   VICE_PRESIDENT
   SECRETARY
   TREASURER
-  MEDIA
+  GENERAL
 }
 
 model Member {

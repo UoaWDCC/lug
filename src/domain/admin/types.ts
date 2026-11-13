@@ -3,7 +3,7 @@ export const ROLES = [
   "VICE_PRESIDENT",
   "SECRETARY",
   "TREASURER",
-  "MEDIA",
+  "GENERAL",
 ] as const;
 
 export type Role = (typeof ROLES)[number];
