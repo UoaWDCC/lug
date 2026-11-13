@@ -45,10 +45,10 @@ The rules live in `src/domain/email/audience.ts`. The recipient count badge on t
 
 Email statuses (`Email.status`):
 
-- `DRAFT`: saved, not sent. Also what an email goes back to if nothing could be delivered, so it can be retried.
+- `DRAFT`: saved, not sent. Also what an email reverts to if nothing could be delivered (e.g. mail server unreachable), so it can be retried.
 - `SENDING`: claimed for sending. The claim is atomic, so a double-click or resubmitted form can't send twice.
 - `SENT`: every recipient was delivered to.
-- `FAILED`: only some recipients got it. It isn't retried automatically, because sending again would reach some members twice.
+- `FAILED`: some recipients got it, but not all. It isn't retried automatically, because sending again would double-deliver to the ones that succeeded.
 
 ## Opting out
 
@@ -75,5 +75,6 @@ Migration: `prisma/migrations/20261025070428_add_mailing_list`.
 
 ## Not done yet
 
+- **Draft listing.** Saved drafts persist in the database but there is no page to list or reopen them. If you navigate away from the composer you lose the draft URL.
 - **Scheduled sending.** Once the site runs on the Pi, a cron job (a task the server runs on a timer) can send scheduled emails.
 - Personalisation (e.g. first names), attachments, open/click tracking, bounce handling.
