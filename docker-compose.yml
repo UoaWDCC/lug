@@ -14,6 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql
 
   app:
+    restart: unless-stopped
     build: .
     env_file:
       - .env
