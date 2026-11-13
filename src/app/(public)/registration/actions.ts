@@ -49,6 +49,7 @@ const COOKIE_OPTIONS = {
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
   path: "/registration",
+  maxAge: 60 * 60 * 24, // 24 hours,
 };
 
 function stripIrrelevantFields(
