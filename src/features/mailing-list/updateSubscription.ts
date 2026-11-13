@@ -1,4 +1,4 @@
-import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe";
+import { decodeUnsubscribeToken } from "@/lib/email/unsubscribe";
 import {
   addEmailAddressOptOut,
   removeEmailAddressOptOut,
@@ -17,7 +17,7 @@ export async function updateSubscription(
   token: string,
   change: SubscriptionChange,
 ): Promise<SubscriptionStatus> {
-  const email = await verifyUnsubscribeToken(token);
+  const email = await decodeUnsubscribeToken(token);
   if (!email) return "invalid_token";
 
   const result =

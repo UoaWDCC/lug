@@ -4,7 +4,7 @@ import { createSessionToken } from "@/lib/auth/session";
 import {
   buildUnsubscribeLinks,
   createUnsubscribeToken,
-  verifyUnsubscribeToken,
+  decodeUnsubscribeToken,
 } from "./unsubscribe";
 
 beforeEach(() => {
@@ -24,7 +24,7 @@ describe("unsubscribe tokens", () => {
   it("round-trips to the lowercased email", async () => {
     const token = await createUnsubscribeToken("  Sam@Example.COM ");
 
-    await expect(verifyUnsubscribeToken(token)).resolves.toBe(
+    await expect(decodeUnsubscribeToken(token)).resolves.toBe(
       "sam@example.com",
     );
   });
@@ -39,7 +39,7 @@ describe("unsubscribe tokens", () => {
     });
 
     await expect(
-      verifyUnsubscribeToken(`${header}.${forgedPayload}.${signature}`),
+      decodeUnsubscribeToken(`${header}.${forgedPayload}.${signature}`),
     ).resolves.toBeNull();
   });
 
@@ -47,7 +47,7 @@ describe("unsubscribe tokens", () => {
     const token = await createUnsubscribeToken("sam@example.com");
     vi.stubEnv("AUTH_SECRET", "a-completely-different-secret-456");
 
-    await expect(verifyUnsubscribeToken(token)).resolves.toBeNull();
+    await expect(decodeUnsubscribeToken(token)).resolves.toBeNull();
   });
 
   it("rejects an admin session token", async () => {
@@ -56,11 +56,11 @@ describe("unsubscribe tokens", () => {
       role: "PRESIDENT",
     });
 
-    await expect(verifyUnsubscribeToken(sessionToken)).resolves.toBeNull();
+    await expect(decodeUnsubscribeToken(sessionToken)).resolves.toBeNull();
   });
 
   it("rejects garbage", async () => {
-    await expect(verifyUnsubscribeToken("not-a-token")).resolves.toBeNull();
+    await expect(decodeUnsubscribeToken("not-a-token")).resolves.toBeNull();
   });
 });
 
@@ -71,11 +71,11 @@ describe("buildUnsubscribeLinks", () => {
     const page = new URL(pageUrl);
     expect(page.origin + page.pathname).toBe("https://lug.example/unsubscribe");
     await expect(
-      verifyUnsubscribeToken(page.searchParams.get("token") ?? ""),
+      decodeUnsubscribeToken(page.searchParams.get("token") ?? ""),
     ).resolves.toBe("sam@example.com");
 
     expect(headers["List-Unsubscribe"]).toMatch(
-      /^<https:\/\/lug\.example\/api\/unsubscribe\?token=[^>]+>$/,
+      /^<https:\/\/lug\.example\/unsubscribe\/api\?token=[^>]+>$/,
     );
     expect(headers["List-Unsubscribe-Post"]).toBe("List-Unsubscribe=One-Click");
   });

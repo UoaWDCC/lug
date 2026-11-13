@@ -1,3 +1,5 @@
+// This file: two server actions for the unsubscribe page's forms.
+
 "use server";
 
 import { redirect } from "next/navigation";
@@ -14,7 +16,6 @@ export async function resubscribeAction(formData: FormData): Promise<void> {
   await changeSubscription(formData, "resubscribe");
 }
 
-// Redirects back to the page afterwards, so refreshing it doesn't resubmit the form
 async function changeSubscription(
   formData: FormData,
   change: SubscriptionChange,
@@ -22,5 +23,7 @@ async function changeSubscription(
   const value = formData.get("token");
   const token = typeof value === "string" ? value : "";
   const status = await updateSubscription(token, change);
+
+  // Redirects back to the page afterwards, so refreshing it doesn't resubmit the form
   redirect(`/unsubscribe?${new URLSearchParams({ token, status })}`);
 }

@@ -13,7 +13,7 @@ import { POST } from "../route";
 // What a mail provider sends when someone clicks the inbox's Unsubscribe button
 function oneClick(token: string): NextRequest {
   return new NextRequest(
-    `http://localhost:3000/api/unsubscribe?token=${encodeURIComponent(token)}`,
+    `http://localhost:3000/unsubscribe/api?token=${encodeURIComponent(token)}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -22,7 +22,7 @@ function oneClick(token: string): NextRequest {
   );
 }
 
-describe("POST /api/unsubscribe", () => {
+describe("POST /unsubscribe/api", () => {
   it("unsubscribes the token's email", async () => {
     mocks.updateSubscription.mockResolvedValue("unsubscribed");
 

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  verifyUnsubscribeToken: vi.fn(),
+  decodeUnsubscribeToken: vi.fn(),
   addEmailAddressOptOut: vi.fn(),
   removeEmailAddressOptOut: vi.fn(),
 }));
 
 vi.mock("@/lib/email/unsubscribe", () => ({
-  verifyUnsubscribeToken: mocks.verifyUnsubscribeToken,
+  decodeUnsubscribeToken: mocks.decodeUnsubscribeToken,
 }));
 vi.mock("@/repositories/emailAddressOptOutRepository", () => ({
   addEmailAddressOptOut: mocks.addEmailAddressOptOut,
@@ -17,7 +17,7 @@ vi.mock("@/repositories/emailAddressOptOutRepository", () => ({
 import { updateSubscription } from "../updateSubscription";
 
 beforeEach(() => {
-  mocks.verifyUnsubscribeToken.mockResolvedValue("sam@example.com");
+  mocks.decodeUnsubscribeToken.mockResolvedValue("sam@example.com");
   mocks.addEmailAddressOptOut.mockResolvedValue({ ok: true, data: {} });
   mocks.removeEmailAddressOptOut.mockResolvedValue({ ok: true, data: 1 });
 });
@@ -27,7 +27,7 @@ describe("updateSubscription", () => {
     await expect(updateSubscription("token", "unsubscribe")).resolves.toBe(
       "unsubscribed",
     );
-    expect(mocks.verifyUnsubscribeToken).toHaveBeenCalledWith("token");
+    expect(mocks.decodeUnsubscribeToken).toHaveBeenCalledWith("token");
     expect(mocks.addEmailAddressOptOut).toHaveBeenCalledWith("sam@example.com");
   });
 
@@ -42,7 +42,7 @@ describe("updateSubscription", () => {
   });
 
   it("changes nothing when the token is invalid", async () => {
-    mocks.verifyUnsubscribeToken.mockResolvedValue(null);
+    mocks.decodeUnsubscribeToken.mockResolvedValue(null);
 
     await expect(updateSubscription("bad", "unsubscribe")).resolves.toBe(
       "invalid_token",

@@ -1,3 +1,6 @@
+// This file contains the business logic for selecting recipient email addresses
+// Selection is based on intended audience, ignoring opted out addresses
+
 import type { AudienceMember, EmailAudience } from "./types";
 
 export function normaliseEmail(email: string): string {
@@ -11,7 +14,7 @@ type SelectRecipientsInput = {
   optedOutEmailAddresses: readonly string[];
 };
 
-export function selectRecipients({
+export function selectRecipientAddresses({
   audience,
   currentMembers,
   earlierMembers,
@@ -27,13 +30,20 @@ export function selectRecipients({
     earlierEmails.has(normaliseEmail(member.email)) ||
     studentKey(member).some((key) => earlierStudentKeys.has(key));
 
-  const recipients = new Set<string>();
+  // Track email addresses added to recipient set
+  const addresses = new Set<string>();
+
+  // Loop over current LUG members
   for (const member of currentMembers) {
     const email = normaliseEmail(member.email);
-    if (optedOut.has(email) || recipients.has(email)) continue;
-    if (matchesAudience(audience, member, isReturning)) recipients.add(email);
+
+    // Skip opted-out email addresses and those already in recipient set
+    if (optedOut.has(email) || addresses.has(email)) continue;
+
+    // Add email address if its member is in the intended audience
+    if (matchesAudience(audience, member, isReturning)) addresses.add(email);
   }
-  return [...recipients];
+  return [...addresses];
 }
 
 function matchesAudience(

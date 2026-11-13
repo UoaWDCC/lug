@@ -8,13 +8,14 @@ import { getSiteUrl } from "./siteUrl";
 
 type RenderEmailInput = {
   subject: string;
-  /** Markdown, as typed in the composer */
-  body: string;
+  body: string; // Markdown, as entered by user in EmailComposer
   unsubscribeUrl: string;
 };
 
 export type RenderedEmail = {
   html: string;
+  /** Plain-text MIME alternative: shown when the recipient's client prefers plain text, and
+   *  improves deliverability (emails without a text part score higher on spam filters). */
   text: string;
 };
 
@@ -59,7 +60,7 @@ function addInlineStyles(node: HastNode, parentTag?: string) {
   }
 }
 
-// Same Markdown flavour and sanitising as the preview; styles are added after sanitising,
+// Same Markdown flavour and sanitising as the Preview; styles are added after sanitising,
 // because the sanitiser strips style attributes
 const markdownToHtml = unified()
   .use(remarkParse)

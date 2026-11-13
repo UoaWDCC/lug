@@ -1,14 +1,20 @@
 import type { Email, Prisma } from "@/generated/prisma/client";
-import { selectRecipients } from "@/domain/email/audience";
+
+// Domain import (recipient address selection business logic)
+import { selectRecipientAddresses } from "@/domain/email/audience";
+
+// Email build and send I/O imports (no business logic)
 import { renderEmail } from "@/lib/email/renderEmail";
 import { sendEmail } from "@/lib/email/sendEmail";
 import { buildUnsubscribeLinks } from "@/lib/email/unsubscribe";
-import { findAllOptedOutEmailAddresses } from "@/repositories/emailAddressOptOutRepository";
+
+// DB repo imports
 import {
   claimEmailForSending,
   updateEmail,
 } from "@/repositories/emailRepository";
 import { findAudienceMembers } from "@/repositories/memberRepository";
+import { findAllOptedOutEmailAddresses } from "@/repositories/emailAddressOptOutRepository";
 
 export type DeliveryResult =
   | { status: "sent"; delivered: number }
@@ -20,26 +26,27 @@ export type DeliveryResult =
   | { status: "already_sent" }
   | { status: "database" };
 
-// Sends one message per recipient, one after another (never a shared To/CC list)
+// Orchestrator: sends one message per recipient address, one after another (never a shared To/CC list)
 export async function deliverEmail(email: Email): Promise<DeliveryResult> {
-  const recipients = await findRecipients(email);
-  if (recipients.length === 0) return { status: "no_recipients" };
+  const recipientAddresses = await getRecipientAddresses(email);
+  if (recipientAddresses.length === 0) return { status: "no_recipients" };
 
+  // Move the email from "DRAFT" to "SENT" in DB
   const claim = await claimEmailForSending(email.id);
   if (!claim.ok) return { status: "database" };
   if (!claim.data) return { status: "already_sent" };
 
   let delivered = 0;
-  for (const to of recipients) {
+  for (const recipientAddress of recipientAddresses) {
     try {
-      const links = await buildUnsubscribeLinks(to);
+      const links = await buildUnsubscribeLinks(recipientAddress);
       const { html, text } = renderEmail({
         subject: email.subject,
         body: email.body,
         unsubscribeUrl: links.pageUrl,
       });
       await sendEmail({
-        to,
+        to: recipientAddress,
         subject: email.subject,
         html,
         text,
@@ -54,7 +61,7 @@ export async function deliverEmail(email: Email): Promise<DeliveryResult> {
     }
   }
 
-  const failed = recipients.length - delivered;
+  const failed = recipientAddresses.length - delivered;
   if (delivered === 0) {
     await markEmail(email.id, { status: "DRAFT" });
     return { status: "failed" };
@@ -71,11 +78,12 @@ export async function deliverEmail(email: Email): Promise<DeliveryResult> {
     : { status: "partial", delivered, failed };
 }
 
-async function findRecipients(email: Email): Promise<string[]> {
+// Helper to get intended recipient addresses
+async function getRecipientAddresses(email: Email): Promise<string[]> {
   const [{ currentMembers, earlierMembers }, optedOutEmailAddresses] =
     await Promise.all([findAudienceMembers(), findAllOptedOutEmailAddresses()]);
 
-  return selectRecipients({
+  return selectRecipientAddresses({
     audience: email.audience,
     currentMembers,
     earlierMembers,

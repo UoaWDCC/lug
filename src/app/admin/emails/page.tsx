@@ -23,6 +23,8 @@ function plural(count: string | undefined, word: string): string {
   return `${count ?? 0} ${word}${count === "1" ? "" : "s"}`;
 }
 
+/** Maps every possible outcome string to a user-friendly message.
+ *  Changing the draft ID remounts the component so React resets all the useState values.  */
 function readNotice(params: SearchParams): Notice | null {
   switch (params.notice) {
     case "draft":
@@ -77,10 +79,14 @@ type PageProps = {
 export default async function AdminEmailsPage({ searchParams }: PageProps) {
   await requireAdmin();
   const params = await searchParams;
+
+  // Load recipient counts and optionally a saved draft in parallel
   const [recipientCounts, saved] = await Promise.all([
     getRecipientCounts(),
     params.draft ? findEmailById(params.draft) : null,
   ]);
+
+  // Read notice query param (set by composeEmailAction after redirect) to show success/error banners
   const notice = readNotice(params);
 
   // Only drafts can be reopened; a sent email's link just shows an empty composer

@@ -78,7 +78,7 @@ export async function findMemberByUpiAndStudentId(
   });
 }
 
-// The fields selectRecipients needs, and nothing else.
+// The fields selectRecipientAddresses needs, and nothing else.
 const audienceMemberSelect = {
   email: true,
   isCurrentUoaStudent: true,

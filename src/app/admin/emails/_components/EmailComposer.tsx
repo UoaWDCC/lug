@@ -27,7 +27,9 @@ const audiences = [
 ] as const;
 
 /* The preview mimics what lands in an inbox, so it keeps email-client colours (white body)
-   in both admin themes rather than using the theme tokens. */
+   in both admin themes rather than using the theme tokens.
+   
+   Note these are duplicated in renderEmail.ts, so they could diverge. */
 const emailBodyClass =
   "text-[15px] leading-relaxed text-[#1f2421] [overflow-wrap:anywhere] " +
   "[&>:first-child]:mt-0 [&_p]:my-3 [&_ul]:my-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:my-3 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1.5 " +

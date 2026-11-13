@@ -10,7 +10,7 @@ import {
   resubscribeAction,
   unsubscribeAction,
 } from "@/features/mailing-list/subscriptionActions";
-import { verifyUnsubscribeToken } from "@/lib/email/unsubscribe";
+import { decodeUnsubscribeToken } from "@/lib/email/unsubscribe";
 
 export const metadata: Metadata = {
   title: "Unsubscribe | The Linux User Group",
@@ -32,7 +32,7 @@ export default async function UnsubscribePage({ searchParams }: PageProps) {
   const params = await searchParams;
   const token = firstValue(params.token);
   const status = firstValue(params.status);
-  const email = token ? await verifyUnsubscribeToken(token) : null;
+  const email = token ? await decodeUnsubscribeToken(token) : null;
 
   if (!email) {
     return (

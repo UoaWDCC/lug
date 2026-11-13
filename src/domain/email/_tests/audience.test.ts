@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { selectRecipients } from "../audience";
+import { selectRecipientAddresses } from "../audience";
 import type { AudienceMember } from "../types";
 
 function member(overrides: Partial<AudienceMember> = {}): AudienceMember {
@@ -33,10 +33,10 @@ const earlierMembers = [
 ];
 
 function recipients(
-  audience: Parameters<typeof selectRecipients>[0]["audience"],
+  audience: Parameters<typeof selectRecipientAddresses>[0]["audience"],
   optedOutEmailAddresses: string[] = [],
 ) {
-  return selectRecipients({
+  return selectRecipientAddresses({
     audience,
     currentMembers,
     earlierMembers,
@@ -44,7 +44,7 @@ function recipients(
   });
 }
 
-describe("selectRecipients", () => {
+describe("selectRecipientAddresses", () => {
   it("sends to everyone this year for ALL, lowercased", () => {
     expect(recipients("ALL")).toEqual([
       "new@aucklanduni.ac.nz",
@@ -72,7 +72,7 @@ describe("selectRecipients", () => {
   });
 
   it("doesn't match on upi alone", () => {
-    const result = selectRecipients({
+    const result = selectRecipientAddresses({
       audience: "RETURNING",
       currentMembers: [member({ upi: "abcd123", studentId: null })],
       earlierMembers: [member({ email: "x@y.com", upi: "abcd123" })],
@@ -89,7 +89,7 @@ describe("selectRecipients", () => {
   });
 
   it("lists an address once even if it registered twice with different casing", () => {
-    const result = selectRecipients({
+    const result = selectRecipientAddresses({
       audience: "ALL",
       currentMembers: [
         member({ email: "dup@example.com" }),

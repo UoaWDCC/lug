@@ -14,7 +14,7 @@ const email = {
   subject: "Hello",
   html: "<p>Hi</p>",
   text: "Hi",
-  headers: { "List-Unsubscribe": "<https://lug.example/api/unsubscribe>" },
+  headers: { "List-Unsubscribe": "<https://lug.example/unsubscribe/api>" },
 };
 
 beforeEach(() => {

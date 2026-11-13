@@ -15,10 +15,12 @@ import type { RepositoryResult } from "@/repositories/repositoryResult";
 import { deliverEmail, type DeliveryResult } from "./deliverEmail";
 
 export async function composeEmailAction(formData: FormData): Promise<void> {
+  // Validate admin session
   const session = await requireAdmin();
   const admin = await findAdminById(session.adminId);
   if (!admin) redirect(emailsPageUrl({ notice: "error" }));
 
+  // Validate form input with Zod
   const emailId = readText(formData, "emailId");
   const parsed = composeEmailSchema.safeParse({
     intent: formData.get("intent"),
@@ -30,6 +32,7 @@ export async function composeEmailAction(formData: FormData): Promise<void> {
     redirect(emailsPageUrl({ notice: "invalid", draft: emailId }));
   }
 
+  // Save draft (updates draft being edited, or creates new one)
   const { intent, ...content } = parsed.data;
   const saved = await saveDraft(
     emailId,
@@ -60,6 +63,7 @@ async function saveDraft(
     : createEmail({ ...content, authorName });
 }
 
+// Maps delivery outcomes to URL query params for the notice banner.
 function resultParams(
   result: DeliveryResult,
   emailId: string,

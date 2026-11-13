@@ -1,4 +1,4 @@
-import { selectRecipients } from "@/domain/email/audience";
+import { selectRecipientAddresses } from "@/domain/email/audience";
 import type { AudienceFormValue, RecipientCounts } from "@/domain/email/types";
 import { AUDIENCE_BY_FORM_VALUE } from "@/domain/email/validation";
 import { findAllOptedOutEmailAddresses } from "@/repositories/emailAddressOptOutRepository";
@@ -9,7 +9,7 @@ export async function getRecipientCounts(): Promise<RecipientCounts> {
     await Promise.all([findAudienceMembers(), findAllOptedOutEmailAddresses()]);
 
   const countFor = (value: AudienceFormValue) =>
-    selectRecipients({
+    selectRecipientAddresses({
       audience: AUDIENCE_BY_FORM_VALUE[value],
       currentMembers,
       earlierMembers,

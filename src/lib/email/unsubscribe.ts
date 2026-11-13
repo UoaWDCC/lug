@@ -1,3 +1,8 @@
+/** This file handles two problems:
+ *
+ * 1. Identifying which member wants to unsubscribe.
+ * 2. Giving email clients the right links/headers to make unsubscribing work.        */
+
 import { SignJWT, jwtVerify } from "jose";
 import { normaliseEmail } from "@/domain/email/audience";
 import { getSecretKey } from "@/lib/auth/session";
@@ -17,7 +22,7 @@ export async function createUnsubscribeToken(email: string): Promise<string> {
 }
 
 // Returns the lowercased email the token was made for, or null if it's invalid or tampered with
-export async function verifyUnsubscribeToken(
+export async function decodeUnsubscribeToken(
   token: string,
 ): Promise<string | null> {
   try {
@@ -52,7 +57,7 @@ export async function buildUnsubscribeLinks(
   return {
     pageUrl: `${siteUrl}/unsubscribe?token=${token}`,
     headers: {
-      "List-Unsubscribe": `<${siteUrl}/api/unsubscribe?token=${token}>`,
+      "List-Unsubscribe": `<${siteUrl}/unsubscribe/api?token=${token}>`,
       "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
     },
   };
